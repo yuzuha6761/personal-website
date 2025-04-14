@@ -1,0 +1,50 @@
+@import '~styles';
+
+.menu-bar {
+  background-color: #0002;
+  backdrop-filter: blur(40px);
+  color: #fff;
+  box-sizing: border-box;
+  @include size($w: 100%, $h: 1.714rem);
+  @include flex-adapter($jc: space-between, $ai: center);
+  & > div {
+    height: 100%;
+    @include flex-adapter($ai: center);
+    &:nth-child(1) {
+      & > div:nth-child(1) {
+        padding: 0 0.65rem 0 1.3rem;
+      }
+    }
+    &:nth-child(2) {
+      & > div:last-child {
+        padding: 0 1.3rem 0 0.65rem;
+      }
+    }
+    & > div {
+      padding: 0 0.65rem;
+      text-shadow: #0005 1px 0 5px;
+      height: 100%;
+      & > div {
+        height: 100%;
+        position: relative;
+        @include flex-adapter($jc: center, $ai: center);
+        img {
+          @include size($w: 1.2rem, $h: 1.2rem);
+        }
+      }
+      &:nth-child(2) {
+        font-weight: bold;
+      }
+      &[data-active=true] {
+        & > img::before, & > div::before {
+          content: '';
+          background-color: #fff3;
+          border-radius: 0.3rem;
+          transform: translate(-50%, -50%);
+          @include size($w: calc(100% + 1.9rem), $h: 1.714rem);
+          @include a-pos($t: 50%, $l: 50%);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+@import 'public';
+
+@keyframes icon-rotating {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.text-ellipsis-1-line {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.text-ellipsis-2-line {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  @extend .text-ellipsis-1-line;
+  white-space: initial;
+}

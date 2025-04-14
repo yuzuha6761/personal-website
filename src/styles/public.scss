@@ -1,0 +1,96 @@
+@mixin flex-adapter($fd: row, $jc: flex-start, $ai: flex-start, $fw: nowrap) {
+  display: flex;
+  @if $fd != row {
+    flex-direction: $fd;
+  }
+  @if $jc != flex-start {
+    justify-content: $jc;
+  }
+  @if $ai != flex-start {
+    align-items: $ai;
+  }
+  @if $fw != nowrap {
+    flex-wrap: $fw;
+  }
+}
+
+@mixin size($w: auto, $h: auto, $maxw: auto, $maxh: auto, $minw: auto, $minh: auto) {
+  @if $w != auto {
+    width: $w;
+  }
+  @if $h != auto {
+    height: $h;
+  }
+  @if $maxw != auto {
+    max-width: $maxw;
+  }
+  @if $maxh != auto {
+    max-height: $maxh;
+  }
+  @if $minw != auto {
+    min-width: $minw;
+  }
+  @if $minh != auto {
+    min-height: $minh;
+  }
+}
+
+@mixin a-pos($t: auto, $r: auto, $b: auto, $l: auto) {
+  position: absolute;
+  @if $t != auto {
+    top: $t;
+  }
+  @if $r != auto {
+    right: $r;
+  }
+  @if $b != auto {
+    bottom: $b;
+  }
+  @if $l != auto {
+    left: $l;
+  }
+}
+
+@mixin r-pos($t: auto, $r: auto, $b: auto, $l: auto) {
+  position: relative;
+  @if $t != auto {
+    top: $t;
+  }
+  @if $r != auto {
+    right: $r;
+  }
+  @if $b != auto {
+    bottom: $b;
+  }
+  @if $l != auto {
+    left: $l;
+  }
+}
+
+@mixin f-pos($t: auto, $r: auto, $b: auto, $l: auto) {
+  @include a-pos($t, $r, $b, $l);
+  position: fixed;
+}
+
+@mixin transition-ease($p: all, $t: 0.3s) {
+  transition: $p $t ease;
+  -moz-transition: $p $t ease; /* Firefox 4 */
+  -webkit-transition: $p $t ease; /* Safari and Chrome */
+  -o-transition: $p $t ease; /* Opera */
+}
+
+@mixin font($fs: $default-font-size, $c: $font-color-text-1, $fw: normal, $ff: $default-font-family) {
+  @if $fs != $default-font-size {
+    font-size: $fs;
+  }
+  @if $c != $font-color-text-1 {
+    color: $c;
+  }
+  @if $fw != normal {
+    font-weight: $fw;
+  }
+  @if $ff != $default-font-family {
+    color: $c;
+    font-family: $ff;
+  }
+}

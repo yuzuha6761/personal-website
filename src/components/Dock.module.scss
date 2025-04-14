@@ -1,0 +1,127 @@
+@import '~styles';
+
+.dock {
+  background-color: #fff2;
+  backdrop-filter: blur(40px);
+  gap: 0.2rem;
+  box-sizing: border-box;
+  border: 1px solid #fff3;
+  border-radius: 1rem;
+  box-shadow: 0 0 1rem #0003;
+  &[data-position=left] {
+    padding: .3rem .3rem .3rem 0;
+    transform: translateY(-50%);
+    @include a-pos($t: 50%, $l: .4rem);
+    @include flex-adapter($fd: column, $ai: flex-start);
+    & > div[data-spliter=true] {
+      width: 80%;
+      border-top: 1px solid #0005;
+      align-self: center;
+      margin: .7rem 0 .7rem .3rem;
+    }
+    & > div:not([data-spliter=true]) {
+      width: 100%;
+      position: relative;
+      @include flex-adapter($jc: flex-end);
+      & > img {
+        width: calc(100% - .5rem);
+        aspect-ratio: 1;
+      }
+      & > div:first-child {
+        transform: translateY(-50%);
+        display: none;
+        padding: 0.2rem 1rem;
+        background-color: #fff6;
+        box-shadow: 0 0 0.5rem #0004;
+        border-radius: 0.3rem;
+        margin-left: 1rem;
+        @include a-pos($l: 100%, $t: 50%)
+      }
+      &:active > img {
+        filter: brightness(.6);
+      }
+      &:hover, &:active {
+        & > div:first-child {
+          display: block;
+        }
+      }
+    }
+  }
+  &[data-position=bottom] {
+    padding: .3rem .3rem 0 .3rem;
+    transform: translateX(-50%);
+    @include a-pos($b: .4rem, $l: 50%);
+    @include flex-adapter($ai: flex-end);
+    & > div[data-spliter=true] {
+      height: 80%;
+      border-left: 1px solid #0005;
+      align-self: center;
+      margin: 0 .7rem .3rem .7rem;
+    }
+    & > div:not([data-spliter=true]) {
+      height: 100%;
+      position: relative;
+      & > img {
+        height: calc(100% - .5rem);
+        aspect-ratio: 1;
+      }
+      & > div:first-child {
+        transform: translateX(-50%);
+        display: none;
+        padding: 0.2rem 1rem;
+        background-color: #fff6;
+        box-shadow: 0 0 0.5rem #0004;
+        border-radius: 0.3rem;
+        margin-bottom: 1rem;
+        @include a-pos($b: 100%, $l: 50%)
+      }
+      &:active > img {
+        filter: brightness(.6);
+      }
+      &:hover, &:active {
+        & > div:first-child {
+          display: block;
+        }
+      }
+    }
+  }
+  &[data-position=right] {
+    padding: .3rem  0 .3rem .3rem;
+    transform: translateY(-50%);
+    @include a-pos($t: 50%, $r: .4rem);
+    @include flex-adapter($fd: column, $ai: flex-end);
+    & > div[data-spliter=true] {
+      width: 80%;
+      border-top: 1px solid #0005;
+      align-self: center;
+      margin: .7rem .3rem .7rem 0;
+    }
+    & > div:not([data-spliter=true]) {
+      width: 100%;
+      position: relative;
+      @include flex-adapter($jc: flex-start);
+      & > img {
+        width: calc(100% - .5rem);
+        aspect-ratio: 1;
+      }
+      & > div:first-child {
+        transform: translateY(-50%);
+        display: none;
+        padding: 0.2rem 1rem;
+        background-color: #fff6;
+        box-shadow: 0 0 0.5rem #0004;
+        border-radius: 0.3rem;
+        margin-right: 1rem;
+        @include a-pos($r: 100%, $t: 50%)
+      }
+      &:active > img {
+        filter: brightness(.6);
+      }
+      &:hover, &:active {
+        & > div:first-child {
+          display: block;
+        }
+      }
+    }
+  }
+}
