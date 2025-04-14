@@ -1,3 +1,5 @@
+import { useState, useRef } from 'react'
+import { useClickAway } from 'ahooks'
 import styles from './MenuBar.module.scss'
 import appleLogo from '~assets/logo/apple.svg'
 import useGlobalStore from "../stores/global";
@@ -11,7 +13,7 @@ function MenuBar() {
   const dockRef = useRef<HTMLDivElement>(null)
 
   useClickAway(() => setActiveMenuId(''), dockRef)
-  
+
   const onMouseDown = (menuId: string) => {
     setActiveMenuId(menuId)
     setMouseDownTimestamp(Date.now())

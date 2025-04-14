@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import styles from './Dock.module.scss'
 import useDockSettingStore from "../stores/settings/dock";
 import {DockPositionEnum} from "~enums";
