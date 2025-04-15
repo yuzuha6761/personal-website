@@ -1,4 +1,4 @@
-@import '~styles';
+@use '../styles/public' as *;
 
 .dock {
   background-color: #fff2;

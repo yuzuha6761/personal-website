@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import Desktop from "./components/Desktop.tsx";
 import Dock from "./components/Dock.tsx";
 import './App.scss'

@@ -1,4 +1,4 @@
-@import '~styles';
+@use '../styles/public' as *;
 
 .menu-bar {
   background-color: #0002;

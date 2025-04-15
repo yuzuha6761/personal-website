@@ -1,5 +1,3 @@
-import { useState, useRef } from 'react'
-import { useClickAway } from 'ahooks'
 import styles from './MenuBar.module.scss'
 import appleLogo from '~assets/logo/apple.svg'
 import useGlobalStore from "../stores/global";
