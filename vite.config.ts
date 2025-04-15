@@ -27,13 +27,28 @@ export default defineConfig({
       '~styles': resolve('./src/styles')
     }
   },
+  optimizeDeps: {
+    exclude: ['react', 'react-dom']
+  },
   build: {
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-dom/client',
+        /^react/,
+        /^react-dom/
+      ],
       output: {
+        format: 'es',
         globals: {
-          react: 'React',
+          'react': 'React',
           'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'jsxRuntime',
+          'react/jsx-dev-runtime': 'jsxDevRuntime',
+          'react-dom/client': 'ReactDOMClient'
         },
       },
     }
