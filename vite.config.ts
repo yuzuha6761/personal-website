@@ -2,9 +2,11 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import AutoImport from 'unplugin-auto-import/vite'
 import react from '@vitejs/plugin-react-swc'
+import { analyzer } from "vite-bundle-analyzer"
+import { createHtmlPlugin } from 'vite-plugin-html'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({mode}) => ({
   plugins: [
     react(),
     AutoImport({
@@ -17,7 +19,16 @@ export default defineConfig({
       eslintrc: {
         enabled: true
       }
-    })
+    }),
+    createHtmlPlugin({
+      template: 'index.html',
+      inject: {
+        data: {
+          isProduction: process.env.NODE_ENV === 'production'
+        },
+      },
+    }),
+    mode === "analyze" ? analyzer() : undefined
   ],
   resolve: {
     alias: {
@@ -28,7 +39,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['react', 'react-dom']
+    include: ['react', 'react-dom']
   },
   build: {
     rollupOptions: {
@@ -39,7 +50,8 @@ export default defineConfig({
         'react/jsx-dev-runtime',
         'react-dom/client',
         /^react/,
-        /^react-dom/
+        /^react-dom/,
+        'luxon'
       ],
       output: {
         format: 'es',
@@ -48,9 +60,10 @@ export default defineConfig({
           'react-dom': 'ReactDOM',
           'react/jsx-runtime': 'jsxRuntime',
           'react/jsx-dev-runtime': 'jsxDevRuntime',
-          'react-dom/client': 'ReactDOMClient'
-        },
+          'react-dom/client': 'ReactDOMClient',
+          'luxon': 'luxon'
+        }
       },
-    }
+    },
   }
-})
+}))
