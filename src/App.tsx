@@ -1,6 +1,5 @@
 import Desktop from "./components/Desktop.tsx";
 import Dock from "./components/Dock.tsx";
-import './App.scss'
 import useDisplaysSettingStore from "./stores/settings/displays";
 import useGlobalStore from "./stores/global";
 

@@ -4,11 +4,13 @@ import AutoImport from 'unplugin-auto-import/vite'
 import react from '@vitejs/plugin-react-swc'
 import { analyzer } from "vite-bundle-analyzer"
 import { createHtmlPlugin } from 'vite-plugin-html'
+import UnoCSS from 'unocss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => ({
   plugins: [
     react(),
+    UnoCSS(),
     AutoImport({
       include: [/\.[tj]sx?$/],
       imports: [

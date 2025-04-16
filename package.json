@@ -42,6 +42,7 @@
     "sass": "^1.86.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
+    "unocss": "66.1.0-beta.11",
     "unplugin-auto-import": "^19.1.2",
     "vite": "^6.2.6",
     "vite-bundle-analyzer": "^0.18.1",

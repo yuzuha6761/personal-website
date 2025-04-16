@@ -1,4 +1,3 @@
-import styles from './Desktop.module.scss'
 import MenuBar from "./MenuBar.tsx";
 
 function Desktop() {
@@ -7,7 +6,7 @@ function Desktop() {
   }, [])
 
   return (
-    <div className={styles['desktop']}>
+    <div className="w-full h-full bg-[url('/src/assets/wallpaper/sonoma-light.jpg')] bg-no-repeat bg-center bg-cover">
       <MenuBar />
     </div>
   )
