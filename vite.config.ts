@@ -15,7 +15,6 @@ export default defineConfig(({mode}) => ({
       include: [/\.[tj]sx?$/],
       imports: [
         'react',
-        'react-i18next',
         'ahooks'
       ],
       eslintrc: {

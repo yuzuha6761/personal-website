@@ -80,6 +80,7 @@
     "useState": true,
     "useSyncExternalStore": true,
     "useTextSelection": true,
+    "useTheme": true,
     "useThrottle": true,
     "useThrottleEffect": true,
     "useThrottleFn": true,
@@ -88,7 +89,6 @@
     "useToggle": true,
     "useTrackedEffect": true,
     "useTransition": true,
-    "useTranslation": true,
     "useUnmount": true,
     "useUnmountedRef": true,
     "useUpdate": true,
@@ -96,7 +96,6 @@
     "useUpdateLayoutEffect": true,
     "useVirtualList": true,
     "useWebSocket": true,
-    "useWhyDidYouUpdate": true,
-    "useTheme": true
+    "useWhyDidYouUpdate": true
   }
 }
