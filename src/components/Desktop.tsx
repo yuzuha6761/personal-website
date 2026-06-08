@@ -1,4 +1,5 @@
 import MenuBar from "./MenuBar.tsx";
+import { wallpaper } from "../constants/preloadAssets";
 
 function Desktop() {
   useEffect(() => {
@@ -6,7 +7,10 @@ function Desktop() {
   }, [])
 
   return (
-    <div className="w-full h-full bg-[url('/src/assets/wallpaper/sonoma-light.jpg')] bg-no-repeat bg-center bg-cover">
+    <div
+      className="w-full h-full bg-no-repeat bg-center bg-cover"
+      style={{ backgroundImage: `url(${wallpaper})` }}
+    >
       <MenuBar />
     </div>
   )
