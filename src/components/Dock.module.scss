@@ -8,6 +8,7 @@
   border: 1px solid #fff3;
   border-radius: 1rem;
   box-shadow: 0 0 1rem #0003;
+  z-index: 1000;
   &[data-position=left] {
     padding: .3rem .3rem .3rem 0;
     transform: translateY(-50%);

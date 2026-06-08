@@ -1,0 +1,355 @@
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
+import type { WindowState } from '~types'
+import fullscreenIcon from '~assets/common/window-fullscreen.svg'
+import northEastSouthWestCursor from '~assets/cursors/Resize (Double)/North-East South-West.svg'
+import northSouthCursor from '~assets/cursors/Resize (Double)/North-South.svg'
+import northWestSouthEastCursor from '~assets/cursors/Resize (Double)/North-West South-East.svg'
+import westEastCursor from '~assets/cursors/Resize (Double)/West-East.svg'
+import circleFillIcon from '~assets/sf-symbols/circle.fill.svg'
+import minusIcon from '~assets/sf-symbols/minus.svg'
+import plusIcon from '~assets/sf-symbols/plus.svg'
+import xmarkIcon from '~assets/sf-symbols/xmark.svg'
+
+interface ApplicationWindowProps {
+  active: boolean
+  children: ReactNode
+  window: WindowState
+  onClose: (windowId: string) => void
+  onFocus: (windowId: string) => void
+}
+
+interface TrafficLightsProps {
+  active: boolean
+  title: string
+  documentDirty?: boolean
+  onClose: () => void
+}
+
+interface WindowFrame {
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+}
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+type WindowInteraction =
+  | {
+      type: 'drag'
+      startPointer: { x: number; y: number }
+      startFrame: WindowFrame
+    }
+  | {
+      type: 'resize'
+      direction: ResizeDirection
+      startPointer: { x: number; y: number }
+      startFrame: WindowFrame
+    }
+
+const trafficLightBaseClass = 'relative w-[.9rem] h-[.9rem] rounded-full p-0 cursor-default flex items-center justify-center active:[filter:brightness(.82)]'
+const trafficLightGlyphBaseClass = 'w-[.42rem] h-[.42rem] object-contain opacity-0'
+const WINDOW_TITLE_BAR_HEIGHT = 38
+const WINDOW_RESIZE_HANDLE_SIZE_REM = 0.25
+const MIN_WINDOW_SIZE = { width: 320, height: 220 }
+const SCREEN_EDGE_MARGIN = 24
+const cursorMap: Record<ResizeDirection, { src: string; hotspot: { x: number; y: number } }> = {
+  e: { src: westEastCursor, hotspot: { x: 8, y: 6 } },
+  w: { src: westEastCursor, hotspot: { x: 8, y: 6 } },
+  n: { src: northSouthCursor, hotspot: { x: 6, y: 8 } },
+  s: { src: northSouthCursor, hotspot: { x: 6, y: 8 } },
+  ne: { src: northEastSouthWestCursor, hotspot: { x: 7, y: 7 } },
+  sw: { src: northEastSouthWestCursor, hotspot: { x: 7, y: 7 } },
+  nw: { src: northWestSouthEastCursor, hotspot: { x: 7, y: 7 } },
+  se: { src: northWestSouthEastCursor, hotspot: { x: 7, y: 7 } },
+}
+
+function getCursorStyle(cursor: { src: string; hotspot: { x: number; y: number } }) {
+  return `url("${cursor.src}") ${cursor.hotspot.x} ${cursor.hotspot.y}, auto`
+}
+
+function getResizeHandleSizePx() {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rootFontSize * WINDOW_RESIZE_HANDLE_SIZE_REM
+}
+
+function getResizeDirection(
+  event: ReactMouseEvent<HTMLDivElement> | MouseEvent,
+  rect: DOMRect,
+): ResizeDirection | null {
+  const resizeHandleSize = getResizeHandleSizePx()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const insideHorizontalRange = x >= -resizeHandleSize && x <= rect.width + resizeHandleSize
+  const insideVerticalRange = y >= -resizeHandleSize && y <= rect.height + resizeHandleSize
+  const nearTop = insideHorizontalRange && y >= -resizeHandleSize && y <= resizeHandleSize
+  const nearRight = insideVerticalRange && x >= rect.width - resizeHandleSize && x <= rect.width + resizeHandleSize
+  const nearBottom = insideHorizontalRange && y >= rect.height - resizeHandleSize && y <= rect.height + resizeHandleSize
+  const nearLeft = insideVerticalRange && x >= -resizeHandleSize && x <= resizeHandleSize
+
+  if (nearTop && nearLeft) return 'nw'
+  if (nearTop && nearRight) return 'ne'
+  if (nearBottom && nearLeft) return 'sw'
+  if (nearBottom && nearRight) return 'se'
+  if (nearTop) return 'n'
+  if (nearRight) return 'e'
+  if (nearBottom) return 's'
+  if (nearLeft) return 'w'
+
+  return null
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function resizeFrame(
+  direction: ResizeDirection,
+  startFrame: WindowFrame,
+  deltaX: number,
+  deltaY: number,
+): WindowFrame {
+  const nextFrame: WindowFrame = {
+    position: { ...startFrame.position },
+    size: { ...startFrame.size },
+  }
+
+  if (direction.includes('e')) {
+    nextFrame.size.width = Math.max(MIN_WINDOW_SIZE.width, startFrame.size.width + deltaX)
+  }
+
+  if (direction.includes('s')) {
+    nextFrame.size.height = Math.max(MIN_WINDOW_SIZE.height, startFrame.size.height + deltaY)
+  }
+
+  if (direction.includes('w')) {
+    const width = Math.max(MIN_WINDOW_SIZE.width, startFrame.size.width - deltaX)
+    nextFrame.position.x = startFrame.position.x + startFrame.size.width - width
+    nextFrame.size.width = width
+  }
+
+  if (direction.includes('n')) {
+    const height = Math.max(MIN_WINDOW_SIZE.height, startFrame.size.height - deltaY)
+    nextFrame.position.y = startFrame.position.y + startFrame.size.height - height
+    nextFrame.size.height = height
+  }
+
+  return nextFrame
+}
+
+function TrafficLights(props: TrafficLightsProps) {
+  const { active, title, documentDirty = false, onClose } = props
+  const [optionKeyPressed, setOptionKeyPressed] = useState(false)
+  const glyphVisibilityClass = active ? 'group-hover:opacity-50' : 'opacity-0'
+  const inactiveLightClass = 'border border-#d3d3d3 bg-#e6e6e6'
+  const closeLightClass = active ? 'border border-#e0443e bg-#ff5f56' : inactiveLightClass
+  const minimizeLightClass = active ? 'border border-#dea123 bg-#ffbd2e' : inactiveLightClass
+  const zoomLightClass = active ? 'border border-#1aab29 bg-#27c93f' : inactiveLightClass
+
+  useEffect(() => {
+    const updateOptionKeyState = (event: KeyboardEvent) => setOptionKeyPressed(event.altKey)
+    const releaseOptionKey = () => setOptionKeyPressed(false)
+
+    window.addEventListener('keydown', updateOptionKeyState)
+    window.addEventListener('keyup', updateOptionKeyState)
+    window.addEventListener('blur', releaseOptionKey)
+
+    return () => {
+      window.removeEventListener('keydown', updateOptionKeyState)
+      window.removeEventListener('keyup', updateOptionKeyState)
+      window.removeEventListener('blur', releaseOptionKey)
+    }
+  }, [])
+
+  return (
+    <div
+      className="group gap-[.43rem] pointer-events-auto flex items-center"
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      <div
+        aria-label={`Close ${title}`}
+        className={`${trafficLightBaseClass} ${closeLightClass}`}
+        onClick={(event) => {
+          event.stopPropagation()
+          onClose()
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <img
+          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`}
+          src={documentDirty ? circleFillIcon : xmarkIcon}
+          alt=""
+        />
+      </div>
+      <div
+        aria-label={`Minimize ${title}`}
+        className={`${trafficLightBaseClass} ${minimizeLightClass}`}
+        role="button"
+        tabIndex={0}
+      >
+        <img className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`} src={minusIcon} alt="" />
+      </div>
+      <div
+        aria-label={`${optionKeyPressed ? 'Zoom' : 'Enter fullscreen'} ${title}`}
+        className={`${trafficLightBaseClass} ${zoomLightClass}`}
+        role="button"
+        tabIndex={0}
+      >
+        <img
+          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`}
+          src={optionKeyPressed ? plusIcon : fullscreenIcon}
+          alt=""
+        />
+      </div>
+    </div>
+  )
+}
+
+function ApplicationWindow(props: ApplicationWindowProps) {
+  const { active, children, window, onClose, onFocus } = props
+  const [frame, setFrame] = useState<WindowFrame>({
+    position: window.position,
+    size: window.size,
+  })
+  const [cursorStyle, setCursorStyle] = useState<string>()
+  const interactionRef = useRef<WindowInteraction | null>(null)
+  const visibleWindowRef = useRef<HTMLDivElement>(null)
+  const resizeHandleSizeRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM}rem`
+  const hitAreaSizeOffsetRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM * 2}rem`
+  const windowClassName = `absolute overflow-hidden border border-#cdcdcd rounded-[.7rem] bg-white text-#1f2933 select-none ${
+    active
+      ? 'shadow-[0_1.15rem_3.2rem_#00000038,0_.2rem_.7rem_#0000001f]'
+      : '[filter:saturate(.88)_brightness(.96)] shadow-[0_.85rem_2.2rem_#00000026,0_.15rem_.45rem_#0000001a]'
+  }`
+
+  useEffect(() => {
+    const handlePointerMove = (event: MouseEvent) => {
+      const interaction = interactionRef.current
+      if (!interaction) return
+
+      const deltaX = event.clientX - interaction.startPointer.x
+      const deltaY = event.clientY - interaction.startPointer.y
+
+      if (interaction.type === 'drag') {
+        setFrame((currentFrame) => ({
+          ...currentFrame,
+          position: {
+            x: clamp(
+              interaction.startFrame.position.x + deltaX,
+              SCREEN_EDGE_MARGIN - interaction.startFrame.size.width,
+              globalThis.window.innerWidth - SCREEN_EDGE_MARGIN,
+            ),
+            y: clamp(
+              interaction.startFrame.position.y + deltaY,
+              0,
+              globalThis.window.innerHeight - SCREEN_EDGE_MARGIN,
+            ),
+          },
+        }))
+        return
+      }
+
+      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY))
+    }
+
+    const handlePointerUp = () => {
+      interactionRef.current = null
+      setCursorStyle(undefined)
+      document.documentElement.style.cursor = ''
+      document.body.style.cursor = ''
+    }
+
+    globalThis.window.addEventListener('mousemove', handlePointerMove)
+    globalThis.window.addEventListener('mouseup', handlePointerUp)
+
+    return () => {
+      globalThis.window.removeEventListener('mousemove', handlePointerMove)
+      globalThis.window.removeEventListener('mouseup', handlePointerUp)
+      document.documentElement.style.cursor = ''
+      document.body.style.cursor = ''
+    }
+  }, [])
+
+  const onWindowMouseMove = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (interactionRef.current) return
+    if (!visibleWindowRef.current) return
+
+    const direction = getResizeDirection(event, visibleWindowRef.current.getBoundingClientRect())
+    setCursorStyle(direction ? getCursorStyle(cursorMap[direction]) : undefined)
+  }
+
+  const onWindowMouseLeave = () => {
+    if (!interactionRef.current) setCursorStyle(undefined)
+  }
+
+  const onWindowMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
+    onFocus(window.id)
+
+    if (event.button !== 0) return
+
+    if (!visibleWindowRef.current) return
+
+    const rect = visibleWindowRef.current.getBoundingClientRect()
+    const direction = getResizeDirection(event, rect)
+
+    if (direction) {
+      const cursor = getCursorStyle(cursorMap[direction])
+      interactionRef.current = {
+        type: 'resize',
+        direction,
+        startPointer: { x: event.clientX, y: event.clientY },
+        startFrame: frame,
+      }
+      setCursorStyle(cursor)
+      document.documentElement.style.cursor = cursor
+      document.body.style.cursor = cursor
+      event.preventDefault()
+      return
+    }
+
+    const localY = event.clientY - rect.top
+    if (localY <= WINDOW_TITLE_BAR_HEIGHT) {
+      interactionRef.current = {
+        type: 'drag',
+        startPointer: { x: event.clientX, y: event.clientY },
+        startFrame: frame,
+      }
+      event.preventDefault()
+    }
+  }
+
+  return (
+    <div
+      className="absolute"
+      onMouseDown={onWindowMouseDown}
+      onMouseLeave={onWindowMouseLeave}
+      onMouseMove={onWindowMouseMove}
+      style={{
+        width: `calc(${frame.size.width}px + ${hitAreaSizeOffsetRem})`,
+        height: `calc(${frame.size.height}px + ${hitAreaSizeOffsetRem})`,
+        cursor: cursorStyle,
+        transform: `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`,
+        zIndex: window.zIndex,
+      }}
+    >
+      <div
+        className={windowClassName}
+        ref={visibleWindowRef}
+        style={{
+          width: frame.size.width,
+          height: frame.size.height,
+          transform: `translate(${resizeHandleSizeRem}, ${resizeHandleSizeRem})`,
+        }}
+      >
+        <div className="absolute z-2 box-border w-full h-[2.35rem] px-[.78rem] pointer-events-none flex items-center">
+          <TrafficLights
+            active={active}
+            title={window.title}
+            onClose={() => onClose(window.id)}
+          />
+        </div>
+        <div className="w-full h-full">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+export default ApplicationWindow

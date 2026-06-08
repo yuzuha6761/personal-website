@@ -1,4 +1,6 @@
 export * from './stores/global'
 export * from './stores/dock'
 export * from './stores/displays'
-export * from './application'
+export * from './stores/window'
+export * from './app'
+export * from './window'

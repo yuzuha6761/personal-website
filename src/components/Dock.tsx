@@ -3,11 +3,13 @@ import useDockSettingStore from "../stores/settings/dock";
 import {DockPositionEnum} from "~enums";
 import trashIcon from '~assets/application-icon/trash.png'
 import {applicationList} from "../constants/appliction";
+import useWindowStore from "../stores/window";
 
 function Dock() {
   const size = useDockSettingStore((state) => state.size)
   const position = useDockSettingStore((state) => state.position)
   const pinnedApplicationIds = useDockSettingStore((state) => state.pinnedApplicationIds)
+  const openApp = useWindowStore((state) => state.openApp)
 
   useEffect(() => {
 
@@ -27,7 +29,7 @@ function Dock() {
         if (!application) return
 
         return (
-          <div key={application.id}>
+          <div key={application.id} onClick={() => openApp(application.id)}>
             <div>{application.name}</div>
             <img src={application.icon} alt=""/>
           </div>
