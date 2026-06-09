@@ -10,6 +10,7 @@ import folderBadgePersonIcon from '~assets/sf-symbols/folder.badge.person.crop.s
 import houseIcon from '~assets/sf-symbols/house.svg'
 import icloudIcon from '~assets/sf-symbols/icloud.svg'
 import laptopIcon from '~assets/sf-symbols/laptopcomputer.svg'
+import networkIcon from '~assets/sf-symbols/network.svg'
 import listBulletIcon from '~assets/sf-symbols/list.bullet.svg'
 import magnifyingGlassIcon from '~assets/sf-symbols/magnifyingglass.svg'
 import menuBarDockIcon from '~assets/sf-symbols/menubar.dock.rectangle.svg'
@@ -33,10 +34,10 @@ export const sidebarIconMap: Record<FinderSidebarIcon, string> = {
   home: houseIcon,
   icloud: icloudIcon,
   document: documentIcon,
-  desktop: rectangleSplitIcon,
+  desktop: menuBarDockIcon,
   shared: folderBadgePersonIcon,
   computer: laptopIcon,
-  onedrive: icloudIcon,
+  network: networkIcon,
 }
 
 export const fileIconMap: Record<FinderItemIcon, string> = {

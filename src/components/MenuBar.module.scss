@@ -5,6 +5,7 @@
   backdrop-filter: blur(40px);
   color: #fff;
   box-sizing: border-box;
+  font-size: .9rem;
   @include size($w: 100%, $h: 1.714rem);
   @include flex-adapter($jc: space-between, $ai: center);
   & > div {

@@ -11,7 +11,7 @@ export type FinderSidebarIcon =
   | 'desktop'
   | 'shared'
   | 'computer'
-  | 'onedrive'
+  | 'network'
 
 export type FinderItemIcon = 'folder' | 'scss' | 'tsx'
 
