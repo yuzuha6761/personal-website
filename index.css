@@ -27,6 +27,7 @@ body {
   -moz-transition: opacity .5s linear; /* Firefox 4 */
   -webkit-transition: opacity .5s linear; /* Safari and Chrome */
   -o-transition: opacity .5s linear; /* Opera */
+  z-index: 9999;
 }
 
 #startingUpScreen > img {

@@ -2,7 +2,7 @@ import styles from './Dock.module.scss'
 import useDockSettingStore from "../stores/settings/dock";
 import {DockPositionEnum} from "~enums";
 import trashIcon from '~assets/application-icon/trash.png'
-import {applicationList} from "../constants/appliction";
+import { getApplicationById } from "../components/applications/registry";
 import useWindowStore from "../stores/window";
 
 function Dock() {
@@ -24,7 +24,7 @@ function Dock() {
   return (
     <div data-position={position} className={styles['dock']} style={dockStyle}>
       {pinnedApplicationIds.map((applicationId) => {
-        const application = applicationList.find((application) => application.id === applicationId)
+        const application = getApplicationById(applicationId)
 
         if (!application) return
 

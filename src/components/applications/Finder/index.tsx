@@ -1,6 +1,7 @@
 import FinderHeader from './FinderHeader'
 import FinderList from './FinderList'
 import FinderSidebar from './FinderSidebar'
+
 function Finder() {
   return (
     <div className="w-full h-full overflow-hidden flex text-#4b4b4d bg-#f7f7f7 text-[.86rem]">

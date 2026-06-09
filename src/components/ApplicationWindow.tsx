@@ -1,5 +1,6 @@
-import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import type { WindowState } from '~types'
+import { resolveApplication } from './applications/registry'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import northEastSouthWestCursor from '~assets/cursors/Resize (Double)/North-East South-West.svg'
 import northSouthCursor from '~assets/cursors/Resize (Double)/North-South.svg'
@@ -12,7 +13,6 @@ import xmarkIcon from '~assets/sf-symbols/xmark.svg'
 
 interface ApplicationWindowProps {
   active: boolean
-  children: ReactNode
   window: WindowState
   onClose: (windowId: string) => void
   onFocus: (windowId: string) => void
@@ -46,6 +46,8 @@ type WindowInteraction =
 
 const trafficLightBaseClass = 'relative w-[.9rem] h-[.9rem] rounded-full p-0 cursor-default flex items-center justify-center active:[filter:brightness(.82)]'
 const trafficLightGlyphBaseClass = 'w-[.42rem] h-[.42rem] object-contain opacity-0'
+const DEFAULT_TRAFFIC_LIGHT_POSITION_REM = { top: 0.78, left: 0.78 }
+const STANDARD_TITLE_BAR_HEIGHT_REM = 2.75
 const WINDOW_TITLE_BAR_HEIGHT = 38
 const WINDOW_RESIZE_HANDLE_SIZE_REM = 0.25
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
@@ -68,6 +70,11 @@ function getCursorStyle(cursor: { src: string; hotspot: { x: number; y: number }
 function getResizeHandleSizePx() {
   const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
   return rootFontSize * WINDOW_RESIZE_HANDLE_SIZE_REM
+}
+
+function getRemPx(rem: number) {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rootFontSize * rem
 }
 
 function getResizeDirection(
@@ -204,7 +211,17 @@ function TrafficLights(props: TrafficLightsProps) {
 }
 
 function ApplicationWindow(props: ApplicationWindowProps) {
-  const { active, children, window, onClose, onFocus } = props
+  const {
+    active,
+    window,
+    onClose,
+    onFocus,
+  } = props
+  const { children, windowOptions } = resolveApplication(window.appId)
+  const {
+    fullSizeContentView = false,
+    trafficLightsPosition,
+  } = windowOptions
   const [frame, setFrame] = useState<WindowFrame>({
     position: window.position,
     size: window.size,
@@ -214,6 +231,15 @@ function ApplicationWindow(props: ApplicationWindowProps) {
   const visibleWindowRef = useRef<HTMLDivElement>(null)
   const resizeHandleSizeRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM}rem`
   const hitAreaSizeOffsetRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM * 2}rem`
+  const trafficLightsTopRem = fullSizeContentView
+    ? trafficLightsPosition?.top ?? DEFAULT_TRAFFIC_LIGHT_POSITION_REM.top
+    : 0.92
+  const trafficLightsLeftRem = fullSizeContentView
+    ? trafficLightsPosition?.left ?? DEFAULT_TRAFFIC_LIGHT_POSITION_REM.left
+    : 1
+  const draggableTitleBarHeight = fullSizeContentView
+    ? WINDOW_TITLE_BAR_HEIGHT
+    : getRemPx(STANDARD_TITLE_BAR_HEIGHT_REM)
   const windowClassName = `absolute overflow-hidden border border-#cdcdcd rounded-[.7rem] bg-white text-#1f2933 select-none ${
     active
       ? 'shadow-[0_1.15rem_3.2rem_#00000038,0_.2rem_.7rem_#0000001f]'
@@ -306,7 +332,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
     }
 
     const localY = event.clientY - rect.top
-    if (localY <= WINDOW_TITLE_BAR_HEIGHT) {
+    if (localY <= draggableTitleBarHeight) {
       interactionRef.current = {
         type: 'drag',
         startPointer: { x: event.clientX, y: event.clientY },
@@ -339,14 +365,46 @@ function ApplicationWindow(props: ApplicationWindowProps) {
           transform: `translate(${resizeHandleSizeRem}, ${resizeHandleSizeRem})`,
         }}
       >
-        <div className="absolute z-2 box-border w-full h-[2.35rem] px-[.78rem] pointer-events-none flex items-center">
-          <TrafficLights
-            active={active}
-            title={window.title}
-            onClose={() => onClose(window.id)}
-          />
-        </div>
-        <div className="w-full h-full">{children}</div>
+        {fullSizeContentView ? (
+          <>
+            <div
+              className="absolute z-2 pointer-events-none"
+              style={{
+                left: `${trafficLightsLeftRem}rem`,
+                top: `${trafficLightsTopRem}rem`,
+              }}
+            >
+              <TrafficLights
+                active={active}
+                title={window.title}
+                onClose={() => onClose(window.id)}
+              />
+            </div>
+            <div className="w-full h-full">{children}</div>
+          </>
+        ) : (
+          <div className="w-full h-full flex flex-col">
+            <div className="relative box-border h-[2.75rem] flex-[0_0_2.75rem] border-b border-b-#d0d0d0 bg-#ececec flex items-center justify-center">
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  left: `${trafficLightsLeftRem}rem`,
+                  top: `${trafficLightsTopRem}rem`,
+                }}
+              >
+                <TrafficLights
+                  active={active}
+                  title={window.title}
+                  onClose={() => onClose(window.id)}
+                />
+              </div>
+              <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[1.08rem] font-700">
+                {window.title}
+              </div>
+            </div>
+            <div className="min-h-0 flex-1">{children}</div>
+          </div>
+        )}
       </div>
     </div>
   )
