@@ -1,4 +1,4 @@
-import { applicationList } from './appliction'
+import { applicationList } from '../components/applications/registry'
 import appleLogo from '~assets/logo/apple.svg'
 import trashIcon from '~assets/application-icon/trash.png'
 import wallpaper from '~assets/wallpaper/sonoma-light.jpg'

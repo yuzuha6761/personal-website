@@ -2,7 +2,6 @@ import MenuBar from "./MenuBar.tsx";
 import { wallpaper } from "../constants/preloadAssets";
 import useWindowStore from "../stores/window";
 import ApplicationWindow from "./ApplicationWindow";
-import Finder from "./applications/Finder";
 
 function Desktop() {
   const windows = useWindowStore((state) => state.windows)
@@ -13,16 +12,6 @@ function Desktop() {
   useEffect(() => {
 
   }, [])
-
-  const renderApplication = (appId: string) => {
-    if (appId === 'finder') return <Finder />
-
-    return (
-      <div className="w-full h-full flex items-center justify-center text-#30363d bg-#f6f6f3">
-        Coming Soon
-      </div>
-    )
-  }
 
   return (
     <div
@@ -37,9 +26,7 @@ function Desktop() {
           window={window}
           onClose={closeWindow}
           onFocus={focusWindow}
-        >
-          {renderApplication(window.appId)}
-        </ApplicationWindow>
+        />
       ))}
     </div>
   )

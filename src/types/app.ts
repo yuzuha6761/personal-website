@@ -1,9 +1,21 @@
-export type AppId = 'finder' | 'launchpad' | 'system-settings'
+export type AppId = string
+
+export interface ApplicationWindowDisplayOptions {
+  fullSizeContentView?: boolean
+  trafficLightsPosition?: { top?: number; left?: number }
+}
+
+export interface ApplicationManifest extends ApplicationWindowDisplayOptions {
+  name: string
+  defaultSizeX?: number
+  defaultSizeY?: number
+  singleInstance?: boolean
+}
 
 export interface Application {
   id: AppId
-  name: string
   icon: string
+  name: string
   defaultSizeX?: number
   defaultSizeY?: number
   singleInstance?: boolean

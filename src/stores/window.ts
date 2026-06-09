@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { WindowStore } from '~types'
-import { getApplicationById } from '../constants/appliction'
+import { getApplicationById } from '../components/applications/registry'
 import { createWindowState, getNextZIndex } from '../services/window'
 
 const useWindowStore = create<WindowStore>((set, get) => ({
