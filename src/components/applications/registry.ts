@@ -1,12 +1,20 @@
 import { createElement, type ComponentType, type ReactNode } from 'react'
+import type { ContextualMenuItem } from '../ContextualMenu'
 import type {
   Application,
   ApplicationManifest,
   ApplicationWindowDisplayOptions,
 } from '~types'
 
+export interface ApplicationMenuBarItem {
+  id: string
+  label: string
+  items: ContextualMenuItem[]
+}
+
 interface ApplicationEntry {
   Component: ComponentType
+  menuBarItems: ApplicationMenuBarItem[]
   windowOptions: ApplicationWindowDisplayOptions
 }
 
@@ -27,6 +35,11 @@ const iconModules = import.meta.glob<string>(
 
 const applicationModules = import.meta.glob<{ default: ComponentType }>(
   './*/index.tsx',
+  { eager: true },
+)
+
+const menuModules = import.meta.glob<{ default?: ApplicationMenuBarItem[]; finderMenuBarItems?: ApplicationMenuBarItem[] }>(
+  './*/menu.ts',
   { eager: true },
 )
 
@@ -82,8 +95,10 @@ function buildApplications(): {
 
     const componentModule = applicationModules[`./${folderName}/index.tsx`]
     if (componentModule) {
+      const menuModule = menuModules[`./${folderName}/menu.ts`]
       applicationRegistry.set(appId, {
         Component: componentModule.default,
+        menuBarItems: menuModule?.default ?? menuModule?.finderMenuBarItems ?? [],
         windowOptions: pickWindowOptions(manifestModule.default),
       })
     }
@@ -102,6 +117,10 @@ export function getApplicationById(id: string): Application | undefined {
 
 export function getApplicationEntry(appId: string): ApplicationEntry | undefined {
   return applicationRegistry.get(appId)
+}
+
+export function getApplicationMenuBarItems(appId: string): ApplicationMenuBarItem[] {
+  return getApplicationEntry(appId)?.menuBarItems ?? []
 }
 
 export function resolveApplication(appId: string): ApplicationRenderConfig {

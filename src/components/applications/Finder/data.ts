@@ -29,7 +29,7 @@ export const sidebarSections: FinderSidebarSection[] = [
     title: '位置',
     items: [
       { id: 'mac', label: '雪ちゃんの Mac...', icon: 'computer' },
-      { id: 'onedrive', label: 'OneDrive', icon: 'onedrive' },
+      { id: 'network', label: '网络', icon: 'network' },
     ],
   },
 ]
