@@ -1,8 +1,17 @@
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import MenuBar from "./MenuBar.tsx";
 import { wallpaper } from "../constants/preloadAssets";
 import useWindowStore from "../stores/window";
 import ApplicationWindow from "./ApplicationWindow";
 import ContextualMenu, { type ContextualMenuItem } from "./ContextualMenu";
+
+interface DesktopSelectionBox {
+  currentX: number
+  currentY: number
+  fading: boolean
+  startX: number
+  startY: number
+}
 
 const desktopContextMenuItems: ContextualMenuItem[] = [
   { id: 'new-folder', label: '新建文件夹' },
@@ -47,6 +56,8 @@ const desktopContextMenuItems: ContextualMenuItem[] = [
   },
 ]
 
+const SELECTION_FADE_DURATION = 300
+
 function Desktop() {
   const windows = useWindowStore((state) => state.windows)
   const activeWindowId = useWindowStore((state) => state.activeWindowId)
@@ -54,12 +65,77 @@ function Desktop() {
   const focusWindow = useWindowStore((state) => state.focusWindow)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
+  const [selectionBox, setSelectionBox] = useState<DesktopSelectionBox | null>(null)
+  const selectionActiveRef = useRef(false)
+  const selectionClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-
+  const clearSelectionTimers = useCallback(() => {
+    if (selectionClearTimerRef.current) {
+      clearTimeout(selectionClearTimerRef.current)
+      selectionClearTimerRef.current = null
+    }
   }, [])
 
-  const onDesktopContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!selectionActiveRef.current) return
+
+      setSelectionBox((currentSelectionBox) => {
+        if (!currentSelectionBox) return currentSelectionBox
+
+        return {
+          ...currentSelectionBox,
+          currentX: event.clientX,
+          currentY: event.clientY,
+        }
+      })
+    }
+
+    const handleMouseUp = () => {
+      if (!selectionActiveRef.current) return
+
+      selectionActiveRef.current = false
+      clearSelectionTimers()
+
+      setSelectionBox((currentSelectionBox) => (
+        currentSelectionBox
+          ? { ...currentSelectionBox, fading: true }
+          : currentSelectionBox
+      ))
+
+      selectionClearTimerRef.current = setTimeout(() => {
+        setSelectionBox(null)
+      }, SELECTION_FADE_DURATION)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+      clearSelectionTimers()
+    }
+  }, [clearSelectionTimers])
+
+  const onDesktopMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return
+    if (event.target !== event.currentTarget) return
+
+    event.preventDefault()
+    clearSelectionTimers()
+    setContextMenuOpen(false)
+    selectionActiveRef.current = true
+    setSelectionBox({
+      currentX: event.clientX,
+      currentY: event.clientY,
+      fading: false,
+      startX: event.clientX,
+      startY: event.clientY,
+    })
+  }
+
+  const onDesktopContextMenu = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return
 
     event.preventDefault()
@@ -71,9 +147,29 @@ function Desktop() {
     <div
       className="relative w-full h-full overflow-hidden bg-no-repeat bg-center bg-cover"
       onContextMenu={onDesktopContextMenu}
+      onMouseDown={onDesktopMouseDown}
       style={{ backgroundImage: `url(${wallpaper})` }}
     >
       <MenuBar />
+      {selectionBox && (
+        <div
+          className="pointer-events-none absolute box-border"
+          style={{
+            left: Math.min(selectionBox.startX, selectionBox.currentX),
+            top: Math.min(selectionBox.startY, selectionBox.currentY),
+            width: Math.abs(selectionBox.currentX - selectionBox.startX),
+            height: Math.abs(selectionBox.currentY - selectionBox.startY),
+            zIndex: 0,
+            opacity: selectionBox.fading ? 0 : 1,
+            transition: selectionBox.fading
+              ? `opacity ${SELECTION_FADE_DURATION}ms ease-out`
+              : 'none',
+            border: '1px solid rgb(230 235 245 / 62%)',
+            backgroundColor: 'rgb(208 218 235 / 18%)',
+            boxShadow: 'inset 0 0 0 1px rgb(30 40 60 / 18%)',
+          }}
+        />
+      )}
       {windows.map((window) => (
         <ApplicationWindow
           active={activeWindowId === window.id}
