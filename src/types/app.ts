@@ -10,6 +10,7 @@ export interface ApplicationManifest extends ApplicationWindowDisplayOptions {
   defaultSizeX?: number
   defaultSizeY?: number
   singleInstance?: boolean
+  addIconSafeArea?: boolean
 }
 
 export interface Application {
@@ -19,4 +20,5 @@ export interface Application {
   defaultSizeX?: number
   defaultSizeY?: number
   singleInstance?: boolean
+  addIconSafeArea: boolean
 }

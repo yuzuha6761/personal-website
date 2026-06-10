@@ -29,7 +29,7 @@ const manifestModules = import.meta.glob<{ default: ApplicationManifest }>(
 )
 
 const iconModules = import.meta.glob<string>(
-  './*/icon.png',
+  ['./*/icon.png', './*/icon.svg'],
   { eager: true, query: '?url', import: 'default' },
 )
 
@@ -38,7 +38,7 @@ const applicationModules = import.meta.glob<{ default: ComponentType }>(
   { eager: true },
 )
 
-const menuModules = import.meta.glob<{ default?: ApplicationMenuBarItem[]; finderMenuBarItems?: ApplicationMenuBarItem[] }>(
+const menuModules = import.meta.glob<{ default?: ApplicationMenuBarItem[]; seekerMenuBarItems?: ApplicationMenuBarItem[] }>(
   './*/menu.ts',
   { eager: true },
 )
@@ -64,6 +64,7 @@ function pickApplicationMeta(
     defaultSizeX: manifest.defaultSizeX,
     defaultSizeY: manifest.defaultSizeY,
     singleInstance: manifest.singleInstance,
+    addIconSafeArea: manifest.addIconSafeArea ?? false,
   }
 }
 
@@ -81,9 +82,10 @@ function buildApplications(): {
     const folderName = match[1]
     const appId = folderNameToAppId(folderName)
     const icon = iconModules[`./${folderName}/icon.png`]
+      ?? iconModules[`./${folderName}/icon.svg`]
 
     if (!icon) {
-      console.warn(`Application "${folderName}" is missing icon.png`)
+      console.warn(`Application "${folderName}" is missing icon.png or icon.svg`)
       continue
     }
 
@@ -98,7 +100,7 @@ function buildApplications(): {
       const menuModule = menuModules[`./${folderName}/menu.ts`]
       applicationRegistry.set(appId, {
         Component: componentModule.default,
-        menuBarItems: menuModule?.default ?? menuModule?.finderMenuBarItems ?? [],
+        menuBarItems: menuModule?.default ?? menuModule?.seekerMenuBarItems ?? [],
         windowOptions: pickWindowOptions(manifestModule.default),
       })
     }

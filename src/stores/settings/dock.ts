@@ -6,7 +6,7 @@ const useDockSettingStore = create<DockSettingStore>((set) => ({
   position: DockPositionEnum.BOTTOM,
   size: '5rem',
   setPosition: (value) => set(() => ({ position: value })),
-  pinnedApplicationIds: ['finder', 'launchpad']
+  pinnedApplicationIds: ['seeker', 'launchpad']
 }))
 
 export default useDockSettingStore

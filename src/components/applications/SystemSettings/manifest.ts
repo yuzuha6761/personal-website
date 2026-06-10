@@ -5,4 +5,5 @@ export default {
   defaultSizeX: 400,
   defaultSizeY: 300,
   singleInstance: true,
+  addIconSafeArea: false,
 } satisfies ApplicationManifest

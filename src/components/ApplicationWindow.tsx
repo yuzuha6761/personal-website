@@ -2,14 +2,8 @@ import type { MouseEvent as ReactMouseEvent } from 'react'
 import type { WindowState } from '~types'
 import { resolveApplication } from './applications/registry'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
-import northEastSouthWestCursor from '~assets/cursors/Resize (Double)/North-East South-West.svg'
-import northSouthCursor from '~assets/cursors/Resize (Double)/North-South.svg'
-import northWestSouthEastCursor from '~assets/cursors/Resize (Double)/North-West South-East.svg'
-import westEastCursor from '~assets/cursors/Resize (Double)/West-East.svg'
-import circleFillIcon from '~assets/sf-symbols/circle.fill.svg'
-import minusIcon from '~assets/sf-symbols/minus.svg'
-import plusIcon from '~assets/sf-symbols/plus.svg'
-import xmarkIcon from '~assets/sf-symbols/xmark.svg'
+import { Circle, Minus, Plus, X } from 'lucide-react'
+import { AppIcon } from './icons/AppIcon'
 
 interface ApplicationWindowProps {
   active: boolean
@@ -52,19 +46,19 @@ const WINDOW_TITLE_BAR_HEIGHT = 38
 const WINDOW_RESIZE_HANDLE_SIZE_REM = 0.25
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
 const SCREEN_EDGE_MARGIN = 24
-const cursorMap: Record<ResizeDirection, { src: string; hotspot: { x: number; y: number } }> = {
-  e: { src: westEastCursor, hotspot: { x: 8, y: 6 } },
-  w: { src: westEastCursor, hotspot: { x: 8, y: 6 } },
-  n: { src: northSouthCursor, hotspot: { x: 6, y: 8 } },
-  s: { src: northSouthCursor, hotspot: { x: 6, y: 8 } },
-  ne: { src: northEastSouthWestCursor, hotspot: { x: 7, y: 7 } },
-  sw: { src: northEastSouthWestCursor, hotspot: { x: 7, y: 7 } },
-  nw: { src: northWestSouthEastCursor, hotspot: { x: 7, y: 7 } },
-  se: { src: northWestSouthEastCursor, hotspot: { x: 7, y: 7 } },
+const cursorMap: Record<ResizeDirection, string> = {
+  e: 'ew-resize',
+  w: 'ew-resize',
+  n: 'ns-resize',
+  s: 'ns-resize',
+  ne: 'nesw-resize',
+  sw: 'nesw-resize',
+  nw: 'nwse-resize',
+  se: 'nwse-resize',
 }
 
-function getCursorStyle(cursor: { src: string; hotspot: { x: number; y: number } }) {
-  return `url("${cursor.src}") ${cursor.hotspot.x} ${cursor.hotspot.y}, auto`
+function getResizeCursor(direction: ResizeDirection) {
+  return cursorMap[direction]
 }
 
 function getResizeHandleSizePx() {
@@ -180,10 +174,10 @@ function TrafficLights(props: TrafficLightsProps) {
         role="button"
         tabIndex={0}
       >
-        <img
-          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`}
-          src={documentDirty ? circleFillIcon : xmarkIcon}
-          alt=""
+        <AppIcon
+          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass} ${documentDirty ? 'fill-current text-#4d0000' : 'text-#4d0000'}`}
+          icon={documentDirty ? Circle : X}
+          strokeWidth={documentDirty ? 0 : 2.5}
         />
       </div>
       <div
@@ -192,7 +186,11 @@ function TrafficLights(props: TrafficLightsProps) {
         role="button"
         tabIndex={0}
       >
-        <img className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`} src={minusIcon} alt="" />
+        <AppIcon
+          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass} text-#171717`}
+          icon={Minus}
+          strokeWidth={2.5}
+        />
       </div>
       <div
         aria-label={`${optionKeyPressed ? 'Zoom' : 'Enter fullscreen'} ${title}`}
@@ -200,11 +198,21 @@ function TrafficLights(props: TrafficLightsProps) {
         role="button"
         tabIndex={0}
       >
-        <img
-          className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`}
-          src={optionKeyPressed ? plusIcon : fullscreenIcon}
-          alt=""
-        />
+        {optionKeyPressed
+          ? (
+              <AppIcon
+                className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass} text-#171717`}
+                icon={Plus}
+                strokeWidth={2.5}
+              />
+            )
+          : (
+              <img
+                className={`${trafficLightGlyphBaseClass} ${glyphVisibilityClass}`}
+                src={fullscreenIcon}
+                alt=""
+              />
+            )}
       </div>
     </div>
   )
@@ -299,7 +307,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
     if (!visibleWindowRef.current) return
 
     const direction = getResizeDirection(event, visibleWindowRef.current.getBoundingClientRect())
-    setCursorStyle(direction ? getCursorStyle(cursorMap[direction]) : undefined)
+    setCursorStyle(direction ? getResizeCursor(direction) : undefined)
   }
 
   const onWindowMouseLeave = () => {
@@ -317,7 +325,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
     const direction = getResizeDirection(event, rect)
 
     if (direction) {
-      const cursor = getCursorStyle(cursorMap[direction])
+      const cursor = getResizeCursor(direction)
       interactionRef.current = {
         type: 'resize',
         direction,
