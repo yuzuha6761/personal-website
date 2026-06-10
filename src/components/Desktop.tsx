@@ -60,8 +60,9 @@ const SELECTION_FADE_DURATION = 300
 
 function Desktop() {
   const windows = useWindowStore((state) => state.windows)
-  const activeWindowId = useWindowStore((state) => state.activeWindowId)
+  const focusedTarget = useWindowStore((state) => state.focusedTarget)
   const closeWindow = useWindowStore((state) => state.closeWindow)
+  const focusDesktop = useWindowStore((state) => state.focusDesktop)
   const focusWindow = useWindowStore((state) => state.focusWindow)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
@@ -124,6 +125,7 @@ function Desktop() {
 
     event.preventDefault()
     clearSelectionTimers()
+    focusDesktop()
     setContextMenuOpen(false)
     selectionActiveRef.current = true
     setSelectionBox({
@@ -139,6 +141,7 @@ function Desktop() {
     if (event.target !== event.currentTarget) return
 
     event.preventDefault()
+    focusDesktop()
     setContextMenuPosition({ x: event.clientX, y: event.clientY })
     setContextMenuOpen(true)
   }
@@ -172,7 +175,7 @@ function Desktop() {
       )}
       {windows.map((window) => (
         <ApplicationWindow
-          active={activeWindowId === window.id}
+          active={focusedTarget.type === 'window' && focusedTarget.windowId === window.id}
           key={window.id}
           window={window}
           onClose={closeWindow}
