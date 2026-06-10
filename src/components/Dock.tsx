@@ -29,16 +29,24 @@ function Dock() {
         if (!application) return
 
         return (
-          <div key={application.id} onClick={() => openApp(application.id)}>
+          <div
+            key={application.id}
+            data-add-icon-safe-area={application.addIconSafeArea}
+            onClick={() => openApp(application.id)}
+          >
             <div>{application.name}</div>
-            <img src={application.icon} alt=""/>
+            <div className={styles['icon']}>
+              <img src={application.icon} alt=""/>
+            </div>
           </div>
         )
       })}
       <div data-spliter={true}></div>
       <div>
         <div>Trash</div>
-        <img src={trashIcon} alt=""/>
+        <div className={styles['icon']}>
+          <img src={trashIcon} alt=""/>
+        </div>
       </div>
     </div>
   )

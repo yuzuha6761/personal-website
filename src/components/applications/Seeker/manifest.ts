@@ -1,7 +1,8 @@
 import type { ApplicationManifest } from '~types'
 
 export default {
-  name: 'Launchpad',
-  singleInstance: true,
-  addIconSafeArea: false,
+  name: 'Seeker',
+  defaultSizeX: 960,
+  defaultSizeY: 620,
+  fullSizeContentView: true,
 } satisfies ApplicationManifest

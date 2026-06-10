@@ -45,8 +45,8 @@ function MenuBar() {
   const windows = useWindowStore((state) => state.windows)
   const activeWindowId = useWindowStore((state) => state.activeWindowId)
   const activeWindow = windows.find((window) => window.id === activeWindowId)
-  const activeAppId = activeWindow?.appId ?? 'finder'
-  const activeApplication = getApplicationById(activeAppId) ?? getApplicationById('finder')
+  const activeAppId = activeWindow?.appId ?? 'seeker'
+  const activeApplication = getApplicationById(activeAppId) ?? getApplicationById('seeker')
   const applicationMenuBarItems = getApplicationMenuBarItems(activeAppId)
 
   const dockRef = useRef<HTMLDivElement>(null)
@@ -110,7 +110,7 @@ function MenuBar() {
           </div>
         )) : (
           <div>
-            <div>{activeApplication?.name ?? 'Finder'}</div>
+            <div>{activeApplication?.name ?? 'Seeker'}</div>
           </div>
         )}
       </div>

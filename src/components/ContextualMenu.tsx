@@ -1,18 +1,9 @@
+import type { LucideIcon } from 'lucide-react'
+import { Check, ChevronRight, Globe } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import arrowtriangleDownIcon from '~assets/sf-symbols/arrowtriangle.down.fill.svg'
-import arrowtriangleLeftIcon from '~assets/sf-symbols/arrowtriangle.left.fill.svg'
-import arrowtriangleRightIcon from '~assets/sf-symbols/arrowtriangle.right.fill.svg'
-import arrowtriangleUpIcon from '~assets/sf-symbols/arrowtriangle.up.fill.svg'
-import checkmarkIcon from '~assets/sf-symbols/checkmark.svg'
-import chevronRightIcon from '~assets/sf-symbols/chevron.right.svg'
-import commandIcon from '~assets/sf-symbols/command.svg'
-import controlIcon from '~assets/sf-symbols/control.svg'
-import deleteLeftIcon from '~assets/sf-symbols/delete.left.svg'
-import globeIcon from '~assets/sf-symbols/globe.svg'
-import optionIcon from '~assets/sf-symbols/option.svg'
-import shiftIcon from '~assets/sf-symbols/shift.svg'
 import { DockPositionEnum } from '~enums'
+import { AppIcon } from './icons/AppIcon'
 import useDockSettingStore from '../stores/settings/dock'
 
 export interface ContextualMenuPosition {
@@ -27,7 +18,7 @@ export interface ContextualMenuActionItem {
   checkable?: boolean
   color?: string
   disabled?: boolean
-  icon?: string
+  icon?: LucideIcon
   iconScale?: number
   shortcut?: string
   children?: ContextualMenuItem[]
@@ -109,18 +100,6 @@ const DOCK_EDGE_GAP_REM = 0.4
 const SELECT_HIGHLIGHT_RESTORE_DELAY = 100
 const SELECT_FADE_OUT_DURATION = 200
 const CONTEXTUAL_MENU_OPEN_EVENT = 'contextual-menu-open'
-const shortcutIconMap: Record<string, string> = {
-  '⌃': controlIcon,
-  '⌥': optionIcon,
-  '⌘': commandIcon,
-  '⇧': shiftIcon,
-  '⌫': deleteLeftIcon,
-  '🌐': globeIcon,
-  '▲': arrowtriangleUpIcon,
-  '▼': arrowtriangleDownIcon,
-  '◀': arrowtriangleLeftIcon,
-  '▶': arrowtriangleRightIcon,
-}
 
 function isDivider(item: ContextualMenuItem): item is ContextualMenuDividerItem {
   return 'type' in item && item.type === 'separator'
@@ -192,26 +171,16 @@ function ShortcutDisplay({ shortcut }: { shortcut?: string }) {
 
   return (
     <span className="pl-[1.8rem] text-#9f9f9f whitespace-nowrap flex items-center justify-end gap-[.06rem]">
-      {splitShortcut(shortcut).map((token, index) => {
-        const icon = shortcutIconMap[token]
-
-        return (
-          <span
-            className="w-[.82rem] h-[.9rem] flex items-center justify-center"
-            key={`${token}-${index}`}
-          >
-            {icon
-              ? (
-                  <img
-                    className="w-[.72rem] h-[.72rem] object-contain [filter:invert(66%)]"
-                    src={icon}
-                    alt={token}
-                  />
-                )
-              : <span className="text-center leading-none tabular-nums">{token}</span>}
-          </span>
-        )
-      })}
+      {splitShortcut(shortcut).map((token, index) => (
+        <span
+          className="min-w-[.82rem] h-[.9rem] flex items-center justify-center text-center leading-none tabular-nums"
+          key={`${token}-${index}`}
+        >
+          {token === '🌐'
+            ? <AppIcon className="w-[.72rem] h-[.72rem] text-#9f9f9f" icon={Globe} strokeWidth={2.25} />
+            : token}
+        </span>
+      ))}
     </span>
   )
 }
@@ -464,10 +433,10 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 {reserveCheckColumn && (
                   <span className={`flex items-center justify-center ${item.disabled ? 'opacity-45' : ''}`}>
                     {item.checked && (
-                      <img
-                        className="w-[.6rem] h-[.6rem] object-contain [filter:invert(9%)]"
-                        src={checkmarkIcon}
-                        alt=""
+                      <AppIcon
+                        className="w-[.9rem] h-[.9rem] text-#171717"
+                        icon={Check}
+                        strokeWidth={2.5}
                       />
                     )}
                   </span>
@@ -475,18 +444,24 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 <span className={`min-w-0 whitespace-nowrap flex items-center gap-[.45rem] ${item.disabled ? 'opacity-45' : ''}`}>
                   {item.icon && (
                     <span className="w-[.9rem] h-[.9rem] shrink-0 flex items-center justify-center">
-                      <img
-                        className="w-[.9rem] h-[.9rem] object-contain origin-center [filter:invert(9%)]"
-                        src={item.icon}
-                        style={{ transform: `scale(${item.iconScale ?? 1})` }}
-                        alt=""
+                      <AppIcon
+                        className="w-[.9rem] h-[.9rem] text-#171717"
+                        icon={item.icon}
+                        scale={item.iconScale ?? 1}
+                        strokeWidth={2}
                       />
                     </span>
                   )}
                   <span className="min-w-0 overflow-hidden text-ellipsis">{item.label}</span>
                 </span>
                 <ShortcutDisplay shortcut={item.shortcut} />
-                {hasChildren && <img className={`w-[.6rem] h-[.6rem] justify-self-end object-contain [filter:invert(9%)] ${item.disabled ? 'opacity-45' : ''}`} src={chevronRightIcon} alt="" />}
+                {hasChildren && (
+                  <AppIcon
+                    className={`w-[.9rem] h-[.9rem] justify-self-end text-#171717 ${item.disabled ? 'opacity-45' : ''}`}
+                    icon={ChevronRight}
+                    strokeWidth={2.5}
+                  />
+                )}
               </div>
             </div>
             {hasChildren && item.children && itemSubmenuOpen && submenuPlacement && (
