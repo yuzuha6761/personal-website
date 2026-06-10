@@ -6,7 +6,7 @@ export type SeekerSidebarIcon =
   | 'pictures'
   | 'downloads'
   | 'home'
-  | 'icloud'
+  | 'cloud-drive'
   | 'document'
   | 'desktop'
   | 'shared'

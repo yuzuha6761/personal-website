@@ -161,7 +161,7 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
       { id: 'computer', label: '电脑', shortcut: '⇧⌘C', icon: seekerIcons.computer },
       { id: 'airdrop', label: '隔空投送', shortcut: '⇧⌘R', icon: seekerIcons.airdrop },
       { id: 'network', label: '网络', shortcut: '⇧⌘K', icon: seekerIcons.network },
-      { id: 'icloud', label: 'iCloud 云盘', shortcut: '⇧⌘I', icon: seekerIcons.icloud },
+      { id: 'cloud-drive', label: '云盘', shortcut: '⇧⌘I', icon: seekerIcons['cloud-drive'] },
       { id: 'shared', label: '共享', shortcut: '⇧⌘S', icon: seekerIcons.shared },
       { id: 'applications', label: '应用程序', shortcut: '⇧⌘A', icon: seekerIcons.applications },
       { id: 'utilities', label: '实用工具', shortcut: '⇧⌘U', icon: seekerIcons.utilities },

@@ -47,7 +47,7 @@ export const seekerIcons = {
   grid: LayoutGrid,
   group: Rows3,
   home: House,
-  icloud: Cloud,
+  'cloud-drive': Cloud,
   list: List,
   more: Ellipsis,
   movies: Film,

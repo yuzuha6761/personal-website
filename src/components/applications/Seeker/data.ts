@@ -15,10 +15,10 @@ export const sidebarSections: SeekerSidebarSection[] = [
     ],
   },
   {
-    id: 'icloud',
-    title: 'iCloud',
+    id: 'cloud-drive',
+    title: '云盘',
     items: [
-      { id: 'icloud-drive', label: 'iCloud 云盘', icon: 'icloud' },
+      { id: 'cloud-drive', label: '云盘', icon: 'cloud-drive' },
       { id: 'documents', label: '文稿', icon: 'document' },
       { id: 'desktop', label: '桌面', icon: 'desktop' },
       { id: 'shared', label: '共享', icon: 'shared' },

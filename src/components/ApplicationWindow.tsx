@@ -4,6 +4,7 @@ import { resolveApplication } from './applications/registry'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import { Circle, Minus, Plus, X } from 'lucide-react'
 import { AppIcon } from './icons/AppIcon'
+import { ApplicationWindowFocusContext } from './ApplicationWindowFocusContext'
 
 interface ApplicationWindowProps {
   active: boolean
@@ -138,11 +139,17 @@ function resizeFrame(
 function TrafficLights(props: TrafficLightsProps) {
   const { active, title, documentDirty = false, onClose } = props
   const [optionKeyPressed, setOptionKeyPressed] = useState(false)
-  const glyphVisibilityClass = active ? 'group-hover:opacity-50' : 'opacity-0'
-  const inactiveLightClass = 'border border-#d3d3d3 bg-#e6e6e6'
-  const closeLightClass = active ? 'border border-#e0443e bg-#ff5f56' : inactiveLightClass
-  const minimizeLightClass = active ? 'border border-#dea123 bg-#ffbd2e' : inactiveLightClass
-  const zoomLightClass = active ? 'border border-#1aab29 bg-#27c93f' : inactiveLightClass
+  const glyphVisibilityClass = 'group-hover:opacity-50'
+  const inactiveLightBaseClass = 'border border-#cecdcd bg-#cecdcd'
+  const closeLightClass = active
+    ? 'border border-#e0443e bg-#ff5f56'
+    : `${inactiveLightBaseClass} group-hover:border-#e0443e group-hover:bg-#ff5f56`
+  const minimizeLightClass = active
+    ? 'border border-#dea123 bg-#ffbd2e'
+    : `${inactiveLightBaseClass} group-hover:border-#dea123 group-hover:bg-#ffbd2e`
+  const zoomLightClass = active
+    ? 'border border-#1aab29 bg-#27c93f'
+    : `${inactiveLightBaseClass} group-hover:border-#1aab29 group-hover:bg-#27c93f`
 
   useEffect(() => {
     const updateOptionKeyState = (event: KeyboardEvent) => setOptionKeyPressed(event.altKey)
@@ -373,28 +380,11 @@ function ApplicationWindow(props: ApplicationWindowProps) {
           transform: `translate(${resizeHandleSizeRem}, ${resizeHandleSizeRem})`,
         }}
       >
-        {fullSizeContentView ? (
-          <>
-            <div
-              className="absolute z-2 pointer-events-none"
-              style={{
-                left: `${trafficLightsLeftRem}rem`,
-                top: `${trafficLightsTopRem}rem`,
-              }}
-            >
-              <TrafficLights
-                active={active}
-                title={window.title}
-                onClose={() => onClose(window.id)}
-              />
-            </div>
-            <div className="w-full h-full">{children}</div>
-          </>
-        ) : (
-          <div className="w-full h-full flex flex-col">
-            <div className="relative box-border h-[2.75rem] flex-[0_0_2.75rem] border-b border-b-#d0d0d0 bg-#ececec flex items-center justify-center">
+        <ApplicationWindowFocusContext.Provider value={{ focused: active, windowId: window.id }}>
+          {fullSizeContentView ? (
+            <>
               <div
-                className="absolute pointer-events-none"
+                className="absolute z-2 pointer-events-none"
                 style={{
                   left: `${trafficLightsLeftRem}rem`,
                   top: `${trafficLightsTopRem}rem`,
@@ -406,13 +396,32 @@ function ApplicationWindow(props: ApplicationWindowProps) {
                   onClose={() => onClose(window.id)}
                 />
               </div>
-              <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[1.08rem] font-700">
-                {window.title}
+              <div className="w-full h-full">{children}</div>
+            </>
+          ) : (
+            <div className="w-full h-full flex flex-col">
+              <div className="relative box-border h-[2.75rem] flex-[0_0_2.75rem] border-b border-b-#d0d0d0 bg-#ececec flex items-center justify-center">
+                <div
+                  className="absolute pointer-events-none"
+                  style={{
+                    left: `${trafficLightsLeftRem}rem`,
+                    top: `${trafficLightsTopRem}rem`,
+                  }}
+                >
+                  <TrafficLights
+                    active={active}
+                    title={window.title}
+                    onClose={() => onClose(window.id)}
+                  />
+                </div>
+                <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[1.08rem] font-700">
+                  {window.title}
+                </div>
               </div>
+              <div className="min-h-0 flex-1">{children}</div>
             </div>
-            <div className="min-h-0 flex-1">{children}</div>
-          </div>
-        )}
+          )}
+        </ApplicationWindowFocusContext.Provider>
       </div>
     </div>
   )
