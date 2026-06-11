@@ -8,7 +8,7 @@ import {
   getApplicationMenuBarItems,
   type ApplicationMenuBarItem,
 } from './applications/registry'
-import useWindowStore from '../stores/window'
+import useAppStore from '../stores/app'
 
 const appleMenuItems: ContextualMenuItem[] = [
   { id: 'about-this-mac', label: '关于本机' },
@@ -42,12 +42,11 @@ function MenuBar() {
   const [menuItems, setMenuItems] = useState<ContextualMenuItem[]>([])
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const timestamp = useGlobalStore((state) => state.timestamp)
-  const windows = useWindowStore((state) => state.windows)
-  const activeWindowId = useWindowStore((state) => state.activeWindowId)
-  const activeWindow = windows.find((window) => window.id === activeWindowId)
-  const activeAppId = activeWindow?.appId ?? 'seeker'
-  const activeApplication = getApplicationById(activeAppId) ?? getApplicationById('seeker')
-  const applicationMenuBarItems = getApplicationMenuBarItems(activeAppId)
+  const activeAppId = useAppStore((state) => state.activeAppId)
+  const activeApplication = activeAppId ? getApplicationById(activeAppId) : undefined
+  const applicationMenuBarItems = activeAppId
+    ? getApplicationMenuBarItems(activeAppId)
+    : []
 
   const dockRef = useRef<HTMLDivElement>(null)
 
@@ -108,11 +107,11 @@ function MenuBar() {
           >
             <div>{menu.label}</div>
           </div>
-        )) : (
+        )) : activeApplication ? (
           <div>
-            <div>{activeApplication?.name ?? 'Seeker'}</div>
+            <div>{activeApplication.name}</div>
           </div>
-        )}
+        ) : null}
       </div>
       <div>
         <div

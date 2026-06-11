@@ -1,9 +1,11 @@
 import { createElement, type ComponentType, type ReactNode } from 'react'
 import type { ContextualMenuItem } from '../ContextualMenu'
 import type {
+  AppId,
   Application,
   ApplicationManifest,
   ApplicationWindowDisplayOptions,
+  WindowState,
 } from '~types'
 
 export interface ApplicationMenuBarItem {
@@ -12,8 +14,30 @@ export interface ApplicationMenuBarItem {
   items: ContextualMenuItem[]
 }
 
+export interface ApplicationDockMenuContext {
+  appId: AppId
+  appName: string
+  running: boolean
+  windows: WindowState[]
+}
+
+export interface ApplicationDockMenuSelectContext extends ApplicationDockMenuContext {
+  openApp: (appId: AppId) => string
+  openWindow: (appId: AppId, options?: { title?: string; position?: { x: number; y: number }; payload?: Record<string, unknown> }) => string
+}
+
+export type ApplicationDockMenuItemsFactory = (
+  context: ApplicationDockMenuContext,
+) => ContextualMenuItem[]
+
+export type ApplicationDockMenuSelectHandler = (
+  event: { itemId: string; context: ApplicationDockMenuSelectContext },
+) => void
+
 interface ApplicationEntry {
   Component: ComponentType
+  dockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
+  onDockMenuSelect?: ApplicationDockMenuSelectHandler
   menuBarItems: ApplicationMenuBarItem[]
   windowOptions: ApplicationWindowDisplayOptions
 }
@@ -38,7 +62,14 @@ const applicationModules = import.meta.glob<{ default: ComponentType }>(
   { eager: true },
 )
 
-const menuModules = import.meta.glob<{ default?: ApplicationMenuBarItem[]; seekerMenuBarItems?: ApplicationMenuBarItem[] }>(
+const menuModules = import.meta.glob<{
+  default?: ApplicationMenuBarItem[]
+  dockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
+  onDockMenuSelect?: ApplicationDockMenuSelectHandler
+  seekerDockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
+  seekerMenuBarItems?: ApplicationMenuBarItem[]
+  onSeekerDockMenuSelect?: ApplicationDockMenuSelectHandler
+}>(
   './*/menu.ts',
   { eager: true },
 )
@@ -100,6 +131,8 @@ function buildApplications(): {
       const menuModule = menuModules[`./${folderName}/menu.ts`]
       applicationRegistry.set(appId, {
         Component: componentModule.default,
+        dockMenuItems: menuModule?.dockMenuItems ?? menuModule?.seekerDockMenuItems,
+        onDockMenuSelect: menuModule?.onDockMenuSelect ?? menuModule?.onSeekerDockMenuSelect,
         menuBarItems: menuModule?.default ?? menuModule?.seekerMenuBarItems ?? [],
         windowOptions: pickWindowOptions(manifestModule.default),
       })
@@ -123,6 +156,25 @@ export function getApplicationEntry(appId: string): ApplicationEntry | undefined
 
 export function getApplicationMenuBarItems(appId: string): ApplicationMenuBarItem[] {
   return getApplicationEntry(appId)?.menuBarItems ?? []
+}
+
+export function getApplicationDockMenuItems(
+  appId: string,
+  context: ApplicationDockMenuContext,
+): ContextualMenuItem[] {
+  const dockMenuItems = getApplicationEntry(appId)?.dockMenuItems
+
+  if (!dockMenuItems) return []
+  if (typeof dockMenuItems === 'function') return dockMenuItems(context)
+
+  return dockMenuItems
+}
+
+export function selectApplicationDockMenuItem(
+  appId: string,
+  event: { itemId: string; context: ApplicationDockMenuSelectContext },
+) {
+  getApplicationEntry(appId)?.onDockMenuSelect?.(event)
 }
 
 export function resolveApplication(appId: string): ApplicationRenderConfig {
