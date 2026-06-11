@@ -9,11 +9,13 @@ export interface WindowState {
   minimized: boolean
   maximized: boolean
   zIndex: number
+  openedAt: number
   payload?: Record<string, unknown>
 }
 
 export interface OpenWindowOptions {
   title?: string
   position?: { x: number; y: number }
+  size?: { width: number; height: number }
   payload?: Record<string, unknown>
 }

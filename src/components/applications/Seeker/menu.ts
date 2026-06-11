@@ -1,6 +1,13 @@
+import {
+  createSeekerAboutWindowOptions,
+  createSeekerSettingsWindowOptions,
+  findSeekerAboutWindow,
+  findSeekerSettingsWindow,
+} from './windows'
 import type {
   ApplicationDockMenuSelectHandler,
   ApplicationMenuBarItem,
+  ApplicationMenuBarSelectHandler,
 } from '../registry'
 import type { ContextualMenuItem } from '../../ContextualMenu'
 import { seekerIcons } from './icons'
@@ -31,6 +38,29 @@ export const seekerDockMenuItems: ContextualMenuItem[] = [
     label: item.label,
   })),
 ]
+
+export const onSeekerMenuBarSelect: ApplicationMenuBarSelectHandler = ({ itemId, context }) => {
+  if (itemId === 'about-seeker') {
+    const existingAboutWindow = findSeekerAboutWindow(context.windows)
+    if (existingAboutWindow) {
+      context.focusWindow(existingAboutWindow.id)
+      return
+    }
+
+    context.openWindow(context.appId, createSeekerAboutWindowOptions())
+    return
+  }
+
+  if (itemId === 'settings') {
+    const existingSettingsWindow = findSeekerSettingsWindow(context.windows)
+    if (existingSettingsWindow) {
+      context.focusWindow(existingSettingsWindow.id)
+      return
+    }
+
+    context.openWindow(context.appId, createSeekerSettingsWindowOptions())
+  }
+}
 
 export const onSeekerDockMenuSelect: ApplicationDockMenuSelectHandler = ({ itemId, context }) => {
   if (itemId === 'new-seeker-window') {

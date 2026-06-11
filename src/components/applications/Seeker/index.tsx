@@ -1,34 +1,27 @@
-import { useEffect } from 'react'
-import Header from './Header'
-import List from './List'
-import Sidebar from './Sidebar'
-import useSeekerWindowStore from './store/window'
+import SeekerAbout from './About'
+import SeekerMain from './Main'
+import SeekerSettings from './Settings'
+import { getSeekerWindowKind, SEEKER_WINDOW_KIND } from './windows'
 import { useApplicationWindowFocus } from '../../ApplicationWindowFocusContext'
+import useWindowStore from '../../../stores/window'
 
 function Seeker() {
   const windowFocus = useApplicationWindowFocus()
-  const focused = windowFocus?.focused ?? true
   const windowId = windowFocus?.windowId
+  const window = useWindowStore((state) => (
+    windowId ? state.windows.find((item) => item.id === windowId) : undefined
+  ))
+  const windowKind = getSeekerWindowKind(window?.payload)
 
-  useEffect(() => {
-    if (!windowId) return
+  if (windowKind === SEEKER_WINDOW_KIND.ABOUT) {
+    return <SeekerAbout />
+  }
 
-    useSeekerWindowStore.getState().initWindow(windowId)
+  if (windowKind === SEEKER_WINDOW_KIND.SETTINGS) {
+    return <SeekerSettings />
+  }
 
-    return () => {
-      useSeekerWindowStore.getState().removeWindow(windowId)
-    }
-  }, [windowId])
-
-  return (
-    <div className="w-full h-full flex">
-      <Sidebar focused={focused} />
-      <div className="min-w-0 flex-1 flex flex-col">
-        <Header focused={focused} />
-        <List focused={focused} />
-      </div>
-    </div>
-  )
+  return <SeekerMain />
 }
 
 export default Seeker

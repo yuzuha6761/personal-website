@@ -1,6 +1,6 @@
-import { AppIcon } from '../../icons/AppIcon'
-import { seekerItems } from './data'
-import { seekerIcons } from './icons'
+import { AppIcon } from '../../../icons/AppIcon'
+import { seekerItems } from '../data'
+import { seekerIcons } from '../icons'
 
 const emptyRows = Array.from({ length: 10 }, (_, index) => `empty-${index}`)
 const listGridClass = 'grid-cols-[minmax(12rem,1.15fr)_minmax(9rem,.62fr)_minmax(5.5rem,.32fr)_minmax(9rem,.55fr)]'

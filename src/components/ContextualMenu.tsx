@@ -117,7 +117,7 @@ const MENU_ARROW_CORNER_RADIUS = 5.5
 const MENU_ARROW_EDGE_INSET = 34
 const MENU_SURFACE_BACKGROUND = 'rgba(241, 229, 226, 0.68)'
 const MENU_SURFACE_BACKDROP_FILTER = 'blur(10px) saturate(1.8)'
-const MENU_SURFACE_BORDER = '#C2C2C2'
+const MENU_SURFACE_BORDER = '#cacaca'
 const MENU_RADIUS = 9
 
 function isDivider(item: ContextualMenuItem): item is ContextualMenuDividerItem {
@@ -586,7 +586,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           <path
             d={panelPath}
             fill="none"
-            stroke="rgba(0, 0, 0, .16)"
+            stroke="rgba(0, 0, 0, .12)"
             strokeWidth="18"
             style={{ filter: 'blur(14px)' }}
             vectorEffect="non-scaling-stroke"
@@ -594,7 +594,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           <path
             d={panelPath}
             fill="none"
-            stroke="rgba(0, 0, 0, .12)"
+            stroke="rgba(0, 0, 0, .08)"
             strokeWidth="5"
             style={{ filter: 'blur(3px)' }}
             vectorEffect="non-scaling-stroke"

@@ -1,10 +1,12 @@
 import { createElement, type ComponentType, type ReactNode } from 'react'
 import type { ContextualMenuItem } from '../ContextualMenu'
+import { getSeekerWindowKind, resolveSeekerWindowOptions } from './Seeker/windows'
 import type {
   AppId,
   Application,
   ApplicationManifest,
   ApplicationWindowDisplayOptions,
+  OpenWindowOptions,
   WindowState,
 } from '~types'
 
@@ -34,10 +36,23 @@ export type ApplicationDockMenuSelectHandler = (
   event: { itemId: string; context: ApplicationDockMenuSelectContext },
 ) => void
 
+export interface ApplicationMenuBarSelectContext {
+  appId: AppId
+  menuId: string
+  windows: WindowState[]
+  openWindow: (appId: AppId, options?: OpenWindowOptions) => string
+  focusWindow: (windowId: string) => void
+}
+
+export type ApplicationMenuBarSelectHandler = (
+  event: { itemId: string; context: ApplicationMenuBarSelectContext },
+) => void
+
 interface ApplicationEntry {
   Component: ComponentType
   dockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
   onDockMenuSelect?: ApplicationDockMenuSelectHandler
+  onMenuBarSelect?: ApplicationMenuBarSelectHandler
   menuBarItems: ApplicationMenuBarItem[]
   windowOptions: ApplicationWindowDisplayOptions
 }
@@ -66,9 +81,11 @@ const menuModules = import.meta.glob<{
   default?: ApplicationMenuBarItem[]
   dockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
   onDockMenuSelect?: ApplicationDockMenuSelectHandler
+  onMenuBarSelect?: ApplicationMenuBarSelectHandler
   seekerDockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
   seekerMenuBarItems?: ApplicationMenuBarItem[]
   onSeekerDockMenuSelect?: ApplicationDockMenuSelectHandler
+  onSeekerMenuBarSelect?: ApplicationMenuBarSelectHandler
 }>(
   './*/menu.ts',
   { eager: true },
@@ -133,6 +150,7 @@ function buildApplications(): {
         Component: componentModule.default,
         dockMenuItems: menuModule?.dockMenuItems ?? menuModule?.seekerDockMenuItems,
         onDockMenuSelect: menuModule?.onDockMenuSelect ?? menuModule?.onSeekerDockMenuSelect,
+        onMenuBarSelect: menuModule?.onMenuBarSelect ?? menuModule?.onSeekerMenuBarSelect,
         menuBarItems: menuModule?.default ?? menuModule?.seekerMenuBarItems ?? [],
         windowOptions: pickWindowOptions(manifestModule.default),
       })
@@ -177,14 +195,33 @@ export function selectApplicationDockMenuItem(
   getApplicationEntry(appId)?.onDockMenuSelect?.(event)
 }
 
-export function resolveApplication(appId: string): ApplicationRenderConfig {
+export function selectApplicationMenuBarItem(
+  appId: string,
+  event: { itemId: string; context: ApplicationMenuBarSelectContext },
+) {
+  getApplicationEntry(appId)?.onMenuBarSelect?.(event)
+}
+
+function resolveWindowOptions(
+  appId: string,
+  baseOptions: ApplicationWindowDisplayOptions,
+  window?: WindowState,
+): ApplicationWindowDisplayOptions {
+  if (appId === 'seeker') {
+    return resolveSeekerWindowOptions(getSeekerWindowKind(window?.payload))
+  }
+
+  return baseOptions
+}
+
+export function resolveApplication(appId: string, window?: WindowState): ApplicationRenderConfig {
   const entry = getApplicationEntry(appId)
 
   if (entry) {
     const { Component, windowOptions } = entry
     return {
       children: createElement(Component),
-      windowOptions,
+      windowOptions: resolveWindowOptions(appId, windowOptions, window),
     }
   }
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { AppId, WindowStore } from '~types'
 import { getApplicationById } from '../components/applications/registry'
+import { findSeekerMainWindow, SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
 import { createWindowState, getNextZIndex } from '../services/window'
 import useAppStore from './app'
 
@@ -29,6 +30,23 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     }
 
     useAppStore.getState().launchApp(appId)
+
+    if (appId === 'seeker') {
+      const mainWindow = findSeekerMainWindow(get().windows)
+      if (mainWindow) {
+        if (mainWindow.minimized) {
+          set((state) => ({
+            windows: state.windows.map((window) => (
+              window.id === mainWindow.id ? { ...window, minimized: false } : window
+            )),
+          }))
+        }
+        get().focusWindow(mainWindow.id)
+        return mainWindow.id
+      }
+
+      return get().openWindow(appId, { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
+    }
 
     const appWindows = getAppWindows(get().windows, appId)
     const visibleWindows = getVisibleAppWindows(get().windows, appId)
@@ -73,10 +91,15 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     useAppStore.getState().launchApp(appId)
 
     const siblings = get().windows.filter((window) => window.appId === appId)
+    const payload = application.id === 'seeker'
+      ? { windowKind: 'main', ...options?.payload }
+      : options?.payload
+
     const newWindow = createWindowState(application, {
       title: options?.title,
       position: options?.position,
-      payload: options?.payload,
+      size: options?.size,
+      payload,
       siblingCount: siblings.length,
       zIndex: getNextZIndex(get().windows),
     })
@@ -90,6 +113,27 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     useAppStore.getState().activateApp(appId)
 
     return newWindow.id
+  },
+
+  minimizeWindow: (windowId) => {
+    const window = get().windows.find((item) => item.id === windowId)
+    if (!window || window.minimized) return
+
+    set((state) => {
+      const { focusedTarget } = state
+      const focusedMinimized = focusedTarget.type === 'window'
+        && focusedTarget.windowId === windowId
+
+      return {
+        windows: state.windows.map((item) => (
+          item.id === windowId ? { ...item, minimized: true } : item
+        )),
+        activeWindowId: state.activeWindowId === windowId ? null : state.activeWindowId,
+        focusedTarget: focusedMinimized ? { type: 'desktop' } : state.focusedTarget,
+      }
+    })
+
+    useAppStore.getState().activateApp(window.appId)
   },
 
   closeWindow: (windowId) => {

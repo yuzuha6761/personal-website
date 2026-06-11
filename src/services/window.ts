@@ -7,6 +7,7 @@ const INITIAL_POSITION = { x: 100, y: 80 }
 export interface CreateWindowStateOptions {
   title?: string
   position?: { x: number; y: number }
+  size?: { width: number; height: number }
   zIndex?: number
   payload?: Record<string, unknown>
   siblingCount?: number
@@ -36,13 +37,18 @@ export function createWindowState(
     appId: application.id,
     title: options.title ?? application.name,
     position: options.position ?? cascadePosition(siblingCount),
-    size: {
+    size: options.size ?? {
       width: application.defaultSizeX ?? DEFAULT_WINDOW_SIZE.width,
       height: application.defaultSizeY ?? DEFAULT_WINDOW_SIZE.height,
     },
     minimized: false,
     maximized: false,
     zIndex: options.zIndex ?? 1,
+    openedAt: Date.now(),
     payload: options.payload,
   }
+}
+
+export function sortWindowsByOpenedAt(windows: WindowState[]) {
+  return [...windows].sort((left, right) => right.openedAt - left.openedAt)
 }
