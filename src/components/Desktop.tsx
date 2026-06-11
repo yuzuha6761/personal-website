@@ -1,6 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import MenuBar from "./MenuBar.tsx";
-import { wallpaper } from "../constants/preloadAssets";
+import useShellStore from "../stores/shell";
 import useWindowStore from "../stores/window";
 import ApplicationWindow from "./ApplicationWindow";
 import ContextualMenu, { type ContextualMenuItem } from "./ContextualMenu";
@@ -59,6 +59,7 @@ const desktopContextMenuItems: ContextualMenuItem[] = [
 const SELECTION_FADE_DURATION = 300
 
 function Desktop() {
+  const wallpaper = useShellStore((state) => state.wallpaper)
   const windows = useWindowStore((state) => state.windows)
   const focusedTarget = useWindowStore((state) => state.focusedTarget)
   const closeWindow = useWindowStore((state) => state.closeWindow)
@@ -173,7 +174,7 @@ function Desktop() {
           }}
         />
       )}
-      {windows.map((window) => (
+      {windows.filter((window) => !window.minimized).map((window) => (
         <ApplicationWindow
           active={focusedTarget.type === 'window' && focusedTarget.windowId === window.id}
           key={window.id}

@@ -1,5 +1,49 @@
-import type { ApplicationMenuBarItem } from '../registry'
+import type {
+  ApplicationDockMenuSelectHandler,
+  ApplicationMenuBarItem,
+} from '../registry'
+import type { ContextualMenuItem } from '../../ContextualMenu'
 import { seekerIcons } from './icons'
+
+const seekerDockPaths = [
+  { id: 'downloads', label: '下载', path: '~/Downloads' },
+  { id: 'applications', label: 'applications', path: '~/components/applications' },
+  { id: 'assets', label: 'assets', path: '~/components/assets' },
+  { id: 'components', label: 'components', path: '~/components' },
+  { id: 'fuyi', label: 'fuyi', path: '~/fuyi' },
+  { id: 'icloud-drive', label: 'iCloud 云盘', path: '~/iCloud Drive' },
+  { id: 'ios-wallpapers', label: 'ios 壁纸', path: '~/ios 壁纸' },
+  { id: 'iptv', label: 'iptv', path: '~/iptv' },
+  { id: 'public', label: 'public', path: '~/public' },
+  { id: 'wallpaper', label: 'wallpaper', path: '~/wallpaper' },
+]
+
+export const seekerDockMenuItems: ContextualMenuItem[] = [
+  { id: 'new-seeker-window', label: '新建 “Seeker” 窗口' },
+  { id: 'new-smart-folder', label: '新建智能文件夹' },
+  { id: 'find', label: '查找...' },
+  { id: 'dock-divider-1', type: 'separator' },
+  { id: 'go-folder', label: '前往文件夹...' },
+  { id: 'connect-server', label: '连接服务器...' },
+  { id: 'dock-divider-2', type: 'separator' },
+  ...seekerDockPaths.map((item) => ({
+    id: `open-path:${item.path}`,
+    label: item.label,
+  })),
+]
+
+export const onSeekerDockMenuSelect: ApplicationDockMenuSelectHandler = ({ itemId, context }) => {
+  if (itemId === 'new-seeker-window') {
+    context.openWindow(context.appId)
+    return
+  }
+
+  if (!itemId.startsWith('open-path:')) return
+
+  context.openWindow(context.appId, {
+    payload: { initialPath: itemId.slice('open-path:'.length) },
+  })
+}
 
 export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
   {
