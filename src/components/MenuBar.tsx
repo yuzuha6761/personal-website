@@ -6,9 +6,11 @@ import ContextualMenu, { type ContextualMenuItem } from './ContextualMenu'
 import {
   getApplicationById,
   getApplicationMenuBarItems,
+  selectApplicationMenuBarItem,
   type ApplicationMenuBarItem,
 } from './applications/registry'
 import useAppStore from '../stores/app'
+import useWindowStore from '../stores/window'
 
 const appleMenuItems: ContextualMenuItem[] = [
   { id: 'about-this-mac', label: '关于本机' },
@@ -43,6 +45,9 @@ function MenuBar() {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const timestamp = useGlobalStore((state) => state.timestamp)
   const activeAppId = useAppStore((state) => state.activeAppId)
+  const windows = useWindowStore((state) => state.windows)
+  const openWindow = useWindowStore((state) => state.openWindow)
+  const focusWindow = useWindowStore((state) => state.focusWindow)
   const activeApplication = activeAppId ? getApplicationById(activeAppId) : undefined
   const applicationMenuBarItems = activeAppId
     ? getApplicationMenuBarItems(activeAppId)
@@ -131,6 +136,20 @@ function MenuBar() {
         open={Boolean(activeMenuId)}
         position={menuPosition}
         onClose={() => setActiveMenuId('')}
+        onSelect={({ item }) => {
+          if (!activeAppId) return
+
+          selectApplicationMenuBarItem(activeAppId, {
+            itemId: item.id,
+            context: {
+              appId: activeAppId,
+              menuId: activeMenuId,
+              windows,
+              openWindow,
+              focusWindow,
+            },
+          })
+        }}
       />
     </div>
   )

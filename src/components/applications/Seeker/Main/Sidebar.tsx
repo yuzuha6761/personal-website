@@ -1,6 +1,6 @@
-import { AppIcon } from '../../icons/AppIcon'
-import { sidebarSections, tagItems } from './data'
-import { seekerIcons } from './icons'
+import { AppIcon } from '../../../icons/AppIcon'
+import { sidebarSections, tagItems } from '../data'
+import { seekerIcons } from '../icons'
 
 const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] p-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[.9rem] h-[.9rem] mr-[.3rem]'

@@ -3,6 +3,9 @@ export type AppId = string
 export interface ApplicationWindowDisplayOptions {
   fullSizeContentView?: boolean
   trafficLightsPosition?: { top?: number; left?: number }
+  zoomDisabled?: boolean
+  minimizeDisabled?: boolean
+  resizable?: boolean
 }
 
 export interface ApplicationManifest extends ApplicationWindowDisplayOptions {

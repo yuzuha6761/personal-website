@@ -1,6 +1,6 @@
-import { AppIcon } from '../../icons/AppIcon'
-import { seekerTabs } from './data'
-import { seekerIcons } from './icons'
+import { AppIcon } from '../../../icons/AppIcon'
+import { seekerTabs } from '../data'
+import { seekerIcons } from '../icons'
 
 const iconButtonClass = 'w-[1.72rem] h-[1.72rem] border-0 rounded-[.36rem] p-0 bg-transparent cursor-default flex items-center justify-center'
 const historyIconClass = 'w-[.95rem] h-[.95rem]'

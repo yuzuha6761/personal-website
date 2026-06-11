@@ -8,6 +8,7 @@ import {
   selectApplicationDockMenuItem,
   type ApplicationDockMenuContext,
 } from "../components/applications/registry";
+import { sortWindowsByOpenedAt } from '../services/window'
 import useWindowStore from "../stores/window";
 import useAppStore from "../stores/app";
 import ContextualMenu, {
@@ -82,9 +83,9 @@ function Dock() {
     if (!application) return []
 
     const running = runningAppIds.includes(application.id)
-    const appWindows = windows
-      .filter((window) => window.appId === application.id)
-      .sort((left, right) => right.zIndex - left.zIndex)
+    const appWindows = sortWindowsByOpenedAt(
+      windows.filter((window) => window.appId === application.id),
+    )
     const context: ApplicationDockMenuContext = {
       appId: application.id,
       appName: application.name,
@@ -176,7 +177,9 @@ function Dock() {
       return
     }
 
-    const appWindows = windows.filter((window) => window.appId === application.id)
+    const appWindows = sortWindowsByOpenedAt(
+      windows.filter((window) => window.appId === application.id),
+    )
     selectApplicationDockMenuItem(application.id, {
       itemId,
       context: {

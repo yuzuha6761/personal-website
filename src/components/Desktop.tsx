@@ -63,6 +63,7 @@ function Desktop() {
   const windows = useWindowStore((state) => state.windows)
   const focusedTarget = useWindowStore((state) => state.focusedTarget)
   const closeWindow = useWindowStore((state) => state.closeWindow)
+  const minimizeWindow = useWindowStore((state) => state.minimizeWindow)
   const focusDesktop = useWindowStore((state) => state.focusDesktop)
   const focusWindow = useWindowStore((state) => state.focusWindow)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
@@ -181,6 +182,7 @@ function Desktop() {
           window={window}
           onClose={closeWindow}
           onFocus={focusWindow}
+          onMinimize={minimizeWindow}
         />
       ))}
       <ContextualMenu
