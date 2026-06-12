@@ -142,6 +142,21 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
 }
 
+function clampDragPosition(position: { x: number; y: number }, frameSize: { width: number; height: number }) {
+  return {
+    x: clamp(
+      position.x,
+      SCREEN_EDGE_MARGIN - frameSize.width,
+      globalThis.window.innerWidth - SCREEN_EDGE_MARGIN,
+    ),
+    y: clamp(
+      position.y,
+      0,
+      globalThis.window.innerHeight - SCREEN_EDGE_MARGIN,
+    ),
+  }
+}
+
 function getWindowFramePath(width: number, height: number) {
   const radius = Math.min(getRemPx(WINDOW_BORDER_RADIUS_REM), width / 2, height / 2)
 
@@ -312,12 +327,19 @@ function Window(props: WindowProps) {
     position: window.position,
     size: window.size,
   })
+  const frameRef = useRef(frame)
+  frameRef.current = frame
   const frameHeightRef = useRef(frame.size.height)
   frameHeightRef.current = frame.size.height
   const [heightTransition, setHeightTransition] = useState<string>()
   const [cursorStyle, setCursorStyle] = useState<string>()
   const interactionRef = useRef<WindowInteraction | null>(null)
+  const shellRef = useRef<HTMLDivElement>(null)
   const visibleWindowRef = useRef<HTMLDivElement>(null)
+  const dragPreviewPositionRef = useRef<{ x: number; y: number } | null>(null)
+  const dragRafRef = useRef<number | null>(null)
+  const minSizeRef = useRef(minSize)
+  minSizeRef.current = minSize
   const resizeHandleSizeRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM}rem`
   const hitAreaSizeOffsetRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM * 2}rem`
   const trafficLightsTopRem = fullSizeContentView
@@ -350,6 +372,48 @@ function Window(props: WindowProps) {
   }, [])
 
   const resizeContextValue = useMemo(() => ({ setWindowHeight }), [setWindowHeight])
+  const focusContextValue = useMemo(
+    () => ({ focused: active, windowId: window.id }),
+    [active, window.id],
+  )
+
+  const applyShellTransform = useCallback((x: number, y: number) => {
+    const shell = shellRef.current
+    if (!shell) return
+
+    shell.style.transform = `translate(calc(${x}px - ${resizeHandleSizeRem}), calc(${y}px - ${resizeHandleSizeRem}))`
+  }, [resizeHandleSizeRem])
+
+  const scheduleDragTransform = useCallback((position: { x: number; y: number }) => {
+    dragPreviewPositionRef.current = position
+
+    if (dragRafRef.current !== null) return
+
+    dragRafRef.current = globalThis.window.requestAnimationFrame(() => {
+      dragRafRef.current = null
+      const previewPosition = dragPreviewPositionRef.current
+      if (!previewPosition) return
+
+      applyShellTransform(previewPosition.x, previewPosition.y)
+    })
+  }, [applyShellTransform])
+
+  const clearDragPreview = useCallback(() => {
+    if (dragRafRef.current !== null) {
+      globalThis.window.cancelAnimationFrame(dragRafRef.current)
+      dragRafRef.current = null
+    }
+
+    dragPreviewPositionRef.current = null
+
+    const shell = shellRef.current
+    if (shell) shell.style.willChange = ''
+  }, [])
+
+  const beginDragPreview = useCallback(() => {
+    const shell = shellRef.current
+    if (shell) shell.style.willChange = 'transform'
+  }, [])
 
   useEffect(() => {
     if (!heightTransition) return
@@ -379,28 +443,28 @@ function Window(props: WindowProps) {
       const deltaY = event.clientY - interaction.startPointer.y
 
       if (interaction.type === 'drag') {
-        setFrame((currentFrame) => ({
-          ...currentFrame,
-          position: {
-            x: clamp(
-              interaction.startFrame.position.x + deltaX,
-              SCREEN_EDGE_MARGIN - interaction.startFrame.size.width,
-              globalThis.window.innerWidth - SCREEN_EDGE_MARGIN,
-            ),
-            y: clamp(
-              interaction.startFrame.position.y + deltaY,
-              0,
-              globalThis.window.innerHeight - SCREEN_EDGE_MARGIN,
-            ),
-          },
-        }))
+        scheduleDragTransform(clampDragPosition({
+          x: interaction.startFrame.position.x + deltaX,
+          y: interaction.startFrame.position.y + deltaY,
+        }, interaction.startFrame.size))
         return
       }
 
-      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY, minSize))
+      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY, minSizeRef.current))
     }
 
     const handlePointerUp = () => {
+      const interaction = interactionRef.current
+      const previewPosition = dragPreviewPositionRef.current
+
+      if (interaction?.type === 'drag' && previewPosition) {
+        setFrame((currentFrame) => ({
+          ...currentFrame,
+          position: previewPosition,
+        }))
+      }
+
+      clearDragPreview()
       interactionRef.current = null
       setCursorStyle(undefined)
       document.documentElement.style.cursor = ''
@@ -413,10 +477,11 @@ function Window(props: WindowProps) {
     return () => {
       globalThis.window.removeEventListener('mousemove', handlePointerMove)
       globalThis.window.removeEventListener('mouseup', handlePointerUp)
+      clearDragPreview()
       document.documentElement.style.cursor = ''
       document.body.style.cursor = ''
     }
-  }, [])
+  }, [clearDragPreview, scheduleDragTransform])
 
   const onWindowMouseMove = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (!resizable) return
@@ -447,7 +512,7 @@ function Window(props: WindowProps) {
         type: 'resize',
         direction,
         startPointer: { x: event.clientX, y: event.clientY },
-        startFrame: frame,
+        startFrame: frameRef.current,
       }
       setCursorStyle(cursor)
       document.documentElement.style.cursor = cursor
@@ -457,10 +522,11 @@ function Window(props: WindowProps) {
     }
 
     if (shouldStartWindowDrag(event.target, visibleWindowRef.current, event.clientY, draggableTitleBarHeight)) {
+      beginDragPreview()
       interactionRef.current = {
         type: 'drag',
         startPointer: { x: event.clientX, y: event.clientY },
-        startFrame: frame,
+        startFrame: frameRef.current,
       }
       event.preventDefault()
     }
@@ -472,6 +538,7 @@ function Window(props: WindowProps) {
       onMouseDown={onWindowMouseDown}
       onMouseLeave={onWindowMouseLeave}
       onMouseMove={onWindowMouseMove}
+      ref={shellRef}
       style={{
         width: `calc(${frame.size.width}px + ${hitAreaSizeOffsetRem})`,
         height: `calc(${frame.size.height}px + ${hitAreaSizeOffsetRem})`,
@@ -492,7 +559,7 @@ function Window(props: WindowProps) {
         }}
       >
         <div className="relative overflow-hidden rounded-[.8rem] w-full h-full" style={{ zIndex: 1 }}>
-          <FocusContext.Provider value={{ focused: active, windowId: window.id }}>
+          <FocusContext.Provider value={focusContextValue}>
             <ResizeContext.Provider value={resizeContextValue}>
             {fullSizeContentView ? (
               <>
