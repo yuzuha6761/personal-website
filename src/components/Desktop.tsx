@@ -2,7 +2,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react'
 import MenuBar from "./MenuBar.tsx";
 import useShellStore from "../stores/shell";
 import useWindowStore from "../stores/window";
-import ApplicationWindow from "./ApplicationWindow";
+import Window from './Window'
 import ContextualMenu, { type ContextualMenuItem } from "./ContextualMenu";
 
 interface DesktopSelectionBox {
@@ -176,7 +176,7 @@ function Desktop() {
         />
       )}
       {windows.filter((window) => !window.minimized).map((window) => (
-        <ApplicationWindow
+        <Window
           active={focusedTarget.type === 'window' && focusedTarget.windowId === window.id}
           key={window.id}
           window={window}

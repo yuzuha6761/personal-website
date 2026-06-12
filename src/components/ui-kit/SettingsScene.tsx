@@ -1,20 +1,22 @@
 import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { AppIcon } from '../icons/AppIcon'
-import { useApplicationWindowResize } from '../ApplicationWindowResizeContext'
+import { dragExcludeProps, dragHandleProps } from '../Window/Drag'
+import { useWindowFocus } from '../Window/FocusContext'
+import { useWindowResize } from '../Window/ResizeContext'
 
 const TAB_TRANSITION_DURATION = 200
 
-export interface SettingsSceneType1Tab {
+export interface SettingsSceneTab {
   id: string
   label: string
   icon: LucideIcon
   content: ReactNode
 }
 
-interface SettingsSceneType1Props {
+interface SettingsSceneProps {
   title: string
-  tabs: SettingsSceneType1Tab[]
+  tabs: SettingsSceneTab[]
   defaultTabId?: string
 }
 
@@ -30,9 +32,11 @@ function waitForNextFrame() {
   })
 }
 
-function SettingsSceneType1(props: SettingsSceneType1Props) {
+function SettingsScene(props: SettingsSceneProps) {
   const { title, tabs, defaultTabId } = props
-  const resizeContext = useApplicationWindowResize()
+  const resizeContext = useWindowResize()
+  const focused = useWindowFocus()?.focused ?? true
+  const toolbarBackgroundClass = focused ? 'bg-#f1efee' : 'bg-#e8e7e6'
   const initialTabId = defaultTabId ?? tabs[0]?.id ?? ''
   const [activeTabId, setActiveTabId] = useState(initialTabId)
   const [displayedTabId, setDisplayedTabId] = useState(initialTabId)
@@ -89,36 +93,53 @@ function SettingsSceneType1(props: SettingsSceneType1Props) {
 
   if (!displayedTab) return null
 
+  const titleClass = focused ? 'text-#2f2f2f' : 'text-#a9a8a9'
+  const getTabContentClass = (selected: boolean) => {
+    if (focused) {
+      return selected
+        ? 'text-#c13584 group-active:text-#b32776'
+        : 'text-#8f8f8f group-active:text-#818181'
+    }
+
+    return selected
+      ? 'text-#8f8f8f group-active:text-#818181'
+      : 'text-#c4c3c4 group-hover:text-#8f8f8f group-active:text-#818181'
+  }
+
   return (
     <div className={`relative w-full bg-#ededed flex flex-col ${isTransitioning ? 'h-full' : ''}`}>
-      <div ref={toolbarRef}>
-        <div className="h-[2.15rem] flex items-center justify-center text-[.92rem] font-700 text-#2f2f2f">
+      <div className={toolbarBackgroundClass} ref={toolbarRef} {...dragHandleProps}>
+        <div className={`h-[2.15rem] flex items-center justify-center text-[.92rem] font-700 ${titleClass}`}>
           {title}
         </div>
-        <div className="px-[1.1rem] pb-[.55rem] flex items-start justify-center gap-[1.35rem]">
+        <div className="px-[1.1rem] pb-[.55rem] flex items-start justify-center gap-[.1rem]">
           {tabs.map((tab) => {
             const selected = tab.id === activeTabId
+            const tabContentClass = getTabContentClass(selected)
 
             return (
-              <button
-                className="min-w-[3.4rem] border-0 p-0 bg-transparent cursor-default flex flex-col items-center gap-[.28rem]"
+              <div
+                className={`group min-w-[3.4rem] rounded-[.48rem] px-[.42rem] py-[.1rem] cursor-default flex flex-col items-center gap-[.1rem] ${
+                  selected
+                    ? 'bg-#e3e2e2 hover:bg-#e3e2e2 active:bg-#e3e2e2'
+                    : 'bg-transparent hover:bg-#e3e2e2 active:bg-#d5d4d5'
+                }`}
                 key={tab.id}
                 onClick={() => switchTab(tab.id)}
-                type="button"
+                role="tab"
+                aria-selected={selected}
               >
-                <span className={`w-[2.55rem] h-[2.55rem] rounded-[.48rem] flex items-center justify-center ${
-                  selected ? 'bg-#e4e4e4' : 'bg-transparent'
-                }`}>
+                <span {...dragExcludeProps} className="flex items-center justify-center">
                   <AppIcon
-                    className={`w-[1.28rem] h-[1.28rem] ${selected ? 'text-#c13584' : 'text-#8f8f8f'}`}
+                    className={`w-[1.8rem] h-[1.8rem] ${tabContentClass}`}
                     icon={tab.icon}
                     strokeWidth={1.75}
                   />
                 </span>
-                <span className={`text-[.72rem] font-600 ${selected ? 'text-#c13584' : 'text-#8f8f8f'}`}>
+                <span className={`text-[.72rem] font-600 ${tabContentClass}`}>
                   {tab.label}
                 </span>
-              </button>
+              </div>
             )
           })}
         </div>
@@ -146,4 +167,4 @@ function SettingsSceneType1(props: SettingsSceneType1Props) {
   )
 }
 
-export default SettingsSceneType1
+export default SettingsScene

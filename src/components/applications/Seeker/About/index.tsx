@@ -3,10 +3,10 @@ import packageJson from '../../../../../package.json'
 
 function SeekerAbout() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-#f5f5f5 px-6 py-8 text-center text-#1f2933">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-#ecebec text-center text-#1f2933">
       <img
         alt=""
-        className="w-[5.5rem] h-[5.5rem] rounded-[1.1rem] shadow-[0_.15rem_.6rem_#0000001f]"
+        className="w-[9rem] h-[9rem] mt-8"
         src={seekerIcon}
       />
       <div className="mt-5 text-[1.35rem] font-700">Seeker</div>

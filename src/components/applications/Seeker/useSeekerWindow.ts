@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import useSeekerWindowStore from './store/window'
 import type { SeekerViewMode, SeekerWindowState } from './store/types'
-import { useApplicationWindowFocus } from '../../ApplicationWindowFocusContext'
+import { useWindowFocus } from '../../Window/FocusContext'
 
 export function useSeekerWindow(): {
   windowId: string | undefined
@@ -15,8 +15,7 @@ export function useSeekerWindow(): {
   setViewMode: (viewMode: SeekerViewMode) => void
   setSelection: (selection: string[]) => void
 } {
-  const windowFocus = useApplicationWindowFocus()
-  const windowId = windowFocus?.windowId
+  const windowId = useWindowFocus()?.windowId
   const windowState = useSeekerWindowStore((state) => (
     windowId ? state.windows[windowId] : undefined
   ))

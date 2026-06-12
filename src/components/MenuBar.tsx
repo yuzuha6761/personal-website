@@ -54,6 +54,7 @@ function MenuBar() {
     : []
 
   const dockRef = useRef<HTMLDivElement>(null)
+  const menuActionContextRef = useRef({ menuId: '', appId: '' })
 
   const openMenu = (
     menuId: string,
@@ -62,6 +63,7 @@ function MenuBar() {
   ) => {
     const rect = target.getBoundingClientRect()
 
+    menuActionContextRef.current = { menuId, appId: activeAppId }
     setActiveMenuId(menuId)
     setMenuItems(items)
     setMenuPosition({ x: rect.left, y: rect.bottom })
@@ -137,13 +139,14 @@ function MenuBar() {
         position={menuPosition}
         onClose={() => setActiveMenuId('')}
         onSelect={({ item }) => {
-          if (!activeAppId) return
+          const { menuId, appId } = menuActionContextRef.current
+          if (!appId) return
 
-          selectApplicationMenuBarItem(activeAppId, {
+          selectApplicationMenuBarItem(appId, {
             itemId: item.id,
             context: {
-              appId: activeAppId,
-              menuId: activeMenuId,
+              appId,
+              menuId,
               windows,
               openWindow,
               focusWindow,

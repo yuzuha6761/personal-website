@@ -3,12 +3,10 @@ import Header from './Header'
 import List from './List'
 import Sidebar from './Sidebar'
 import useSeekerWindowStore from '../store/window'
-import { useApplicationWindowFocus } from '../../../ApplicationWindowFocusContext'
+import { useWindowFocus } from '../../../Window/FocusContext'
 
 function SeekerMain() {
-  const windowFocus = useApplicationWindowFocus()
-  const focused = windowFocus?.focused ?? true
-  const windowId = windowFocus?.windowId
+  const windowId = useWindowFocus()?.windowId
 
   useEffect(() => {
     if (!windowId) return
@@ -22,10 +20,10 @@ function SeekerMain() {
 
   return (
     <div className="w-full h-full flex">
-      <Sidebar focused={focused} />
+      <Sidebar />
       <div className="min-w-0 flex-1 flex flex-col">
-        <Header focused={focused} />
-        <List focused={focused} />
+        <Header />
+        <List />
       </div>
     </div>
   )

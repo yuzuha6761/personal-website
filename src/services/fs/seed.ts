@@ -88,8 +88,8 @@ export function createInitialFsNodes(): Record<string, FsNode> {
     },
     {
       id: 'application-window',
-      name: 'ApplicationWindow.tsx',
-      path: '~/components/ApplicationWindow.tsx',
+      name: 'index.tsx',
+      path: '~/components/Window/index.tsx',
       parentId: components.id,
       kind: 'file',
       modified: '今天 14:50',

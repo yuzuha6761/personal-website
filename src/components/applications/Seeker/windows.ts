@@ -1,7 +1,8 @@
-import type { ApplicationWindowDisplayOptions, OpenWindowOptions, WindowState } from '~types'
+import type { WindowDisplayOptions, OpenWindowOptions, WindowState } from '~types'
 import { aboutWindowOptions } from './About/window'
 import { mainWindowOptions } from './Main/window'
 import { settingsWindowOptions } from './Settings/window'
+import { resolveRemSizeToPx } from '../../../services/window'
 
 export const SEEKER_WINDOW_KIND = {
   MAIN: 'main',
@@ -11,12 +12,12 @@ export const SEEKER_WINDOW_KIND = {
 
 export type SeekerWindowKind = typeof SEEKER_WINDOW_KIND[keyof typeof SEEKER_WINDOW_KIND]
 
-export const SEEKER_ABOUT_WINDOW_SIZE = { width: 320, height: 380 }
-export const SEEKER_SETTINGS_WINDOW_SIZE = { width: 500, height: 400 }
+const SETTINGS_WINDOW_SIZE_DEFAULTS_PX = { width: 500, height: 400 }
+const ABOUT_WINDOW_SIZE_DEFAULTS_PX = { width: 320, height: 376 }
 
 export function resolveSeekerWindowOptions(
   windowKind: SeekerWindowKind,
-): ApplicationWindowDisplayOptions {
+): WindowDisplayOptions {
   switch (windowKind) {
     case SEEKER_WINDOW_KIND.ABOUT:
       return aboutWindowOptions
@@ -61,10 +62,12 @@ export function findSeekerAboutWindow(windows: WindowState[]) {
 }
 
 export function createSeekerAboutWindowOptions(): OpenWindowOptions {
+  const size = resolveRemSizeToPx(aboutWindowOptions.size, ABOUT_WINDOW_SIZE_DEFAULTS_PX)
+
   return {
     title: '关于 Seeker',
-    size: SEEKER_ABOUT_WINDOW_SIZE,
-    position: centerWindowPosition(SEEKER_ABOUT_WINDOW_SIZE),
+    size,
+    position: centerWindowPosition(size),
     payload: { windowKind: SEEKER_WINDOW_KIND.ABOUT },
   }
 }
@@ -77,10 +80,12 @@ export function findSeekerSettingsWindow(windows: WindowState[]) {
 }
 
 export function createSeekerSettingsWindowOptions(): OpenWindowOptions {
+  const size = resolveRemSizeToPx(settingsWindowOptions.size, SETTINGS_WINDOW_SIZE_DEFAULTS_PX)
+
   return {
     title: 'Seeker 设置',
-    size: SEEKER_SETTINGS_WINDOW_SIZE,
-    position: centerWindowPosition(SEEKER_SETTINGS_WINDOW_SIZE),
+    size,
+    position: centerWindowPosition(size),
     payload: { windowKind: SEEKER_WINDOW_KIND.SETTINGS },
   }
 }

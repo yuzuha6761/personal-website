@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import useFsStore from '../../../../stores/fs'
-import useWindowStore from '../../../../stores/window'
+import useFsStore from '~stores/fs'
+import useWindowStore from '~stores/window'
 import useSeekerGlobalStore from './global'
 import type {
   SeekerTabState,

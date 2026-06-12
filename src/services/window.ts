@@ -1,4 +1,4 @@
-import type { Application, WindowState } from '~types'
+import type { Application, WindowRemSize, WindowState } from '~types'
 
 const DEFAULT_WINDOW_SIZE = { width: 400, height: 300 }
 const CASCADE_OFFSET = 24
@@ -7,7 +7,7 @@ const INITIAL_POSITION = { x: 100, y: 80 }
 export interface CreateWindowStateOptions {
   title?: string
   position?: { x: number; y: number }
-  size?: { width: number; height: number }
+  size?: { width?: number; height?: number }
   zIndex?: number
   payload?: Record<string, unknown>
   siblingCount?: number
@@ -37,15 +37,40 @@ export function createWindowState(
     appId: application.id,
     title: options.title ?? application.name,
     position: options.position ?? cascadePosition(siblingCount),
-    size: options.size ?? {
-      width: application.defaultSizeX ?? DEFAULT_WINDOW_SIZE.width,
-      height: application.defaultSizeY ?? DEFAULT_WINDOW_SIZE.height,
+    size: {
+      width: options.size?.width ?? application.defaultSizeX ?? DEFAULT_WINDOW_SIZE.width,
+      height: options.size?.height ?? application.defaultSizeY ?? DEFAULT_WINDOW_SIZE.height,
     },
     minimized: false,
     maximized: false,
     zIndex: options.zIndex ?? 1,
     openedAt: Date.now(),
     payload: options.payload,
+  }
+}
+
+export function getRootFontSize() {
+  return Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+}
+
+export function remSizeToPx(size: WindowRemSize) {
+  const rootFontSize = getRootFontSize()
+
+  return {
+    ...(size.width !== undefined ? { width: rootFontSize * size.width } : {}),
+    ...(size.height !== undefined ? { height: rootFontSize * size.height } : {}),
+  }
+}
+
+export function resolveRemSizeToPx(
+  size: WindowRemSize | undefined,
+  defaultsPx: { width: number; height: number },
+) {
+  const partialPx = size ? remSizeToPx(size) : {}
+
+  return {
+    width: partialPx.width ?? defaultsPx.width,
+    height: partialPx.height ?? defaultsPx.height,
   }
 }
 
