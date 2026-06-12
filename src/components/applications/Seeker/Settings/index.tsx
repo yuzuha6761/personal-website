@@ -1,5 +1,5 @@
 import { PanelLeft, Settings, Settings2, Tag } from 'lucide-react'
-import { SettingsSceneType1 } from '../../../ui-kit'
+import { SettingsScene } from '../../../ui-kit'
 import AdvancedTab from './AdvancedTab'
 import GeneralTab from './GeneralTab'
 import SidebarTab from './SidebarTab'
@@ -7,7 +7,7 @@ import TagsTab from './TagsTab'
 
 function SeekerSettings() {
   return (
-    <SettingsSceneType1
+    <SettingsScene
       title="Seeker 设置"
       tabs={[
         { id: 'general', label: '通用', icon: Settings, content: <GeneralTab /> },

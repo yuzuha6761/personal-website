@@ -5,7 +5,7 @@ import type {
   AppId,
   Application,
   ApplicationManifest,
-  ApplicationWindowDisplayOptions,
+  WindowDisplayOptions,
   OpenWindowOptions,
   WindowState,
 } from '~types'
@@ -54,12 +54,12 @@ interface ApplicationEntry {
   onDockMenuSelect?: ApplicationDockMenuSelectHandler
   onMenuBarSelect?: ApplicationMenuBarSelectHandler
   menuBarItems: ApplicationMenuBarItem[]
-  windowOptions: ApplicationWindowDisplayOptions
+  windowOptions: WindowDisplayOptions
 }
 
 export interface ApplicationRenderConfig {
   children: ReactNode
-  windowOptions: ApplicationWindowDisplayOptions
+  windowOptions: WindowDisplayOptions
 }
 
 const manifestModules = import.meta.glob<{ default: ApplicationManifest }>(
@@ -97,7 +97,7 @@ function folderNameToAppId(folderName: string): string {
     .toLowerCase()
 }
 
-function pickWindowOptions(manifest: ApplicationManifest): ApplicationWindowDisplayOptions {
+function pickWindowOptions(manifest: ApplicationManifest): WindowDisplayOptions {
   return {
     fullSizeContentView: manifest.fullSizeContentView,
     trafficLightsPosition: manifest.trafficLightsPosition,
@@ -204,9 +204,9 @@ export function selectApplicationMenuBarItem(
 
 function resolveWindowOptions(
   appId: string,
-  baseOptions: ApplicationWindowDisplayOptions,
+  baseOptions: WindowDisplayOptions,
   window?: WindowState,
-): ApplicationWindowDisplayOptions {
+): WindowDisplayOptions {
   if (appId === 'seeker') {
     return resolveSeekerWindowOptions(getSeekerWindowKind(window?.payload))
   }

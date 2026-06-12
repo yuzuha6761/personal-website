@@ -2,12 +2,11 @@ import SeekerAbout from './About'
 import SeekerMain from './Main'
 import SeekerSettings from './Settings'
 import { getSeekerWindowKind, SEEKER_WINDOW_KIND } from './windows'
-import { useApplicationWindowFocus } from '../../ApplicationWindowFocusContext'
+import { useWindowFocus } from '../../Window/FocusContext'
 import useWindowStore from '../../../stores/window'
 
 function Seeker() {
-  const windowFocus = useApplicationWindowFocus()
-  const windowId = windowFocus?.windowId
+  const windowId = useWindowFocus()?.windowId
   const window = useWindowStore((state) => (
     windowId ? state.windows.find((item) => item.id === windowId) : undefined
   ))

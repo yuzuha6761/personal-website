@@ -1,16 +1,13 @@
 import { AppIcon } from '../../../icons/AppIcon'
+import { useWindowFocus } from '../../../Window/FocusContext'
 import { sidebarSections, tagItems } from '../data'
 import { seekerIcons } from '../icons'
 
 const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] p-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[.9rem] h-[.9rem] mr-[.3rem]'
 
-interface SidebarProps {
-  focused: boolean
-}
-
-function Sidebar(props: SidebarProps) {
-  const { focused } = props
+function Sidebar() {
+  const focused = useWindowFocus()?.focused ?? true
   const sidebarBgClass = focused ? 'bg-#d0cccd' : 'bg-#e2e2e2'
   const sidebarBorderClass = focused ? 'border-r-#bbb8ba' : 'border-r-#d5d5d5'
   const sidebarTitleClass = focused ? 'text-#8c8a8d' : 'text-#a3a3a3'

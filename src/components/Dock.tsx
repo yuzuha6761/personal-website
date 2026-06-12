@@ -65,6 +65,7 @@ function Dock() {
   const quitApp = useWindowStore((state) => state.quitApp)
   const runningAppIds = useAppStore((state) => state.runningAppIds)
   const [dockMenu, setDockMenu] = useState<DockMenuState | null>(null)
+  const dockMenuActionRef = useRef<DockMenuState | null>(null)
 
   useEffect(() => {
 
@@ -143,18 +144,22 @@ function Dock() {
           : 'bottom',
     } satisfies ContextualMenuAnchor
 
-    setDockMenu({
+    const menu = {
       anchor,
       appId: applicationId,
       position: { x: anchor.x, y: anchor.y },
-    })
+    }
+
+    dockMenuActionRef.current = menu
+    setDockMenu(menu)
   }
 
   const onDockMenuSelect = (event: ContextualMenuSelectEvent) => {
-    if (!dockMenu) return
+    const menu = dockMenuActionRef.current
+    if (!menu) return
 
     const itemId = event.item.id
-    const application = getApplicationById(dockMenu.appId)
+    const application = getApplicationById(menu.appId)
     if (!application) return
 
     if (itemId.startsWith('window:')) {

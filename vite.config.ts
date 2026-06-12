@@ -34,10 +34,12 @@ export default defineConfig(({mode}) => ({
   ],
   resolve: {
     alias: {
+      '~': resolve('./src/'),
       '~types': resolve('./src/types'),
       '~enums': resolve('./src/enums'),
       '~assets': resolve('./src/assets'),
-      '~styles': resolve('./src/styles')
+      '~styles': resolve('./src/styles'),
+      '~stores': resolve('./src/stores'),
     }
   },
   optimizeDeps: {

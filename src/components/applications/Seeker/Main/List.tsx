@@ -1,4 +1,5 @@
 import { AppIcon } from '../../../icons/AppIcon'
+import { useWindowFocus } from '../../../Window/FocusContext'
 import { seekerItems } from '../data'
 import { seekerIcons } from '../icons'
 
@@ -8,12 +9,8 @@ const rowBaseClass = `h-[1.86rem] box-border rounded-[.34rem] grid ${listGridCla
 const disclosureIconClass = 'w-[.48rem] h-[.48rem]'
 const fileIconClass = 'w-4 h-4'
 
-interface ListProps {
-  focused: boolean
-}
-
-function List(props: ListProps) {
-  const { focused } = props
+function List() {
+  const focused = useWindowFocus()?.focused ?? true
   const headerTextClass = focused ? 'text-#616161' : 'text-#9d9d9d'
   const headerBorderClass = focused ? 'border-r-#e3e3e3' : 'border-r-#eeeeee'
   const rowTextClass = focused ? 'text-#3b3b3d' : 'text-#8a8a8a'

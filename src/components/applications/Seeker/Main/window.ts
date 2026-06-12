@@ -1,4 +1,4 @@
-import type { ApplicationWindowDisplayOptions } from '~types'
+import type { WindowDisplayOptions } from '~types'
 
 export const mainWindowOptions = {
   fullSizeContentView: true,
@@ -6,4 +6,8 @@ export const mainWindowOptions = {
     top: 1.4,
     left: 1.4,
   },
-} satisfies ApplicationWindowDisplayOptions
+  minSize: {
+    width: 22.5,
+    height: 18,
+  },
+} satisfies WindowDisplayOptions

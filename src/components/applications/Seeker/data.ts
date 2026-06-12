@@ -69,7 +69,7 @@ export const seekerItems: SeekerListItem[] = [
   },
   {
     id: 'application-window',
-    name: 'ApplicationWindow.tsx',
+    name: 'index.tsx',
     modified: '今天 14:50',
     size: '2 KB',
     kind: 'React source code',

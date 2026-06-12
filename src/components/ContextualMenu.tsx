@@ -432,9 +432,11 @@ function ContextualSubmenu(props: ContextualSubmenuProps) {
   const { availableBottom, children, placement, zIndex } = props
   const submenuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ x: placement.x, y: placement.y })
+  const [positionReady, setPositionReady] = useState(false)
 
   useLayoutEffect(() => {
     setPosition(getSubmenuPosition(placement, submenuRef.current, availableBottom))
+    setPositionReady(true)
   }, [availableBottom, placement])
 
   return createPortal(
@@ -445,6 +447,7 @@ function ContextualSubmenu(props: ContextualSubmenuProps) {
         left: position.x,
         top: position.y,
         zIndex,
+        visibility: positionReady ? 'visible' : 'hidden',
       }}
     >
       {children}
@@ -800,8 +803,11 @@ function ContextualMenu(props: ContextualMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const restoreHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSelectRef = useRef<ContextualMenuSelectEvent | null>(null)
   const [adjustedPosition, setAdjustedPosition] = useState(position)
+  const [positionReady, setPositionReady] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [frozenItems, setFrozenItems] = useState<ContextualMenuItem[] | null>(null)
   const [selectedHighlightVisible, setSelectedHighlightVisible] = useState(true)
   const [selectedPathKey, setSelectedPathKey] = useState<string | null>(null)
   const availableBottom = dockPosition === DockPositionEnum.BOTTOM
@@ -817,6 +823,7 @@ function ContextualMenu(props: ContextualMenuProps) {
       clearTimeout(restoreHighlightTimerRef.current)
       restoreHighlightTimerRef.current = null
     }
+    pendingSelectRef.current = null
   }, [])
 
   useOutsideClose(open && !closing, menuRef, onClose)
@@ -840,23 +847,26 @@ function ContextualMenu(props: ContextualMenuProps) {
   useEffect(() => () => clearCloseTimers(), [clearCloseTimers])
 
   useLayoutEffect(() => {
-    if (!open) return
+    if (!open) {
+      setPositionReady(false)
+      return
+    }
     clearCloseTimers()
     setClosing(false)
+    setFrozenItems(null)
     setSelectedHighlightVisible(true)
     setSelectedPathKey(null)
-    setAdjustedPosition(position)
-    requestAnimationFrame(() => {
-      setAdjustedPosition(getAdjustedRootPosition(position, menuRef.current, availableBottom, anchor))
-    })
+    setAdjustedPosition(getAdjustedRootPosition(position, menuRef.current, availableBottom, anchor))
+    setPositionReady(true)
   }, [anchor, availableBottom, clearCloseTimers, open, position])
 
   const onSelectItem = (event: ContextualMenuSelectEvent) => {
     clearCloseTimers()
 
+    pendingSelectRef.current = event
+    setFrozenItems(items)
     setSelectedPathKey(getPathKey(event.path))
     setSelectedHighlightVisible(false)
-    onSelect?.(event)
 
     restoreHighlightTimerRef.current = setTimeout(() => {
       setSelectedHighlightVisible(true)
@@ -866,11 +876,18 @@ function ContextualMenu(props: ContextualMenuProps) {
         onClose?.()
         setClosing(false)
         setSelectedPathKey(null)
+        setFrozenItems(null)
+
+        const pending = pendingSelectRef.current
+        pendingSelectRef.current = null
+        if (pending) onSelect?.(pending)
       }, SELECT_FADE_OUT_DURATION)
     }, SELECT_HIGHLIGHT_RESTORE_DELAY)
   }
 
   if (!open && !closing) return null
+
+  const displayItems = frozenItems ?? items
 
   const menuRect = menuRef.current?.getBoundingClientRect()
   const arrowEdge = anchor?.side
@@ -889,6 +906,7 @@ function ContextualMenu(props: ContextualMenuProps) {
         left: adjustedPosition.x,
         top: adjustedPosition.y,
         zIndex,
+        visibility: positionReady ? 'visible' : 'hidden',
       }}
     >
       <ContextualMenuPanel
@@ -896,7 +914,7 @@ function ContextualMenu(props: ContextualMenuProps) {
         arrowOffset={arrowOffset ?? undefined}
         availableBottom={availableBottom}
         closing={closing}
-        items={items}
+        items={displayItems}
         path={[]}
         selectedHighlightVisible={selectedHighlightVisible}
         selectedPathKey={selectedPathKey}

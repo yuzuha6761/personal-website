@@ -1,4 +1,5 @@
 import { AppIcon } from '../../../icons/AppIcon'
+import { useWindowFocus } from '../../../Window/FocusContext'
 import { seekerTabs } from '../data'
 import { seekerIcons } from '../icons'
 
@@ -7,12 +8,8 @@ const historyIconClass = 'w-[.95rem] h-[.95rem]'
 const toolbarIconClass = 'w-[1.08rem] h-[1.08rem]'
 const newTabIconClass = 'w-[.9rem] h-[.9rem]'
 
-interface HeaderProps {
-  focused: boolean
-}
-
-function Header(props: HeaderProps) {
-  const { focused } = props
+function Header() {
+  const focused = useWindowFocus()?.focused ?? true
   const historyIconColorClass = focused ? 'text-#808080' : 'text-#b8b8b8'
   const toolbarIconColorClass = focused ? 'text-#737373' : 'text-#adadad'
   const newTabIconColorClass = focused ? 'text-#6b6b6b' : 'text-#a8a8a8'

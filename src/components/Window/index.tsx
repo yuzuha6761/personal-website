@@ -1,13 +1,15 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import type { WindowState } from '~types'
-import { resolveApplication } from './applications/registry'
+import { resolveApplication } from '../applications/registry'
+import { resolveRemSizeToPx } from '../../services/window'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import { Circle, Minus, Plus, X } from 'lucide-react'
-import { AppIcon } from './icons/AppIcon'
-import { ApplicationWindowFocusContext } from './ApplicationWindowFocusContext'
-import { ApplicationWindowResizeContext } from './ApplicationWindowResizeContext'
+import { AppIcon } from '../icons/AppIcon'
+import { FocusContext } from './FocusContext'
+import { shouldStartWindowDrag } from './Drag'
+import { ResizeContext } from './ResizeContext'
 
-interface ApplicationWindowProps {
+interface WindowProps {
   active: boolean
   window: WindowState
   onClose: (windowId: string) => void
@@ -46,14 +48,45 @@ type WindowInteraction =
 
 const trafficLightBaseClass = 'relative w-[.9rem] h-[.9rem] rounded-full p-0 cursor-default flex items-center justify-center active:[filter:brightness(.82)]'
 const trafficLightGlyphBaseClass = 'w-[.42rem] h-[.42rem] object-contain opacity-0'
+const TRAFFIC_LIGHT_INACTIVE_CLASS = 'border border-#cecdcd bg-#cecdcd'
+const TRAFFIC_LIGHT_APPEARANCE = {
+  close: {
+    active: 'border border-#e0443e bg-#ff5f56',
+    hover: 'group-hover:border-#e0443e group-hover:bg-#ff5f56',
+  },
+  minimize: {
+    active: 'border border-#dea123 bg-#ffbd2e',
+    hover: 'group-hover:border-#dea123 group-hover:bg-#ffbd2e',
+  },
+  zoom: {
+    active: 'border border-#1aab29 bg-#27c93f',
+    hover: 'group-hover:border-#1aab29 group-hover:bg-#27c93f',
+  },
+} as const
+
+/** Focused: colored unless disabled. Unfocused: gray; hover traffic lights restores all enabled colors. */
+function resolveTrafficLightClass(
+  focused: boolean,
+  disabled: boolean,
+  appearance: { active: string; hover: string },
+) {
+  if (disabled) return TRAFFIC_LIGHT_INACTIVE_CLASS
+  if (focused) return appearance.active
+  return `${TRAFFIC_LIGHT_INACTIVE_CLASS} ${appearance.hover}`
+}
+
+function getTrafficLightGlyphClass(disabled = false) {
+  return disabled ? 'opacity-0' : 'opacity-0 group-hover:opacity-50'
+}
 const DEFAULT_TRAFFIC_LIGHT_POSITION_REM = { top: 0.55, left: 0.55 }
 const STANDARD_TITLE_BAR_HEIGHT_REM = 2.75
 const WINDOW_TITLE_BAR_HEIGHT = 38
 const WINDOW_RESIZE_HANDLE_SIZE_REM = 0.25
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
 const SCREEN_EDGE_MARGIN = 24
-const WINDOW_BORDER_RADIUS_REM = 0.7
+const WINDOW_BORDER_RADIUS_REM = 0.8
 const WINDOW_BORDER_COLOR = '#cacaca'
+const TITLE_BAR_BORDER_COLOR = '#c6c5c5'
 const cursorMap: Record<ResizeDirection, string> = {
   e: 'ew-resize',
   w: 'ew-resize',
@@ -131,6 +164,7 @@ function resizeFrame(
   startFrame: WindowFrame,
   deltaX: number,
   deltaY: number,
+  minSize: { width: number; height: number } = MIN_WINDOW_SIZE,
 ): WindowFrame {
   const nextFrame: WindowFrame = {
     position: { ...startFrame.position },
@@ -138,21 +172,21 @@ function resizeFrame(
   }
 
   if (direction.includes('e')) {
-    nextFrame.size.width = Math.max(MIN_WINDOW_SIZE.width, startFrame.size.width + deltaX)
+    nextFrame.size.width = Math.max(minSize.width, startFrame.size.width + deltaX)
   }
 
   if (direction.includes('s')) {
-    nextFrame.size.height = Math.max(MIN_WINDOW_SIZE.height, startFrame.size.height + deltaY)
+    nextFrame.size.height = Math.max(minSize.height, startFrame.size.height + deltaY)
   }
 
   if (direction.includes('w')) {
-    const width = Math.max(MIN_WINDOW_SIZE.width, startFrame.size.width - deltaX)
+    const width = Math.max(minSize.width, startFrame.size.width - deltaX)
     nextFrame.position.x = startFrame.position.x + startFrame.size.width - width
     nextFrame.size.width = width
   }
 
   if (direction.includes('n')) {
-    const height = Math.max(MIN_WINDOW_SIZE.height, startFrame.size.height - deltaY)
+    const height = Math.max(minSize.height, startFrame.size.height - deltaY)
     nextFrame.position.y = startFrame.position.y + startFrame.size.height - height
     nextFrame.size.height = height
   }
@@ -171,23 +205,9 @@ function TrafficLights(props: TrafficLightsProps) {
     onMinimize,
   } = props
   const [optionKeyPressed, setOptionKeyPressed] = useState(false)
-  const getGlyphVisibilityClass = (disabled = false) => (
-    disabled ? 'opacity-0' : 'opacity-0 group-hover:opacity-50'
-  )
-  const inactiveLightBaseClass = 'border border-#cecdcd bg-#cecdcd'
-  const closeLightClass = active
-    ? 'border border-#e0443e bg-#ff5f56'
-    : `${inactiveLightBaseClass} group-hover:border-#e0443e group-hover:bg-#ff5f56`
-  const minimizeLightClass = minimizeDisabled
-    ? inactiveLightBaseClass
-    : active
-      ? 'border border-#dea123 bg-#ffbd2e'
-      : `${inactiveLightBaseClass} group-hover:border-#dea123 group-hover:bg-#ffbd2e`
-  const zoomLightClass = zoomDisabled
-    ? inactiveLightBaseClass
-    : active
-      ? 'border border-#1aab29 bg-#27c93f'
-      : `${inactiveLightBaseClass} group-hover:border-#1aab29 group-hover:bg-#27c93f`
+  const closeLightClass = resolveTrafficLightClass(active, false, TRAFFIC_LIGHT_APPEARANCE.close)
+  const minimizeLightClass = resolveTrafficLightClass(active, minimizeDisabled, TRAFFIC_LIGHT_APPEARANCE.minimize)
+  const zoomLightClass = resolveTrafficLightClass(active, zoomDisabled, TRAFFIC_LIGHT_APPEARANCE.zoom)
 
   useEffect(() => {
     const updateOptionKeyState = (event: KeyboardEvent) => setOptionKeyPressed(event.altKey)
@@ -206,12 +226,12 @@ function TrafficLights(props: TrafficLightsProps) {
 
   return (
     <div
-      className="gap-[.5rem] pointer-events-auto flex items-center"
+      className="group gap-[.5rem] pointer-events-auto flex items-center"
       onMouseDown={(event) => event.stopPropagation()}
     >
       <div
         aria-label={`Close ${title}`}
-        className={`group ${trafficLightBaseClass} ${closeLightClass}`}
+        className={`${trafficLightBaseClass} ${closeLightClass}`}
         onClick={(event) => {
           event.stopPropagation()
           onClose()
@@ -220,7 +240,7 @@ function TrafficLights(props: TrafficLightsProps) {
         tabIndex={0}
       >
         <AppIcon
-          className={`${trafficLightGlyphBaseClass} ${getGlyphVisibilityClass()} ${documentDirty ? 'fill-current text-#4d0000' : 'text-#4d0000'}`}
+          className={`${trafficLightGlyphBaseClass} ${getTrafficLightGlyphClass()} ${documentDirty ? 'fill-current text-#4d0000' : 'text-#4d0000'}`}
           icon={documentDirty ? Circle : X}
           strokeWidth={documentDirty ? 0 : 2.5}
         />
@@ -228,8 +248,9 @@ function TrafficLights(props: TrafficLightsProps) {
       <div
         aria-disabled={minimizeDisabled}
         aria-label={`Minimize ${title}`}
-        className={`group ${trafficLightBaseClass} ${minimizeLightClass} ${minimizeDisabled ? 'pointer-events-none' : ''}`}
+        className={`${trafficLightBaseClass} ${minimizeLightClass}`}
         onClick={(event) => {
+          if (minimizeDisabled) return
           event.stopPropagation()
           onMinimize()
         }}
@@ -237,7 +258,7 @@ function TrafficLights(props: TrafficLightsProps) {
         tabIndex={minimizeDisabled ? -1 : 0}
       >
         <AppIcon
-          className={`${trafficLightGlyphBaseClass} ${getGlyphVisibilityClass(minimizeDisabled)} text-#171717`}
+          className={`${trafficLightGlyphBaseClass} ${getTrafficLightGlyphClass(minimizeDisabled)} text-#171717`}
           icon={Minus}
           strokeWidth={2.5}
         />
@@ -245,21 +266,21 @@ function TrafficLights(props: TrafficLightsProps) {
       <div
         aria-disabled={zoomDisabled}
         aria-label={`${optionKeyPressed ? 'Zoom' : 'Enter fullscreen'} ${title}`}
-        className={`group ${trafficLightBaseClass} ${zoomLightClass} ${zoomDisabled ? 'pointer-events-none' : ''}`}
+        className={`${trafficLightBaseClass} ${zoomLightClass}`}
         role="button"
         tabIndex={zoomDisabled ? -1 : 0}
       >
         {optionKeyPressed
           ? (
               <AppIcon
-                className={`${trafficLightGlyphBaseClass} ${getGlyphVisibilityClass(zoomDisabled)} text-#171717`}
+                className={`${trafficLightGlyphBaseClass} ${getTrafficLightGlyphClass(zoomDisabled)} text-#171717`}
                 icon={Plus}
                 strokeWidth={2.5}
               />
             )
           : (
               <img
-                className={`${trafficLightGlyphBaseClass} ${getGlyphVisibilityClass(zoomDisabled)}`}
+                className={`${trafficLightGlyphBaseClass} ${getTrafficLightGlyphClass(zoomDisabled)}`}
                 src={fullscreenIcon}
                 alt=""
               />
@@ -269,7 +290,7 @@ function TrafficLights(props: TrafficLightsProps) {
   )
 }
 
-function ApplicationWindow(props: ApplicationWindowProps) {
+function Window(props: WindowProps) {
   const {
     active,
     window,
@@ -284,7 +305,9 @@ function ApplicationWindow(props: ApplicationWindowProps) {
     zoomDisabled = false,
     minimizeDisabled = false,
     resizable = true,
+    minSize: minSizeRem,
   } = windowOptions
+  const minSize = minSizeRem ? resolveRemSizeToPx(minSizeRem, MIN_WINDOW_SIZE) : MIN_WINDOW_SIZE
   const [frame, setFrame] = useState<WindowFrame>({
     position: window.position,
     size: window.size,
@@ -299,10 +322,10 @@ function ApplicationWindow(props: ApplicationWindowProps) {
   const hitAreaSizeOffsetRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM * 2}rem`
   const trafficLightsTopRem = fullSizeContentView
     ? trafficLightsPosition?.top ?? DEFAULT_TRAFFIC_LIGHT_POSITION_REM.top
-    : 0.92
+    : DEFAULT_TRAFFIC_LIGHT_POSITION_REM.top
   const trafficLightsLeftRem = fullSizeContentView
     ? trafficLightsPosition?.left ?? DEFAULT_TRAFFIC_LIGHT_POSITION_REM.left
-    : 1
+    : DEFAULT_TRAFFIC_LIGHT_POSITION_REM.left
   const draggableTitleBarHeight = fullSizeContentView
     ? WINDOW_TITLE_BAR_HEIGHT
     : getRemPx(STANDARD_TITLE_BAR_HEIGHT_REM)
@@ -341,10 +364,10 @@ function ApplicationWindow(props: ApplicationWindowProps) {
     () => getWindowFramePath(frame.size.width, frame.size.height),
     [frame.size.width, frame.size.height],
   )
-  const windowClassName = `absolute rounded-[.7rem] bg-white text-#1f2933 select-none ${
+  const windowClassName = `absolute rounded-[.8rem] bg-white text-#1f2933 select-none ${
     active
       ? 'shadow-[0_1.15rem_3.2rem_#00000038,0_.2rem_.7rem_#0000001f]'
-      : '[filter:saturate(.88)_brightness(.96)] shadow-[0_.85rem_2.2rem_#00000026,0_.15rem_.45rem_#0000001a]'
+      : 'shadow-[0_.85rem_2.2rem_#00000026,0_.15rem_.45rem_#0000001a]'
   }`
 
   useEffect(() => {
@@ -374,7 +397,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
         return
       }
 
-      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY))
+      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY, minSize))
     }
 
     const handlePointerUp = () => {
@@ -433,8 +456,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
       return
     }
 
-    const localY = event.clientY - rect.top
-    if (localY <= draggableTitleBarHeight) {
+    if (shouldStartWindowDrag(event.target, visibleWindowRef.current, event.clientY, draggableTitleBarHeight)) {
       interactionRef.current = {
         type: 'drag',
         startPointer: { x: event.clientX, y: event.clientY },
@@ -454,6 +476,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
         width: `calc(${frame.size.width}px + ${hitAreaSizeOffsetRem})`,
         height: `calc(${frame.size.height}px + ${hitAreaSizeOffsetRem})`,
         cursor: cursorStyle,
+        transition: heightTransition,
         transform: `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`,
         zIndex: window.zIndex,
       }}
@@ -468,9 +491,9 @@ function ApplicationWindow(props: ApplicationWindowProps) {
           transform: `translate(${resizeHandleSizeRem}, ${resizeHandleSizeRem})`,
         }}
       >
-        <div className="relative overflow-hidden rounded-[.7rem] w-full h-full" style={{ zIndex: 1 }}>
-          <ApplicationWindowFocusContext.Provider value={{ focused: active, windowId: window.id }}>
-            <ApplicationWindowResizeContext.Provider value={resizeContextValue}>
+        <div className="relative overflow-hidden rounded-[.8rem] w-full h-full" style={{ zIndex: 1 }}>
+          <FocusContext.Provider value={{ focused: active, windowId: window.id }}>
+            <ResizeContext.Provider value={resizeContextValue}>
             {fullSizeContentView ? (
               <>
                 <div
@@ -493,7 +516,7 @@ function ApplicationWindow(props: ApplicationWindowProps) {
               </>
             ) : (
               <div className="w-full h-full flex flex-col">
-                <div className="relative box-border h-[2.75rem] flex-[0_0_2.75rem] border-b border-b-#d0d0d0 bg-#ececec flex items-center justify-center">
+                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-#efeeef' : 'bg-#e8e7e7'} flex items-center justify-center`}>
                   <div
                     className="absolute pointer-events-none"
                     style={{
@@ -510,20 +533,37 @@ function ApplicationWindow(props: ApplicationWindowProps) {
                       onMinimize={() => onMinimize(window.id)}
                     />
                   </div>
-                  <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[1.08rem] font-700">
+                  <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[.9rem] font-700">
                     {window.title}
                   </div>
+                  <svg
+                    aria-hidden
+                    className="pointer-events-none absolute left-0 bottom-0 w-full"
+                    height="1"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 1 1"
+                  >
+                    <line
+                      stroke={TITLE_BAR_BORDER_COLOR}
+                      strokeWidth="1"
+                      vectorEffect="non-scaling-stroke"
+                      x1="0"
+                      x2="1"
+                      y1="0.5"
+                      y2="0.5"
+                    />
+                  </svg>
                 </div>
                 <div className="min-h-0 flex-1">{children}</div>
               </div>
             )}
-            </ApplicationWindowResizeContext.Provider>
-          </ApplicationWindowFocusContext.Provider>
+            </ResizeContext.Provider>
+          </FocusContext.Provider>
         </div>
         <svg
-          className="pointer-events-none absolute inset-0 overflow-visible"
-          width={frame.size.width}
-          height={frame.size.height}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 w-full h-full overflow-visible"
+          preserveAspectRatio="none"
           viewBox={`0 0 ${frame.size.width} ${frame.size.height}`}
           style={{ zIndex: 2 }}
         >
@@ -540,4 +580,4 @@ function ApplicationWindow(props: ApplicationWindowProps) {
   )
 }
 
-export default ApplicationWindow
+export default Window

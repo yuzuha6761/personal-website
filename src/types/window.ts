@@ -16,6 +16,6 @@ export interface WindowState {
 export interface OpenWindowOptions {
   title?: string
   position?: { x: number; y: number }
-  size?: { width: number; height: number }
+  size?: { width?: number; height?: number }
   payload?: Record<string, unknown>
 }

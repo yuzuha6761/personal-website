@@ -1,8 +1,11 @@
-import type { ApplicationWindowDisplayOptions } from '~types'
+import type { WindowDisplayOptions } from '~types'
 
 export const settingsWindowOptions = {
   fullSizeContentView: true,
   zoomDisabled: true,
   minimizeDisabled: true,
   resizable: false,
-} satisfies ApplicationWindowDisplayOptions
+  size: {
+    width: 27
+  },
+} satisfies WindowDisplayOptions
