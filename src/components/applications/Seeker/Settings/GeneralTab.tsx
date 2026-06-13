@@ -10,7 +10,7 @@ function GeneralTab() {
     cds: true,
     servers: false,
   })
-  const [newWindowPath, setNewWindowPath] = useState('yuki')
+  const [newWindowPath, setNewWindowPath] = useState('yuzuha')
   const [syncDesktopDocuments, setSyncDesktopDocuments] = useState(true)
   const [openInTabs, setOpenInTabs] = useState(true)
 
@@ -45,8 +45,8 @@ function GeneralTab() {
         onChange={setNewWindowPath}
         options={[
           {
-            value: 'yuki',
-            label: 'yuki',
+            value: 'yuzuha',
+            label: 'yuzuha',
             menuIcon: Folder,
             icon: <AppIcon className="w-[.95rem] h-[.95rem] text-#3595d6" icon={Folder} strokeWidth={2} />,
           },

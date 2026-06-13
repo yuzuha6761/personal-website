@@ -35,7 +35,7 @@ const appleMenuItems: ContextualMenuItem[] = [
   { id: 'shutdown', label: '关机...' },
   { id: 'divider-5', type: 'separator' },
   { id: 'lock-screen', label: '锁定屏幕', shortcut: '⌃⌘Q' },
-  { id: 'log-out', label: '退出登录 “yuki”...', shortcut: '⇧⌘Q' },
+  { id: 'log-out', label: '退出登录 “yuzuha”...', shortcut: '⇧⌘Q' },
 ]
 
 function MenuBar() {
@@ -63,7 +63,7 @@ function MenuBar() {
   ) => {
     const rect = target.getBoundingClientRect()
 
-    menuActionContextRef.current = { menuId, appId: activeAppId }
+    menuActionContextRef.current = { menuId, appId: activeAppId ?? '' }
     setActiveMenuId(menuId)
     setMenuItems(items)
     setMenuPosition({ x: rect.left, y: rect.bottom })

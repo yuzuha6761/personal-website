@@ -15,7 +15,7 @@ function SeekerAbout() {
         {`“Seeker” 版本 ${packageJson.version}`}
       </div>
       <div className="mt-auto pt-8 text-[.72rem] leading-[1.35rem] text-#8a8a8a">
-        <div>™和© 2025 yuki</div>
+        <div>™和© 2025 yuzuha</div>
         <div>保留一切权利。</div>
       </div>
     </div>

@@ -1,14 +1,15 @@
-import { useEffect } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import Header from './Header'
 import List from './List'
 import Sidebar from './Sidebar'
 import useSeekerWindowStore from '../store/window'
-import { useWindowFocus } from '../../../Window/FocusContext'
+import { useWindowFocus } from '~/components/Window/FocusContext'
 
 function SeekerMain() {
   const windowId = useWindowFocus()?.windowId
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!windowId) return
 
     useSeekerWindowStore.getState().initWindow(windowId)
@@ -19,8 +20,8 @@ function SeekerMain() {
   }, [windowId])
 
   return (
-    <div className="w-full h-full flex">
-      <Sidebar />
+    <div ref={containerRef} className="w-full h-full flex">
+      <Sidebar containerRef={containerRef} />
       <div className="min-w-0 flex-1 flex flex-col">
         <Header />
         <List />
