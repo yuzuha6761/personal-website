@@ -30,6 +30,7 @@ import {
   Share,
   Tag,
   Wrench,
+  X,
 } from 'lucide-react'
 
 export const seekerIcons = {
@@ -40,6 +41,7 @@ export const seekerIcons = {
   chevronRight: ChevronRight,
   chevronsRight: ChevronsRight,
   chevronsUpDown: ChevronsUpDown,
+  close: X,
   clock: Clock,
   columns: Columns3,
   computer: Laptop,

@@ -1,27 +1,16 @@
-export type SeekerSidebarIcon =
-  | 'clock'
-  | 'applications'
-  | 'movies'
-  | 'music'
-  | 'pictures'
-  | 'downloads'
-  | 'home'
-  | 'cloud-drive'
-  | 'document'
-  | 'desktop'
-  | 'shared'
-  | 'computer'
-  | 'network'
+import type { SeekerSidebarSection, SeekerViewMode } from './Main/types'
 
-export interface SeekerSidebarItem {
+export interface SeekerTagItem {
   id: string
   label: string
-  icon: SeekerSidebarIcon
-  active?: boolean
+  color: string
 }
 
-export interface SeekerSidebarSection {
-  id: string
-  title?: string
-  items: SeekerSidebarItem[]
+export interface SeekerGlobalStore {
+  sidebarSections: SeekerSidebarSection[]
+  tagItems: SeekerTagItem[]
+  showHiddenFiles: boolean
+  defaultViewMode: SeekerViewMode
+  setShowHiddenFiles: (showHiddenFiles: boolean) => void
+  setDefaultViewMode: (viewMode: SeekerViewMode) => void
 }

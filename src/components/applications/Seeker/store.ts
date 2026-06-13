@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { sidebarSections, tagItems } from '../data'
+import { sidebarSections, tagItems } from './data'
 import type { SeekerGlobalStore } from './types'
 
 const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({

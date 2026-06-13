@@ -4,7 +4,7 @@ import ContextualMenu, { type ContextualMenuItem } from '~/components/Contextual
 import { AppIcon } from '~/components/icons/AppIcon'
 import { getRootFontSize } from '~/services/window'
 import { seekerIcons } from '../icons'
-import type { SeekerViewMode } from '../store/types'
+import type { SeekerViewMode } from './types'
 
 const TITLE_MIN_REM = 7.5
 const ICON_SLOT_REM = 1.72

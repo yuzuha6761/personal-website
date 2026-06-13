@@ -1,4 +1,4 @@
-import type { SeekerSidebarSection } from './types'
+import type { SeekerSidebarSection } from './Main/types'
 
 export const sidebarSections: SeekerSidebarSection[] = [
   {

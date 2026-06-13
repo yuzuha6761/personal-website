@@ -5,13 +5,13 @@ import useFsStore from '~/fs'
 import type { FsDirectoryEntry, FsFileIcon } from '~types'
 import { seekerIcons } from '../icons'
 import { useSeekerWindow } from '../useSeekerWindow'
+import TabBar from './TabBar'
+import { SEEKER_DEFAULT_TAB_PATH, shouldShowSeekerTabBar } from './types'
 
 const MIN_EMPTY_ROWS = 10
-const DEFAULT_TAB_PATH = '/Users/yuzuha'
 const listGridClass = 'grid-cols-[minmax(12rem,1.15fr)_minmax(9rem,.62fr)_minmax(5.5rem,.32fr)_minmax(9rem,.55fr)]'
 const rowBaseClass = `h-[1.86rem] box-border rounded-[.34rem] grid ${listGridClass}`
 const fileIconClass = 'w-4 h-4'
-const newTabIconClass = 'w-[.9rem] h-[.9rem]'
 
 function isFolderEntry(entry: FsDirectoryEntry): boolean {
   return entry.icon === 'folder'
@@ -47,11 +47,14 @@ function List() {
     setSelection,
     setActiveTab,
     addTab,
+    closeTab,
+    moveTabs,
   } = useSeekerWindow()
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
-  const currentPath = activeTab?.path ?? DEFAULT_TAB_PATH
+  const currentPath = activeTab?.path ?? SEEKER_DEFAULT_TAB_PATH
   const tabs = windowState?.tabs ?? []
   const activeTabId = windowState?.activeTabId
+  const showTabBar = shouldShowSeekerTabBar(tabs.length)
   const nodes = useFsStore((state) => state.nodes)
   const items = useMemo(
     () => useFsStore.getState().listDirectory(currentPath),
@@ -63,9 +66,6 @@ function List() {
     (_, index) => `empty-${index}`,
   )
 
-  const tabBarClass = focused ? 'bg-#ececec' : 'bg-#dedede'
-  const tabDividerClass = focused ? 'border-r-#d6d6d6' : 'border-r-#d1d1d1'
-  const newTabIconColorClass = focused ? 'text-#6b6b6b' : 'text-#a8a8a8'
   const headerTextClass = focused ? 'text-#616161' : 'text-#9d9d9d'
   const headerBorderClass = focused ? 'border-r-#e3e3e3' : 'border-r-#eeeeee'
   const rowTextClass = focused ? 'text-#3b3b3d' : 'text-#8a8a8a'
@@ -87,40 +87,26 @@ function List() {
   }
 
   const handleAddTab = () => {
-    addTab(DEFAULT_TAB_PATH)
+    addTab(SEEKER_DEFAULT_TAB_PATH)
+  }
+
+  const handleCloseTab = (tabId: string) => {
+    closeTab(tabId)
   }
 
   return (
     <section className="min-h-0 flex-1 bg-white flex flex-col">
-      <div className={`shrink-0 h-8 flex items-stretch border-b border-b-#dddddd ${tabBarClass}`}>
-        <div className="min-w-0 flex flex-1 overflow-hidden">
-          {tabs.map((tab) => {
-            const active = tab.id === activeTabId
-
-            return (
-              <button
-                className={`shrink-0 min-w-[4.25rem] max-w-[8.5rem] border-0 border-r px-[.85rem] [font:inherit] text-[.82rem] font-[620] leading-8 cursor-default truncate ${
-                  active
-                    ? focused ? 'bg-white text-#2f2f2f' : 'bg-#f5f5f5 text-#a0a0a0'
-                    : focused ? 'bg-transparent text-#555555 hover:bg-#e4e4e4 active:bg-#dcdcdc' : 'bg-transparent text-#a7a7a7 hover:bg-#d8d8d8'
-                } border-r ${tabDividerClass}`}
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                type="button"
-              >
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
-        <button
-          className={`shrink-0 w-[2.35rem] border-0 border-l ${tabDividerClass} bg-transparent cursor-default flex items-center justify-center ${focused ? 'hover:bg-#e4e4e4 active:bg-#dcdcdc' : 'hover:bg-#d8d8d8'}`}
-          onClick={handleAddTab}
-          type="button"
-        >
-          <AppIcon className={`${newTabIconClass} ${newTabIconColorClass}`} icon={seekerIcons.plus} />
-        </button>
-      </div>
+      {showTabBar && activeTabId ? (
+        <TabBar
+          activeTabId={activeTabId}
+          focused={focused}
+          onAddTab={handleAddTab}
+          onCloseTab={handleCloseTab}
+          onMoveTabs={moveTabs}
+          onSelectTab={setActiveTab}
+          tabs={tabs}
+        />
+      ) : null}
 
       <div className={`shrink-0 h-[1.82rem] box-border border-b border-b-#dfdfdf grid ${listGridClass} bg-white ${headerTextClass} text-[.78rem] font-700`}>
         <div className={`min-w-0 px-[.72rem] py-[.32rem] border-r ${headerBorderClass} overflow-hidden text-ellipsis whitespace-nowrap`}>名称</div>
