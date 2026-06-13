@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import Header from './Header'
 import List from './List'
 import Sidebar from './Sidebar'
-import useSeekerWindowStore from '../store/window'
+import useSeekerWindowStore from './store'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 
 function SeekerMain() {

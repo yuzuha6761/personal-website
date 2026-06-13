@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import useSeekerWindowStore from './store/window'
-import type { SeekerViewMode, SeekerWindowState } from './store/types'
+import useSeekerWindowStore from './Main/store'
+import type { SeekerViewMode, SeekerWindowState } from './Main/types'
 import { useWindowFocus } from '../../Window/FocusContext'
 
 export function useSeekerWindow(): {
@@ -9,6 +9,7 @@ export function useSeekerWindow(): {
   setActiveTab: (tabId: string) => void
   addTab: (path: string, label?: string) => void
   closeTab: (tabId: string) => void
+  moveTabs: (tabIds: string[]) => void
   navigateTo: (path: string) => void
   goBack: () => void
   goForward: () => void
@@ -23,6 +24,7 @@ export function useSeekerWindow(): {
     setActiveTab,
     addTab,
     closeTab,
+    moveTabs,
     navigateTo,
     goBack,
     goForward,
@@ -44,6 +46,11 @@ export function useSeekerWindow(): {
     if (!windowId) return
     closeTab(windowId, tabId)
   }, [closeTab, windowId])
+
+  const boundMoveTabs = useCallback((tabIds: string[]) => {
+    if (!windowId) return
+    moveTabs(windowId, tabIds)
+  }, [moveTabs, windowId])
 
   const boundNavigateTo = useCallback((path: string) => {
     if (!windowId) return
@@ -76,6 +83,7 @@ export function useSeekerWindow(): {
     setActiveTab: boundSetActiveTab,
     addTab: boundAddTab,
     closeTab: boundCloseTab,
+    moveTabs: boundMoveTabs,
     navigateTo: boundNavigateTo,
     goBack: boundGoBack,
     goForward: boundGoForward,
@@ -87,6 +95,7 @@ export function useSeekerWindow(): {
     boundSetActiveTab,
     boundAddTab,
     boundCloseTab,
+    boundMoveTabs,
     boundNavigateTo,
     boundGoBack,
     boundGoForward,

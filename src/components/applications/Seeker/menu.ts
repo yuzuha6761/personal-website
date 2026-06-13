@@ -3,7 +3,9 @@ import {
   createSeekerSettingsWindowOptions,
   findSeekerAboutWindow,
   findSeekerSettingsWindow,
+  SEEKER_WINDOW_KIND,
 } from './windows'
+import { addTabToTargetMainWindow } from './Main/store'
 import type {
   ApplicationDockMenuSelectHandler,
   ApplicationMenuBarItem,
@@ -59,6 +61,16 @@ export const onSeekerMenuBarSelect: ApplicationMenuBarSelectHandler = ({ itemId,
     }
 
     context.openWindow(context.appId, createSeekerSettingsWindowOptions())
+    return
+  }
+
+  if (itemId === 'new-seeker-window') {
+    context.openWindow(context.appId, { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
+    return
+  }
+
+  if (itemId === 'new-tab') {
+    addTabToTargetMainWindow()
   }
 }
 

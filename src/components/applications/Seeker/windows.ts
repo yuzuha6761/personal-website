@@ -1,4 +1,4 @@
-import type { WindowDisplayOptions, OpenWindowOptions, WindowState } from '~types'
+import type { FocusTarget, WindowDisplayOptions, OpenWindowOptions, WindowState } from '~types'
 import { aboutWindowOptions } from './About/window'
 import { mainWindowOptions } from './Main/window'
 import { settingsWindowOptions } from './Settings/window'
@@ -39,6 +39,23 @@ export function getSeekerMainWindows(windows: WindowState[]) {
 
 export function findSeekerMainWindow(windows: WindowState[]) {
   return getSeekerMainWindows(windows)[0]
+}
+
+export function resolveTargetSeekerMainWindowId(
+  windows: WindowState[],
+  focusedTarget: FocusTarget,
+): string | undefined {
+  if (focusedTarget.type === 'window') {
+    const focused = windows.find((window) => window.id === focusedTarget.windowId)
+    if (
+      focused?.appId === 'seeker'
+      && getSeekerWindowKind(focused.payload) === SEEKER_WINDOW_KIND.MAIN
+    ) {
+      return focused.id
+    }
+  }
+
+  return findSeekerMainWindow(windows)?.id
 }
 
 export function getSeekerWindowKind(payload?: Record<string, unknown>): SeekerWindowKind {

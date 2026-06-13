@@ -8,7 +8,8 @@ import useFsStore, { buildPathChainFromCurrent, getPathDisplayLabel } from '~/fs
 import { getRootFontSize } from '~/services/window'
 import { seekerIcons } from '../icons'
 import { useSeekerWindow } from '../useSeekerWindow'
-import useSeekerWindowStore from '../store/window'
+import useSeekerWindowStore from './store'
+import { SEEKER_DEFAULT_TAB_PATH } from './types'
 import { HeaderToolbarArea } from './HeaderToolbar'
 
 const historyIconClass = 'w-[1.4rem] h-[1.4rem]'
@@ -67,7 +68,7 @@ function Header() {
   } = useSeekerWindow()
   const nodes = useFsStore((state) => state.nodes)
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
-  const currentPath = activeTab?.path ?? '/Users/yuzuha'
+  const currentPath = activeTab?.path ?? SEEKER_DEFAULT_TAB_PATH
   const canGoBack = (windowState?.historyBack.length ?? 0) > 0
   const canGoForward = (windowState?.historyForward.length ?? 0) > 0
 

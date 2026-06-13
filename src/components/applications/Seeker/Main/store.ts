@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 import useFsStore, { getPathDisplayLabel } from '~/fs'
 import useWindowStore from '~stores/window'
-import useSeekerGlobalStore from './global'
+import useSeekerGlobalStore from '../store'
+import { resolveTargetSeekerMainWindowId, SEEKER_WINDOW_KIND } from '../windows'
 import type {
   SeekerTabState,
   SeekerWindowState,
   SeekerWindowStore,
 } from './types'
-
-const DEFAULT_PATH = '/Users/yuzuha'
+import { SEEKER_DEFAULT_TAB_PATH as DEFAULT_PATH } from './types'
 
 function getInitialPathFromPayload(payload?: Record<string, unknown>): string {
   const initialPath = payload?.initialPath
@@ -154,6 +154,30 @@ const useSeekerWindowStore = create<SeekerWindowStore>((set, get) => ({
     })
   },
 
+  moveTabs: (windowId, tabIds) => {
+    set((state) => {
+      const windowState = state.windows[windowId]
+      if (!windowState || tabIds.length !== windowState.tabs.length) return state
+
+      const tabById = new Map(windowState.tabs.map((tab) => [tab.id, tab]))
+      const nextTabs = tabIds
+        .map((id) => tabById.get(id))
+        .filter((tab): tab is SeekerTabState => tab !== undefined)
+
+      if (nextTabs.length !== windowState.tabs.length) return state
+
+      return {
+        windows: {
+          ...state.windows,
+          [windowId]: {
+            ...windowState,
+            tabs: nextTabs,
+          },
+        },
+      }
+    })
+  },
+
   navigateTo: (windowId, path) => {
     set((state) => {
       const windowState = state.windows[windowId]
@@ -271,5 +295,21 @@ const useSeekerWindowStore = create<SeekerWindowStore>((set, get) => ({
     })
   },
 }))
+
+export function addTabToTargetMainWindow(path: string = DEFAULT_PATH): void {
+  const windowStore = useWindowStore.getState()
+  const seekerStore = useSeekerWindowStore.getState()
+  const { windows, focusedTarget } = windowStore
+
+  let windowId = resolveTargetSeekerMainWindowId(windows, focusedTarget)
+
+  if (!windowId) {
+    windowId = windowStore.openWindow('seeker', { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
+  }
+
+  seekerStore.initWindow(windowId)
+  seekerStore.addTab(windowId, path)
+  windowStore.focusWindow(windowId)
+}
 
 export default useSeekerWindowStore
