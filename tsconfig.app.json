@@ -8,6 +8,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -21,10 +22,13 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
+      "~/*": ["./src/*"],
       "~types": ["./src/types"],
       "~enums": ["./src/enums"],
       "~assets": ["./src/assets"],
-      "~styles": ["./src/styles"]
+      "~styles": ["./src/styles"],
+      "~fs": ["./src/fs"],
+      "~stores/*": ["./src/stores/*"]
     }
   },
   "include": ["src", "auto-imports.d.ts"]

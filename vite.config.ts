@@ -39,6 +39,7 @@ export default defineConfig(({mode}) => ({
       '~enums': resolve('./src/enums'),
       '~assets': resolve('./src/assets'),
       '~styles': resolve('./src/styles'),
+      '~fs': resolve('./src/fs'),
       '~stores': resolve('./src/stores'),
     }
   },

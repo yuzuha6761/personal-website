@@ -13,16 +13,16 @@ import type { ContextualMenuItem } from '../../ContextualMenu'
 import { seekerIcons } from './icons'
 
 const seekerDockPaths = [
-  { id: 'downloads', label: '下载', path: '~/Downloads' },
-  { id: 'applications', label: 'applications', path: '~/components/applications' },
-  { id: 'assets', label: 'assets', path: '~/components/assets' },
-  { id: 'components', label: 'components', path: '~/components' },
-  { id: 'fuyi', label: 'fuyi', path: '~/fuyi' },
-  { id: 'icloud-drive', label: 'iCloud 云盘', path: '~/iCloud Drive' },
-  { id: 'ios-wallpapers', label: 'ios 壁纸', path: '~/ios 壁纸' },
-  { id: 'iptv', label: 'iptv', path: '~/iptv' },
-  { id: 'public', label: 'public', path: '~/public' },
-  { id: 'wallpaper', label: 'wallpaper', path: '~/wallpaper' },
+  { id: 'downloads', label: '下载', path: '/Users/yuzuha/Downloads' },
+  { id: 'applications', label: 'applications', path: '/Users/yuzuha/components/applications' },
+  { id: 'assets', label: 'assets', path: '/Users/yuzuha/components/assets' },
+  { id: 'components', label: 'components', path: '/Users/yuzuha/components' },
+  { id: 'fuyi', label: 'fuyi', path: '/Users/yuzuha/fuyi' },
+  { id: 'icloud-drive', label: 'iCloud 云盘', path: '/Users/yuzuha/iCloud Drive' },
+  { id: 'ios-wallpapers', label: 'ios 壁纸', path: '/Users/yuzuha/ios 壁纸' },
+  { id: 'iptv', label: 'iptv', path: '/Users/yuzuha/iptv' },
+  { id: 'public', label: 'public', path: '/Users/yuzuha/Public' },
+  { id: 'wallpaper', label: 'wallpaper', path: '/Users/yuzuha/wallpaper' },
 ]
 
 export const seekerDockMenuItems: ContextualMenuItem[] = [
@@ -243,7 +243,7 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
       { id: 'recent-folders', label: '最近使用的文件夹', children: [
         { id: 'downloads-folder', label: '下载' },
         { id: 'sf-symbols-folder', label: 'sf-symbols' },
-        { id: 'yuki-folder', label: 'yuki' },
+        { id: 'yuzuha-folder', label: 'yuzuha' },
       ] },
       { id: 'divider-3', type: 'separator' },
       { id: 'go-folder', label: '前往文件夹...', shortcut: '⇧⌘G' },
@@ -283,7 +283,7 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
       { id: 'divider-6', type: 'separator' },
       { id: 'downloads-window', label: '下载' },
       { id: 'sf-symbols-window', label: 'sf-symbols' },
-      { id: 'yuki-window', label: 'yuki' },
+      { id: 'yuzuha-window', label: 'yuzuha' },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import useFsStore from '~stores/fs'
+import useFsStore, { getPathDisplayLabel } from '~/fs'
 import useWindowStore from '~stores/window'
 import useSeekerGlobalStore from './global'
 import type {
@@ -8,7 +8,7 @@ import type {
   SeekerWindowStore,
 } from './types'
 
-const DEFAULT_PATH = '~/components'
+const DEFAULT_PATH = '/Users/yuzuha'
 
 function getInitialPathFromPayload(payload?: Record<string, unknown>): string {
   const initialPath = payload?.initialPath
@@ -16,10 +16,7 @@ function getInitialPathFromPayload(payload?: Record<string, unknown>): string {
 }
 
 function getPathLabel(path: string): string {
-  const node = useFsStore.getState().getNodeByPath(path)
-  if (!node) return path.split('/').at(-1) ?? path
-  if (node.path === '~') return 'yuki'
-  return node.name
+  return getPathDisplayLabel(path, useFsStore.getState().nodes)
 }
 
 function createTab(path: string, label?: string): SeekerTabState {

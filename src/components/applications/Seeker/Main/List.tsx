@@ -1,31 +1,128 @@
-import { AppIcon } from '../../../icons/AppIcon'
-import { useWindowFocus } from '../../../Window/FocusContext'
-import { seekerItems } from '../data'
+import { useMemo } from 'react'
+import { AppIcon } from '~/components/icons/AppIcon'
+import { useWindowFocus } from '~/components/Window/FocusContext'
+import useFsStore from '~/fs'
+import type { FsDirectoryEntry, FsFileIcon } from '~types'
 import { seekerIcons } from '../icons'
+import { useSeekerWindow } from '../useSeekerWindow'
 
-const emptyRows = Array.from({ length: 10 }, (_, index) => `empty-${index}`)
+const MIN_EMPTY_ROWS = 10
+const DEFAULT_TAB_PATH = '/Users/yuzuha'
 const listGridClass = 'grid-cols-[minmax(12rem,1.15fr)_minmax(9rem,.62fr)_minmax(5.5rem,.32fr)_minmax(9rem,.55fr)]'
 const rowBaseClass = `h-[1.86rem] box-border rounded-[.34rem] grid ${listGridClass}`
-const disclosureIconClass = 'w-[.48rem] h-[.48rem]'
 const fileIconClass = 'w-4 h-4'
+const newTabIconClass = 'w-[.9rem] h-[.9rem]'
 
-function List() {
-  const focused = useWindowFocus()?.focused ?? true
-  const headerTextClass = focused ? 'text-#616161' : 'text-#9d9d9d'
-  const headerBorderClass = focused ? 'border-r-#e3e3e3' : 'border-r-#eeeeee'
-  const rowTextClass = focused ? 'text-#3b3b3d' : 'text-#8a8a8a'
-  const metadataTextClass = focused ? 'text-#858585' : 'text-#9f9f9f'
-  const selectedRowClass = focused ? 'bg-#f2f2f2' : 'bg-#f1f1f1'
-  const stripeRowClass = focused ? 'bg-#f3f3f3' : 'bg-#f4f4f4'
-  const disclosureColorClass = focused ? 'text-#737373' : 'text-#acacac'
+function isFolderEntry(entry: FsDirectoryEntry): boolean {
+  return entry.icon === 'folder'
+}
+
+function FileIconBadge({ focused, icon }: { focused: boolean; icon: FsFileIcon }) {
   const fileIconColorClass = focused ? 'text-#737373' : 'text-#b6b6b6'
   const folderIconColorClass = focused ? 'text-#3595d6' : 'text-#9fc9df'
   const scssBadgeClass = focused ? 'text-#ff4aa3' : 'text-#f1a6cb'
   const tsBadgeClass = focused ? 'text-#3595d6' : 'text-#9fc9df'
 
   return (
+    <span className="relative flex-[0_0_1.14rem] h-[1.14rem] flex items-center justify-center">
+      <AppIcon
+        className={`${fileIconClass} ${icon === 'folder' ? folderIconColorClass : fileIconColorClass}`}
+        icon={seekerIcons[icon]}
+        strokeWidth={icon === 'folder' ? 2 : 1.75}
+      />
+      {icon !== 'folder' && (
+        <span className={`absolute font-800 ${icon === 'scss' ? `left-[.43rem] top-[.34rem] ${scssBadgeClass} text-[.42rem]` : `left-[.33rem] top-[.32rem] ${tsBadgeClass} text-[.34rem]`}`}>
+          {icon === 'scss' ? 'S' : 'TS'}
+        </span>
+      )}
+    </span>
+  )
+}
+
+function List() {
+  const focused = useWindowFocus()?.focused ?? true
+  const {
+    windowState,
+    navigateTo,
+    setSelection,
+    setActiveTab,
+    addTab,
+  } = useSeekerWindow()
+  const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
+  const currentPath = activeTab?.path ?? DEFAULT_TAB_PATH
+  const tabs = windowState?.tabs ?? []
+  const activeTabId = windowState?.activeTabId
+  const nodes = useFsStore((state) => state.nodes)
+  const items = useMemo(
+    () => useFsStore.getState().listDirectory(currentPath),
+    [nodes, currentPath],
+  )
+  const selection = windowState?.selection ?? []
+  const emptyRows = Array.from(
+    { length: Math.max(0, MIN_EMPTY_ROWS - items.length) },
+    (_, index) => `empty-${index}`,
+  )
+
+  const tabBarClass = focused ? 'bg-#ececec' : 'bg-#dedede'
+  const tabDividerClass = focused ? 'border-r-#d6d6d6' : 'border-r-#d1d1d1'
+  const newTabIconColorClass = focused ? 'text-#6b6b6b' : 'text-#a8a8a8'
+  const headerTextClass = focused ? 'text-#616161' : 'text-#9d9d9d'
+  const headerBorderClass = focused ? 'border-r-#e3e3e3' : 'border-r-#eeeeee'
+  const rowTextClass = focused ? 'text-#3b3b3d' : 'text-#8a8a8a'
+  const metadataTextClass = focused ? 'text-#858585' : 'text-#9f9f9f'
+  const selectedRowClass = focused ? 'bg-#f2f2f2' : 'bg-#f1f1f1'
+  const stripeRowClass = focused ? 'bg-#f3f3f3' : 'bg-#f4f4f4'
+
+  const handleSelect = (path: string) => {
+    setSelection([path])
+  }
+
+  const handleOpen = (entry: FsDirectoryEntry) => {
+    if (!isFolderEntry(entry)) return
+    navigateTo(entry.path)
+  }
+
+  const handleRowDoubleClick = (entry: FsDirectoryEntry) => {
+    handleOpen(entry)
+  }
+
+  const handleAddTab = () => {
+    addTab(DEFAULT_TAB_PATH)
+  }
+
+  return (
     <section className="min-h-0 flex-1 bg-white flex flex-col">
-      <div className={`h-[1.82rem] box-border border-b border-b-#dfdfdf grid ${listGridClass} ${headerTextClass} text-[.78rem] font-700`}>
+      <div className={`shrink-0 h-8 flex items-stretch border-b border-b-#dddddd ${tabBarClass}`}>
+        <div className="min-w-0 flex flex-1 overflow-hidden">
+          {tabs.map((tab) => {
+            const active = tab.id === activeTabId
+
+            return (
+              <button
+                className={`shrink-0 min-w-[4.25rem] max-w-[8.5rem] border-0 border-r px-[.85rem] [font:inherit] text-[.82rem] font-[620] leading-8 cursor-default truncate ${
+                  active
+                    ? focused ? 'bg-white text-#2f2f2f' : 'bg-#f5f5f5 text-#a0a0a0'
+                    : focused ? 'bg-transparent text-#555555 hover:bg-#e4e4e4 active:bg-#dcdcdc' : 'bg-transparent text-#a7a7a7 hover:bg-#d8d8d8'
+                } border-r ${tabDividerClass}`}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+        <button
+          className={`shrink-0 w-[2.35rem] border-0 border-l ${tabDividerClass} bg-transparent cursor-default flex items-center justify-center ${focused ? 'hover:bg-#e4e4e4 active:bg-#dcdcdc' : 'hover:bg-#d8d8d8'}`}
+          onClick={handleAddTab}
+          type="button"
+        >
+          <AppIcon className={`${newTabIconClass} ${newTabIconColorClass}`} icon={seekerIcons.plus} />
+        </button>
+      </div>
+
+      <div className={`shrink-0 h-[1.82rem] box-border border-b border-b-#dfdfdf grid ${listGridClass} bg-white ${headerTextClass} text-[.78rem] font-700`}>
         <div className={`min-w-0 px-[.72rem] py-[.32rem] border-r ${headerBorderClass} overflow-hidden text-ellipsis whitespace-nowrap`}>名称</div>
         <div className={`min-w-0 px-[.72rem] py-[.32rem] border-r ${headerBorderClass} overflow-hidden text-ellipsis whitespace-nowrap`}>修改日期</div>
         <div className={`min-w-0 px-[.72rem] py-[.32rem] border-r ${headerBorderClass} overflow-hidden text-ellipsis whitespace-nowrap`}>大小</div>
@@ -33,35 +130,28 @@ function List() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden px-[.62rem] py-[.45rem]">
-        {seekerItems.map((item, index) => (
-          <button
-            className={`${rowBaseClass} w-full border-0 p-0 ${rowTextClass} [font:inherit] text-left cursor-default ${item.selected || index % 2 === 1 ? selectedRowClass : 'bg-transparent'}`}
-            key={item.id}
-            type="button"
-          >
-            <span className="min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-[.28rem]">
-              <span className="w-[.48rem] h-[.72rem] flex items-center justify-center">
-                {item.expanded && <AppIcon className={`${disclosureIconClass} ${disclosureColorClass}`} icon={seekerIcons.chevronRight} strokeWidth={2.5} />}
+        {items.map((item, index) => {
+          const selected = selection.includes(item.path)
+
+          return (
+            <button
+              className={`${rowBaseClass} w-full border-0 p-0 ${rowTextClass} [font:inherit] text-left cursor-default ${selected || index % 2 === 1 ? selectedRowClass : 'bg-transparent'}`}
+              key={item.path}
+              onClick={() => handleSelect(item.path)}
+              onDoubleClick={() => handleRowDoubleClick(item)}
+              type="button"
+            >
+              <span className="min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-[.28rem]">
+                <span className="w-[.48rem] h-[.72rem] shrink-0" />
+                <FileIconBadge focused={focused} icon={item.icon} />
+                <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</span>
               </span>
-              <span className="relative flex-[0_0_1.14rem] h-[1.14rem] flex items-center justify-center">
-                <AppIcon
-                  className={`${fileIconClass} ${item.icon === 'folder' ? folderIconColorClass : fileIconColorClass}`}
-                  icon={seekerIcons[item.icon]}
-                  strokeWidth={item.icon === 'folder' ? 2 : 1.75}
-                />
-                {item.icon !== 'folder' && (
-                  <span className={`absolute font-800 ${item.icon === 'scss' ? `left-[.43rem] top-[.34rem] ${scssBadgeClass} text-[.42rem]` : `left-[.33rem] top-[.32rem] ${tsBadgeClass} text-[.34rem]`}`}>
-                    {item.icon === 'scss' ? 'S' : 'TS'}
-                  </span>
-                )}
-              </span>
-              <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</span>
-            </span>
-            <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.modified}</span>
-            <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.size}</span>
-            <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.kind}</span>
-          </button>
-        ))}
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.modified}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.size}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.kind}</span>
+            </button>
+          )
+        })}
         {emptyRows.map((row, index) => (
           <div className={`${rowBaseClass} ${index % 2 === 1 ? stripeRowClass : ''}`} key={row} />
         ))}
