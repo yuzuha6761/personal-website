@@ -56,28 +56,6 @@ interface HairlineProps {
   color: string
 }
 
-function HairlineHorizontal({ className = '', color }: HairlineProps) {
-  return (
-    <svg
-      aria-hidden
-      className={`pointer-events-none ${className}`}
-      height="1"
-      preserveAspectRatio="none"
-      viewBox="0 0 1 1"
-    >
-      <line
-        stroke={color}
-        strokeWidth="1"
-        vectorEffect="non-scaling-stroke"
-        x1="0"
-        x2="1"
-        y1="0.5"
-        y2="0.5"
-      />
-    </svg>
-  )
-}
-
 function HairlineVertical({ className = '', color }: HairlineProps) {
   return (
     <svg
@@ -99,6 +77,12 @@ function HairlineVertical({ className = '', color }: HairlineProps) {
     </svg>
   )
 }
+
+const TAB_TOP_INNER_SHADOW = {
+  // Alpha fades toward 0 at 3px so inactive tab bg (#f0f0f0 / #e3e3e3) shows through at the seam.
+  focused: 'inset 0 1px 0 0 rgba(205, 205, 205, 0.45), inset 0 2px 0 0 rgba(221, 221, 221, 0.22), inset 0 3px 0 0 rgba(240, 240, 240, 0)',
+  unfocused: 'inset 0 1px 0 0 rgba(191, 191, 191, 0.45), inset 0 2px 0 0 rgba(211, 211, 211, 0.22), inset 0 3px 0 0 rgba(227, 227, 227, 0)',
+} as const
 
 interface TabCloseButtonProps {
   active: boolean
@@ -195,6 +179,8 @@ function TabBar({
   const [trackWidthPx, setTrackWidthPx] = useState(0)
   const [settleState, setSettleState] = useState<TabSettleState | null>(null)
   const [layoutAnim, setLayoutAnim] = useState<TabLayoutAnimState | null>(null)
+  const [suppressBgTransition, setSuppressBgTransition] = useState(false)
+  const prevFocusedRef = useRef(focused)
 
   const measureTrack = useCallback(() => {
     const track = trackRef.current
@@ -207,6 +193,16 @@ function TabBar({
     window.addEventListener('resize', measureTrack)
     return () => window.removeEventListener('resize', measureTrack)
   }, [measureTrack, tabs.length])
+
+  useLayoutEffect(() => {
+    if (prevFocusedRef.current === focused) return
+    prevFocusedRef.current = focused
+    setSuppressBgTransition(true)
+    const frame = requestAnimationFrame(() => {
+      setSuppressBgTransition(false)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focused])
 
   useLayoutEffect(() => () => {
     if (settleTimerRef.current !== null) {
@@ -281,13 +277,18 @@ function TabBar({
     ?? dragState?.previewTabIds
     ?? tabs.map((tab) => tab.id)
   const tabBarBgClass = focused ? 'bg-#ececec' : 'bg-#dedede'
-  const activeTabBgClass = focused ? 'bg-#f4f4f4' : 'bg-#efefef'
+  const activeTabBgClass = focused ? 'bg-#fdfdfd' : 'bg-#f2f2f2'
+  const tabBgTransitionClass = suppressBgTransition ? 'transition-none' : TAB_BG_TRANSITION_CLASS
   const inactiveTabBgClass = isDragging || isSettling
-    ? 'bg-#e6e5e5'
-    : `bg-#e6e5e5 hover:bg-#d8d7d7 ${TAB_BG_TRANSITION_CLASS}`
+    ? focused ? 'bg-#f0f0f0' : 'bg-#e3e3e3'
+    : focused
+      ? `bg-#f0f0f0 hover:bg-#e3e3e3 ${tabBgTransitionClass}`
+      : `bg-#e3e3e3 hover:bg-#d6d6d6 ${tabBgTransitionClass}`
   const addTabBgClass = isDragging || isSettling
-    ? 'bg-#e6e5e5'
-    : `bg-#e6e5e5 hover:bg-#d8d7d7 active:bg-#cac9c9 ${TAB_BG_TRANSITION_CLASS}`
+    ? focused ? 'bg-#f0f0f0' : 'bg-#e3e3e3'
+    : focused
+      ? `bg-#f0f0f0 hover:bg-#e3e3e3 active:bg-#cac9c9 ${tabBgTransitionClass}`
+      : `bg-#e3e3e3 hover:bg-#d6d6d6 ${tabBgTransitionClass}`
   const newTabIconColorClass = focused ? 'text-#6b6b6b' : 'text-#a8a8a8'
   const tabTextClass = focused ? 'text-#2f2f2f' : 'text-#a0a0a0'
   const tabCount = tabs.length
@@ -566,7 +567,7 @@ function TabBar({
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[4]"
-        style={{ boxShadow: SEEKER_TAB_CHROME.topInnerShadow }}
+        style={{ boxShadow: focused ? TAB_TOP_INNER_SHADOW.focused : TAB_TOP_INNER_SHADOW.unfocused }}
       />
 
       {showActiveOverlay ? (
@@ -585,7 +586,7 @@ function TabBar({
             height: `calc(100% + ${ACTIVE_TAB_RISE_PX}px)`,
           }}
         >
-          <div className={`pointer-events-auto flex min-w-0 h-full flex-col cursor-default ${activeTabBgClass} ${TAB_BG_TRANSITION_CLASS}`}>
+          <div className={`pointer-events-auto flex min-w-0 h-full flex-col cursor-default ${activeTabBgClass}`}>
             <div className={`shrink-0 ${activeTabBgClass}`} style={{ height: ACTIVE_TAB_RISE_PX }} />
             <div
               className="flex min-w-0 flex-1 items-stretch h-8"
@@ -655,11 +656,6 @@ function TabBar({
           </div>
         )
       })() : null}
-
-      <HairlineHorizontal
-        className="absolute inset-x-0 bottom-0 z-[25] w-full"
-        color={SEEKER_TAB_CHROME.bottomBorder}
-      />
     </div>
   )
 }

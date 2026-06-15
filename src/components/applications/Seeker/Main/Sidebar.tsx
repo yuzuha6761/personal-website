@@ -67,10 +67,10 @@ function Sidebar({ containerRef }: SidebarProps) {
 
   const sidebarBgClass = focused
     ? 'bg-#d0cccd/68 backdrop-blur-[20px] backdrop-saturate-180'
-    : 'bg-#e8e7e7'
+    : 'bg-#f2f2f2'
   const sidebarBorderColors = focused
     ? (['#e0dfdf', '#dedddd', '#d5d4d4'] as const)
-    : (['#e7e6e6', '#e5e4e4', '#dcdbdb'] as const)
+    : (['#f1f1f1', '#efefef', '#e6e6e6'] as const)
   const sidebarTitleClass = focused ? 'text-#8c8a8d' : 'text-#a3a3a3'
   const sidebarTextClass = focused ? 'text-#4a494b' : 'text-#a2a2a2'
   const sidebarIconColorClass = focused ? 'text-#c13584' : 'text-#ffb3da'

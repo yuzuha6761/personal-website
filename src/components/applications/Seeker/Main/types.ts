@@ -10,7 +10,6 @@ export const SEEKER_TAB_CHROME = {
   inactiveCloseBackgroundActive: '#8a8989',
   divider: '#d5d4d4',
   bottomBorder: '#d9d9d9',
-  topInnerShadow: 'inset 0 2px 2px rgba(0, 0, 0, 0.06)',
 } as const
 
 export function shouldShowSeekerTabBar(tabCount: number): boolean {

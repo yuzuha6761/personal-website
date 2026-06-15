@@ -3,7 +3,7 @@ import packageJson from '../../../../../package.json'
 
 function SeekerAbout() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-#ecebec text-center text-#1f2933">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-#f6f6f6 text-center text-#1f2933">
       <img
         alt=""
         className="w-[9rem] h-[9rem] mt-8"

@@ -36,7 +36,7 @@ function SettingsScene(props: SettingsSceneProps) {
   const { title, tabs, defaultTabId } = props
   const resizeContext = useWindowResize()
   const focused = useWindowFocus()?.focused ?? true
-  const toolbarBackgroundClass = focused ? 'bg-#f1efee' : 'bg-#e8e7e6'
+  const toolbarBackgroundClass = focused ? 'bg-#fcfcfc' : 'bg-#f0f0f0'
   const initialTabId = defaultTabId ?? tabs[0]?.id ?? ''
   const [activeTabId, setActiveTabId] = useState(initialTabId)
   const [displayedTabId, setDisplayedTabId] = useState(initialTabId)
@@ -98,16 +98,16 @@ function SettingsScene(props: SettingsSceneProps) {
     if (focused) {
       return selected
         ? 'text-#c13584 group-active:text-#b32776'
-        : 'text-#8f8f8f group-active:text-#818181'
+        : 'text-#777777 group-active:text-#272727'
     }
 
     return selected
-      ? 'text-#8f8f8f group-active:text-#818181'
-      : 'text-#c4c3c4 group-hover:text-#8f8f8f group-active:text-#818181'
+      ? 'text-#717171 group-hover:text-#272727'
+      : 'text-#bbbbbb group-hover:text-#717171'
   }
 
   return (
-    <div className={`relative w-full bg-#ededed flex flex-col ${isTransitioning ? 'h-full' : ''}`}>
+    <div className={`relative w-full bg-#f6f6f6 flex flex-col ${isTransitioning ? 'h-full' : ''}`}>
       <div className={toolbarBackgroundClass} ref={toolbarRef} {...dragHandleProps}>
         <div className={`h-[2.15rem] flex items-center justify-center text-[.92rem] font-700 ${titleClass}`}>
           {title}
@@ -152,7 +152,7 @@ function SettingsScene(props: SettingsSceneProps) {
         </div>
       )}
 
-      {isTransitioning && <div className="flex-1 bg-#ededed" />}
+      {isTransitioning && <div className="flex-1 bg-#f6f6f6" />}
 
       {isTransitioning && measuringTab && (
         <div

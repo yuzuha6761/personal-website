@@ -6,7 +6,29 @@ import type { FsDirectoryEntry, FsFileIcon } from '~types'
 import { seekerIcons } from '../icons'
 import { useSeekerWindow } from '../useSeekerWindow'
 import TabBar from './TabBar'
-import { SEEKER_DEFAULT_TAB_PATH, shouldShowSeekerTabBar } from './types'
+import { SEEKER_DEFAULT_TAB_PATH, SEEKER_TAB_CHROME, shouldShowSeekerTabBar } from './types'
+
+function HairlineHorizontal({ className = '', color }: { className?: string; color: string }) {
+  return (
+    <svg
+      aria-hidden
+      className={`pointer-events-none ${className}`}
+      height="1"
+      preserveAspectRatio="none"
+      viewBox="0 0 1 1"
+    >
+      <line
+        stroke={color}
+        strokeWidth="1"
+        vectorEffect="non-scaling-stroke"
+        x1="0"
+        x2="1"
+        y1="0.5"
+        y2="0.5"
+      />
+    </svg>
+  )
+}
 
 const MIN_EMPTY_ROWS = 10
 const listGridClass = 'grid-cols-[minmax(12rem,1.15fr)_minmax(9rem,.62fr)_minmax(5.5rem,.32fr)_minmax(9rem,.55fr)]'
@@ -107,6 +129,11 @@ function List() {
           tabs={tabs}
         />
       ) : null}
+
+      <HairlineHorizontal
+        className="shrink-0 w-full"
+        color={SEEKER_TAB_CHROME.bottomBorder}
+      />
 
       <div className={`shrink-0 h-[1.82rem] box-border border-b border-b-#dfdfdf grid ${listGridClass} bg-white ${headerTextClass} text-[.78rem] font-700`}>
         <div className={`min-w-0 px-[.72rem] py-[.32rem] border-r ${headerBorderClass} overflow-hidden text-ellipsis whitespace-nowrap`}>名称</div>

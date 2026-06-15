@@ -583,7 +583,7 @@ function Window(props: WindowProps) {
               </>
             ) : (
               <div className="w-full h-full flex flex-col">
-                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-#efeeef' : 'bg-#e8e7e7'} flex items-center justify-center`}>
+                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-#fcfcfc' : 'bg-#f0f0f0'} flex items-center justify-center`}>
                   <div
                     className="absolute pointer-events-none"
                     style={{
