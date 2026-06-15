@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AppId, WindowStore } from '~types'
-import { getApplicationById } from '../components/applications/registry'
+import { getApplicationById, getApplicationWindowHandlers } from '../components/applications/registry'
 import { findSeekerMainWindow, SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
 import { createWindowState, getNextZIndex } from '../services/window'
 import useAppStore from './app'
@@ -30,6 +30,26 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     }
 
     useAppStore.getState().launchApp(appId)
+
+    const windowHandlers = getApplicationWindowHandlers(appId)
+    if (windowHandlers?.openApp) {
+      const handledWindowId = windowHandlers.openApp({
+        appId,
+        windows: get().windows,
+        options,
+        openWindow: (targetAppId, targetOptions) => get().openWindow(targetAppId, targetOptions),
+        focusWindow: (windowId) => get().focusWindow(windowId),
+        restoreWindow: (windowId) => {
+          set((state) => ({
+            windows: state.windows.map((window) => (
+              window.id === windowId ? { ...window, minimized: false } : window
+            )),
+          }))
+        },
+      })
+
+      if (handledWindowId) return handledWindowId
+    }
 
     if (appId === 'seeker') {
       const mainWindow = findSeekerMainWindow(get().windows)
@@ -91,9 +111,17 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     useAppStore.getState().launchApp(appId)
 
     const siblings = get().windows.filter((window) => window.appId === appId)
-    const payload = application.id === 'seeker'
-      ? { windowKind: 'main', ...options?.payload }
-      : options?.payload
+    const handlerPayload = getApplicationWindowHandlers(appId)?.resolveOpenWindowPayload?.({
+      appId,
+      options,
+    })
+    let payload = options?.payload
+
+    if (handlerPayload) {
+      payload = { ...handlerPayload, ...options?.payload }
+    } else if (application.id === 'seeker') {
+      payload = { windowKind: SEEKER_WINDOW_KIND.MAIN, ...options?.payload }
+    }
 
     const newWindow = createWindowState(application, {
       title: options?.title,
@@ -138,6 +166,16 @@ const useWindowStore = create<WindowStore>((set, get) => ({
 
   closeWindow: (windowId) => {
     const closedWindow = get().windows.find((window) => window.id === windowId)
+    if (!closedWindow) return
+
+    const closeAction = getApplicationWindowHandlers(closedWindow.appId)?.onCloseWindow?.({
+      window: closedWindow,
+    })
+
+    if (closeAction === 'quit') {
+      get().quitApp(closedWindow.appId)
+      return
+    }
 
     set((state) => {
       const remaining = state.windows.filter((window) => window.id !== windowId)
@@ -220,6 +258,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
 
   focusDesktop: () => {
     set({ focusedTarget: { type: 'desktop' } })
+    useAppStore.getState().activateApp('seeker')
   },
 
   focusWindow: (windowId) => {

@@ -435,7 +435,7 @@ function TabBar({
       const slotWidth = track.offsetWidth / count
       const trackWidth = track.offsetWidth
       let deltaX = moveEvent.clientX - state.startX
-      let dragging = state.dragging || Math.abs(deltaX) >= DRAG_THRESHOLD_PX
+      const dragging = state.dragging || Math.abs(deltaX) >= DRAG_THRESHOLD_PX
 
       if (dragging && slotWidth > 0) {
         const trackLeft = track.getBoundingClientRect().left

@@ -25,7 +25,7 @@ function Checkbox(props: CheckboxProps) {
   const focused = useWindowFocus()?.focused ?? true
   const active = checked || indeterminate
   const boxClass = active && focused
-    ? 'border-#c13584 bg-#c13584'
+    ? 'border-[var(--system-color-solid,#ef5ba1)] bg-[var(--system-color-solid,#ef5ba1)]'
     : checkboxInactiveBoxClass
   const iconClass = active
     ? focused ? 'text-white' : 'text-#262626'

@@ -79,6 +79,7 @@ interface ContextualMenuPanelProps {
   zIndex: number
   onClose?: () => void
   onSelectItem: (event: ContextualMenuSelectEvent) => void
+  onSubmenuItemHoverChange?: (hovered: boolean) => void
 }
 
 interface SubmenuPlacement {
@@ -119,6 +120,9 @@ const MENU_SURFACE_BACKGROUND = 'rgba(241, 229, 226, 0.68)'
 const MENU_SURFACE_BACKDROP_FILTER = 'blur(10px) saturate(1.8)'
 const MENU_SURFACE_BORDER = '#cacaca'
 const MENU_RADIUS = 9
+const MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE: CSSProperties = {
+  backgroundColor: 'rgba(255, 255, 255, 0.58)',
+}
 
 function isDivider(item: ContextualMenuItem): item is ContextualMenuDividerItem {
   return 'type' in item && item.type === 'separator'
@@ -185,18 +189,21 @@ function splitShortcut(shortcut: string) {
   return tokens
 }
 
-function ShortcutDisplay({ shortcut }: { shortcut?: string }) {
+function ShortcutDisplay({ shortcut, highlighted = false }: { shortcut?: string; highlighted?: boolean }) {
   if (!shortcut) return null
 
+  const shortcutClass = highlighted ? 'text-white/75' : 'text-#9f9f9f'
+  const globeClass = highlighted ? 'text-white/75' : 'text-#9f9f9f'
+
   return (
-    <span className="pl-[1.8rem] text-#9f9f9f whitespace-nowrap flex items-center justify-end gap-[.06rem]">
+    <span className={`pl-[1.8rem] whitespace-nowrap flex items-center justify-end gap-[.06rem] ${shortcutClass}`}>
       {splitShortcut(shortcut).map((token, index) => (
         <span
           className="min-w-[.82rem] h-[.9rem] flex items-center justify-center text-center leading-none tabular-nums"
           key={`${token}-${index}`}
         >
           {token === '🌐'
-            ? <AppIcon className="w-[.72rem] h-[.72rem] text-#9f9f9f" icon={Globe} strokeWidth={2.25} />
+            ? <AppIcon className={`w-[.72rem] h-[.72rem] ${globeClass}`} icon={Globe} strokeWidth={2.25} />
             : token}
         </span>
       ))}
@@ -493,10 +500,13 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
     zIndex,
     onClose,
     onSelectItem,
+    onSubmenuItemHoverChange,
   } = props
   const [submenuPlacements, setSubmenuPlacements] = useState<Record<string, SubmenuPlacement>>({})
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null)
   const [activeSubmenuItemId, setActiveSubmenuItemId] = useState<string | null>(null)
+  const [submenuItemHovered, setSubmenuItemHovered] = useState(false)
+  const [submenuEngaged, setSubmenuEngaged] = useState(false)
   const [clipSize, setClipSize] = useState<{ width: number; height: number }>()
   const panelRef = useRef<HTMLDivElement>(null)
   const reserveCheckColumn = hasCheckColumn(items)
@@ -533,6 +543,25 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
 
     return () => resizeObserver.disconnect()
   }, [items])
+
+  useEffect(() => {
+    setSubmenuItemHovered(false)
+    setSubmenuEngaged(false)
+  }, [activeSubmenuItemId])
+
+  useEffect(() => {
+    if (submenuItemHovered) {
+      setSubmenuEngaged(true)
+    }
+  }, [submenuItemHovered])
+
+  useEffect(() => {
+    onSubmenuItemHoverChange?.(hoveredItemId !== null)
+
+    return () => {
+      onSubmenuItemHoverChange?.(false)
+    }
+  }, [hoveredItemId, onSubmenuItemHoverChange])
 
   const updateSubmenuPlacement = (
     itemId: string,
@@ -631,7 +660,10 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
             return (
               <div className="h-[1.9rem] px-[.55rem] flex items-center" key={item.id}>
                 <div className="h-[1.38rem] w-full rounded-[.34rem] bg-#ffffff70 border border-#00000010 px-[.48rem] flex items-center text-#9d9d9d">
-                  <span className="w-[.16rem] h-[1rem] rounded-full bg-#e46ca9 mr-[.18rem]" />
+                  <span
+                    className="w-[.16rem] h-[1rem] rounded-full mr-[.18rem]"
+                    style={{ background: 'var(--system-color, #ef5ba1)' }}
+                  />
                   <span>{item.placeholder}</span>
                 </div>
               </div>
@@ -659,6 +691,12 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           const itemSubmenuOpen = activeSubmenuItemId === item.id
           const itemPathKey = getPathKey(childPath)
           const itemSelected = selectedPathKey === itemPathKey
+          const parentSubmenuGrayHighlight = itemSubmenuOpen && !itemHovered && submenuEngaged
+          const itemAccentHighlighted = itemSelected
+            ? selectedHighlightVisible
+            : itemHovered
+          const itemTextHighlighted = !item.disabled && !parentSubmenuGrayHighlight && itemAccentHighlighted
+          const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-#171717'
           const selectItem = () => {
             if (hasChildren || item.disabled) return
             onSelectItem({ item, path: childPath })
@@ -695,33 +733,34 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 tabIndex={item.disabled ? -1 : 0}
               >
                 {!item.disabled && (
-                  <span className={`absolute inset-y-0 left-[.35rem] right-[.35rem] rounded-[.32rem] ${
-                    itemSelected
-                      ? selectedHighlightVisible ? 'bg-#ffffff66' : ''
-                      : itemHovered
-                      ? 'bg-#ffffff66'
-                      : itemSubmenuOpen
-                        ? 'bg-#00000014'
-                        : ''
-                  }`} />
+                  <span
+                    className="absolute inset-y-0 left-[.35rem] right-[.35rem] z-0 rounded-[.32rem]"
+                    style={
+                      itemAccentHighlighted
+                        ? { backgroundColor: 'var(--system-color-menu-highlight, rgba(239, 91, 161, 0.75))' }
+                        : parentSubmenuGrayHighlight
+                          ? MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE
+                          : undefined
+                    }
+                  />
                 )}
-                <div className={`relative h-full items-center ${rowGridClass}`}>
+                <div className={`relative z-1 h-full items-center ${rowGridClass}`}>
                   {reserveCheckColumn && (
                     <span className={`flex items-center justify-center ${item.disabled ? 'opacity-45' : ''}`}>
                       {item.checked && (
                         <AppIcon
-                          className="w-[.9rem] h-[.9rem] text-#171717"
+                          className={`w-[.9rem] h-[.9rem] ${itemIconClass}`}
                           icon={Check}
                           strokeWidth={2.5}
                         />
                       )}
                     </span>
                   )}
-                  <span className={`min-w-0 whitespace-nowrap flex items-center gap-[.45rem] ${item.disabled ? 'opacity-45' : ''}`}>
+                  <span className={`min-w-0 whitespace-nowrap flex items-center gap-[.45rem] ${item.disabled ? 'opacity-45' : itemTextHighlighted ? 'text-white' : ''}`}>
                     {item.icon && (
                       <span className="w-[.9rem] h-[.9rem] shrink-0 flex items-center justify-center">
                         <AppIcon
-                          className="w-[.9rem] h-[.9rem] text-#171717"
+                          className={`w-[.9rem] h-[.9rem] ${itemIconClass}`}
                           icon={item.icon}
                           scale={item.iconScale ?? 1}
                           strokeWidth={2}
@@ -730,10 +769,10 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     )}
                     <span className="min-w-0 overflow-hidden text-ellipsis">{item.label}</span>
                   </span>
-                  <ShortcutDisplay shortcut={item.shortcut} />
+                  <ShortcutDisplay highlighted={itemTextHighlighted} shortcut={item.shortcut} />
                   {hasChildren && (
                     <AppIcon
-                      className={`w-[.9rem] h-[.9rem] justify-self-end text-#171717 ${item.disabled ? 'opacity-45' : ''}`}
+                      className={`w-[.9rem] h-[.9rem] justify-self-end ${itemIconClass} ${item.disabled ? 'opacity-45' : ''}`}
                       icon={ChevronRight}
                       strokeWidth={2.5}
                     />
@@ -756,6 +795,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     zIndex={zIndex}
                     onClose={onClose}
                     onSelectItem={onSelectItem}
+                    onSubmenuItemHoverChange={setSubmenuItemHovered}
                   />
                 </ContextualSubmenu>
               )}

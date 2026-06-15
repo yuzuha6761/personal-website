@@ -1,12 +1,22 @@
 import Desktop from "./components/Desktop.tsx";
 import Dock from "./components/Dock.tsx";
 import useDisplaysSettingStore from "./stores/settings/displays";
+import useSystemSettingsStore from "./stores/settings/system-settings";
 import useGlobalStore from "./stores/global";
 import { startupPreloadImages } from "./constants/preloadAssets";
 import { preloadImages } from "./services/preload";
+import { applySystemSettingsAppearance } from "./services/system-settings";
+import { useEffect } from "react";
 
 function App() {
   const textSize = useDisplaysSettingStore((state) => state.textSize)
+  const appearance = useSystemSettingsStore((state) => state.appearance)
+  const color = useSystemSettingsStore((state) => state.color)
+  const textHighlightColor = useSystemSettingsStore((state) => state.textHighlightColor)
+  const sidebarIconSize = useSystemSettingsStore((state) => state.sidebarIconSize)
+  const wallpaperTint = useSystemSettingsStore((state) => state.wallpaperTint)
+  const scrollBars = useSystemSettingsStore((state) => state.scrollBars)
+  const scrollbarClick = useSystemSettingsStore((state) => state.scrollbarClick)
   const setTimestamp = useGlobalStore((state) => state.setTimestamp)
 
   useEffect(() => {
@@ -48,6 +58,26 @@ function App() {
   useEffect(() => {
     document.documentElement.style.fontSize = textSize
   }, [textSize]);
+
+  useEffect(() => {
+    applySystemSettingsAppearance({
+      appearance,
+      color,
+      textHighlightColor,
+      sidebarIconSize,
+      wallpaperTint,
+      scrollBars,
+      scrollbarClick,
+    })
+  }, [
+    appearance,
+    color,
+    textHighlightColor,
+    sidebarIconSize,
+    wallpaperTint,
+    scrollBars,
+    scrollbarClick,
+  ]);
 
   return (
     <>

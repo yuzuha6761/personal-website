@@ -1,6 +1,7 @@
 export * from './global.ts'
 export * from './settings/dock.ts'
 export * from './settings/displays.ts'
+export { default as useSystemSettingsStore } from './settings/system-settings.ts'
 export * from './window.ts'
 export { default as useAppStore } from './app.ts'
 export { default as useShellStore } from './shell.ts'

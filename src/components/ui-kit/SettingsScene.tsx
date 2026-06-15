@@ -97,7 +97,7 @@ function SettingsScene(props: SettingsSceneProps) {
   const getTabContentClass = (selected: boolean) => {
     if (focused) {
       return selected
-        ? 'text-#c13584 group-active:text-#b32776'
+        ? 'text-[var(--system-color-solid,#ef5ba1)] group-active:text-[var(--system-color-solid,#ef5ba1)]'
         : 'text-#777777 group-active:text-#272727'
     }
 

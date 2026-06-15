@@ -73,7 +73,11 @@ function Sidebar({ containerRef }: SidebarProps) {
     : (['#f1f1f1', '#efefef', '#e6e6e6'] as const)
   const sidebarTitleClass = focused ? 'text-#8c8a8d' : 'text-#a3a3a3'
   const sidebarTextClass = focused ? 'text-#4a494b' : 'text-#a2a2a2'
-  const sidebarIconColorClass = focused ? 'text-#c13584' : 'text-#ffb3da'
+  const sidebarIconColorStyle = {
+    color: focused
+      ? 'var(--system-sidebar-icon-color, #c13584)'
+      : 'var(--system-sidebar-icon-color-muted, #ffb3da)',
+  }
 
   const handleResizeMove = useCallback((clientX: number) => {
     const container = containerRef.current
@@ -141,7 +145,7 @@ function Sidebar({ containerRef }: SidebarProps) {
             {section.title && <div className={`mb-[.25rem] ${sidebarTitleClass} text-[.78rem] font-700`}>{section.title}</div>}
             {section.items.map((item) => (
               <button className={`${sidebarItemClass} ${sidebarTextClass}`} key={item.id} type="button">
-                <AppIcon className={`${sidebarIconClass} ${sidebarIconColorClass}`} icon={seekerIcons[item.icon]} />
+                <AppIcon className={sidebarIconClass} icon={seekerIcons[item.icon]} style={sidebarIconColorStyle} />
                 <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.label}</span>
               </button>
             ))}

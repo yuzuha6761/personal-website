@@ -5,6 +5,7 @@ import type {
   AppId,
   Application,
   ApplicationManifest,
+  ApplicationWindowHandlers,
   WindowDisplayOptions,
   OpenWindowOptions,
   WindowState,
@@ -91,6 +92,13 @@ const menuModules = import.meta.glob<{
   { eager: true },
 )
 
+const applicationWindowHandlerModules = import.meta.glob<{
+  applicationWindowHandlers?: ApplicationWindowHandlers
+}>(
+  './*/windows.ts',
+  { eager: true },
+)
+
 function folderNameToAppId(folderName: string): string {
   return folderName
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
@@ -101,6 +109,11 @@ function pickWindowOptions(manifest: ApplicationManifest): WindowDisplayOptions 
   return {
     fullSizeContentView: manifest.fullSizeContentView,
     trafficLightsPosition: manifest.trafficLightsPosition,
+    zoomDisabled: manifest.zoomDisabled,
+    minimizeDisabled: manifest.minimizeDisabled,
+    resizable: manifest.resizable,
+    minSize: manifest.minSize,
+    size: manifest.size,
   }
 }
 
@@ -116,9 +129,23 @@ function pickApplicationMeta(
   }
 }
 
+function buildApplicationWindowHandlersRegistry(): Map<string, ApplicationWindowHandlers> {
+  const registry = new Map<string, ApplicationWindowHandlers>()
+
+  for (const [path, module] of Object.entries(applicationWindowHandlerModules)) {
+    const match = path.match(/\.\/([^/]+)\/windows\.ts$/)
+    if (!match || !module.applicationWindowHandlers) continue
+
+    registry.set(folderNameToAppId(match[1]), module.applicationWindowHandlers)
+  }
+
+  return registry
+}
+
 function buildApplications(): {
   applicationList: Application[]
   applicationRegistry: Map<string, ApplicationEntry>
+  applicationWindowHandlersRegistry: Map<string, ApplicationWindowHandlers>
 } {
   const applicationList: Application[] = []
   const applicationRegistry = new Map<string, ApplicationEntry>()
@@ -157,10 +184,14 @@ function buildApplications(): {
     }
   }
 
-  return { applicationList, applicationRegistry }
+  return {
+    applicationList,
+    applicationRegistry,
+    applicationWindowHandlersRegistry: buildApplicationWindowHandlersRegistry(),
+  }
 }
 
-const { applicationList, applicationRegistry } = buildApplications()
+const { applicationList, applicationRegistry, applicationWindowHandlersRegistry } = buildApplications()
 
 export { applicationList, applicationRegistry }
 
@@ -170,6 +201,10 @@ export function getApplicationById(id: string): Application | undefined {
 
 export function getApplicationEntry(appId: string): ApplicationEntry | undefined {
   return applicationRegistry.get(appId)
+}
+
+export function getApplicationWindowHandlers(appId: string): ApplicationWindowHandlers | undefined {
+  return applicationWindowHandlersRegistry.get(appId)
 }
 
 export function getApplicationMenuBarItems(appId: string): ApplicationMenuBarItem[] {

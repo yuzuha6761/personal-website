@@ -46,6 +46,7 @@ function MenuBar() {
   const timestamp = useGlobalStore((state) => state.timestamp)
   const activeAppId = useAppStore((state) => state.activeAppId)
   const windows = useWindowStore((state) => state.windows)
+  const openApp = useWindowStore((state) => state.openApp)
   const openWindow = useWindowStore((state) => state.openWindow)
   const focusWindow = useWindowStore((state) => state.focusWindow)
   const activeApplication = activeAppId ? getApplicationById(activeAppId) : undefined
@@ -140,6 +141,13 @@ function MenuBar() {
         onClose={() => setActiveMenuId('')}
         onSelect={({ item }) => {
           const { menuId, appId } = menuActionContextRef.current
+          setActiveMenuId('')
+
+          if (menuId === 'apple') {
+            if (item.id === 'system-settings') openApp('system-settings')
+            return
+          }
+
           if (!appId) return
 
           selectApplicationMenuBarItem(appId, {

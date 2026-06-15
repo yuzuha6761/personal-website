@@ -1,6 +1,8 @@
 export { default as Checkbox } from './Checkbox'
+export { default as Radio } from './Radio'
 export { default as Select } from './Select'
 export type { SelectOption } from './Select'
 export { default as Stepper } from './Stepper'
+export { default as Switch } from './Switch'
 export { default as SettingsScene } from './SettingsScene'
 export type { SettingsSceneTab } from './SettingsScene'

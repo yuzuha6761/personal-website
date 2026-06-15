@@ -22,7 +22,7 @@ function Stepper(props: StepperProps) {
     <div className="inline-flex items-center gap-[.18rem]">
       <button
         aria-label="Decrease"
-        className={`${stepperButtonClass} ${decrementDisabled ? 'bg-#e8e8e8 text-#b0b0b0' : 'bg-#c13584 text-white'}`}
+        className={`${stepperButtonClass} ${decrementDisabled ? 'bg-#e8e8e8 text-#b0b0b0' : 'bg-[var(--system-color-solid,#ef5ba1)] text-white'}`}
         disabled={decrementDisabled}
         onClick={onDecrement}
         type="button"
