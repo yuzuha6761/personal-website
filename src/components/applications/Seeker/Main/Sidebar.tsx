@@ -14,6 +14,36 @@ const MAIN_MIN_WIDTH_REM = 25
 const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] p-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[.9rem] h-[.9rem] mr-[.3rem]'
 
+interface HairlineStripProps {
+  className?: string
+  colors: readonly [string, string, string]
+}
+
+function HairlineVerticalStrip({ className = '', colors }: HairlineStripProps) {
+  return (
+    <svg
+      aria-hidden
+      className={`pointer-events-none ${className}`}
+      preserveAspectRatio="none"
+      viewBox="0 0 3 1"
+      width="3"
+    >
+      {colors.map((color, index) => (
+        <line
+          key={color}
+          stroke={color}
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+          x1={index + 0.5}
+          x2={index + 0.5}
+          y1="0"
+          y2="1"
+        />
+      ))}
+    </svg>
+  )
+}
+
 interface SidebarProps {
   containerRef: RefObject<HTMLDivElement | null>
 }
@@ -38,7 +68,9 @@ function Sidebar({ containerRef }: SidebarProps) {
   const sidebarBgClass = focused
     ? 'bg-#d0cccd/68 backdrop-blur-[20px] backdrop-saturate-180'
     : 'bg-#e8e7e7'
-  const sidebarBorderClass = focused ? 'border-r-#bbb8ba' : 'border-r-#d5d5d5'
+  const sidebarBorderColors = focused
+    ? (['#e0dfdf', '#dedddd', '#d5d4d4'] as const)
+    : (['#e7e6e6', '#e5e4e4', '#dcdbdb'] as const)
   const sidebarTitleClass = focused ? 'text-#8c8a8d' : 'text-#a3a3a3'
   const sidebarTextClass = focused ? 'text-#4a494b' : 'text-#a2a2a2'
   const sidebarIconColorClass = focused ? 'text-#c13584' : 'text-#ffb3da'
@@ -93,12 +125,15 @@ function Sidebar({ containerRef }: SidebarProps) {
 
   return (
     <aside
-      className={`relative h-full shrink-0 overflow-hidden border-r ${visible ? sidebarBorderClass : 'border-r-0'} ${sidebarBgClass}`}
-      style={{
-        width: visible ? `${widthRem}rem` : 0,
-        boxShadow: visible ? 'inset -2px 0 2px rgba(0, 0, 0, 0.06)' : undefined,
-      }}
+      className={`relative h-full shrink-0 overflow-hidden ${sidebarBgClass}`}
+      style={{ width: visible ? `${widthRem}rem` : 0 }}
     >
+      {visible ? (
+        <HairlineVerticalStrip
+          className="absolute top-0 right-0 z-[1] h-full"
+          colors={sidebarBorderColors}
+        />
+      ) : null}
       <div className="h-[3.85rem]" />
       <div className="h-[calc(100%-3.25rem)] overflow-hidden pt-0 pr-[.75rem] pb-[.9rem] pl-[.9rem]">
         {sidebarSections.map((section) => (
