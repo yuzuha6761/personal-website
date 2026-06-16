@@ -32,14 +32,36 @@ function HairlineHorizontal({ className = '', color }: { className?: string; col
 
 const MIN_EMPTY_ROWS = 10
 const listGridClass = 'grid-cols-[minmax(12rem,1.15fr)_minmax(9rem,.62fr)_minmax(5.5rem,.32fr)_minmax(9rem,.55fr)]'
-const rowBaseClass = `h-[1.86rem] box-border rounded-[.34rem] grid ${listGridClass}`
+const rowBaseClass = `h-[1.42rem] box-border rounded-[.34rem] grid ${listGridClass}`
 const fileIconClass = 'w-4 h-4'
 
 function isFolderEntry(entry: FsDirectoryEntry): boolean {
   return entry.icon === 'folder'
 }
 
-function FileIconBadge({ focused, icon }: { focused: boolean; icon: FsFileIcon }) {
+function FileIconBadge({ focused, icon, selected }: { focused: boolean; icon: FsFileIcon; selected: boolean }) {
+  if (selected && focused) {
+    const selectedFolderIconClass = 'text-white'
+    const selectedFileIconClass = 'text-white/90'
+    const selectedScssBadgeClass = 'text-white'
+    const selectedTsBadgeClass = 'text-white/90'
+
+    return (
+      <span className="relative flex-[0_0_1.14rem] h-[1.14rem] flex items-center justify-center">
+        <AppIcon
+          className={`${fileIconClass} ${icon === 'folder' ? selectedFolderIconClass : selectedFileIconClass}`}
+          icon={seekerIcons[icon]}
+          strokeWidth={icon === 'folder' ? 2 : 1.75}
+        />
+        {icon !== 'folder' && (
+          <span className={`absolute font-800 ${icon === 'scss' ? `left-[.43rem] top-[.34rem] ${selectedScssBadgeClass} text-[.42rem]` : `left-[.33rem] top-[.32rem] ${selectedTsBadgeClass} text-[.34rem]`}`}>
+            {icon === 'scss' ? 'S' : 'TS'}
+          </span>
+        )}
+      </span>
+    )
+  }
+
   const fileIconColorClass = focused ? 'text-#737373' : 'text-#b6b6b6'
   const folderIconColorClass = focused ? 'text-#3595d6' : 'text-#9fc9df'
   const scssBadgeClass = focused ? 'text-#ff4aa3' : 'text-#f1a6cb'
@@ -92,7 +114,9 @@ function List() {
   const headerBorderClass = focused ? 'border-r-#e3e3e3' : 'border-r-#eeeeee'
   const rowTextClass = focused ? 'text-#3b3b3d' : 'text-#8a8a8a'
   const metadataTextClass = focused ? 'text-#858585' : 'text-#9f9f9f'
-  const selectedRowClass = focused ? 'bg-#f2f2f2' : 'bg-#f1f1f1'
+  const selectedRowBgClass = focused
+    ? 'bg-[var(--system-color-solid,#ef5ba1)]'
+    : 'bg-#f1f1f1'
   const stripeRowClass = focused ? 'bg-#f3f3f3' : 'bg-#f4f4f4'
 
   const handleSelect = (path: string) => {
@@ -145,10 +169,17 @@ function List() {
       <div className="min-h-0 flex-1 overflow-hidden px-[.62rem] py-[.45rem]">
         {items.map((item, index) => {
           const selected = selection.includes(item.path)
+          const rowBgClass = selected
+            ? selectedRowBgClass
+            : index % 2 === 1
+              ? stripeRowClass
+              : 'bg-transparent'
+          const nameTextClass = selected && focused ? 'text-white' : rowTextClass
+          const itemMetadataTextClass = selected && focused ? 'text-white/85' : metadataTextClass
 
           return (
             <button
-              className={`${rowBaseClass} w-full border-0 p-0 ${rowTextClass} [font:inherit] text-left cursor-default ${selected || index % 2 === 1 ? selectedRowClass : 'bg-transparent'}`}
+              className={`${rowBaseClass} w-full border-0 p-0 ${nameTextClass} [font:inherit] text-left cursor-default ${rowBgClass}`}
               key={item.path}
               onClick={() => handleSelect(item.path)}
               onDoubleClick={() => handleRowDoubleClick(item)}
@@ -156,12 +187,12 @@ function List() {
             >
               <span className="min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-[.28rem]">
                 <span className="w-[.48rem] h-[.72rem] shrink-0" />
-                <FileIconBadge focused={focused} icon={item.icon} />
+                <FileIconBadge focused={focused} icon={item.icon} selected={selected} />
                 <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</span>
               </span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.modified}</span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.size}</span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${metadataTextClass}`}>{item.kind}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${itemMetadataTextClass}`}>{item.modified}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${itemMetadataTextClass}`}>{item.size}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center ${itemMetadataTextClass}`}>{item.kind}</span>
             </button>
           )
         })}

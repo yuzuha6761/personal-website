@@ -82,7 +82,9 @@ function Header() {
   ), [pathMenuPaths, nodes])
 
   const titleColorClass = focused ? 'text-#444' : 'text-#a2a2a2'
-  const headerBgClass = focused ? 'bg-#fdfdfd' : 'bg-#f2f2f2'
+  const headerBgClass = focused
+    ? 'bg-[var(--seeker-header-focused)]'
+    : 'bg-[var(--seeker-header-unfocused)]'
 
   const openPathMenu = useCallback(() => {
     const titleRect = titleRef.current?.getBoundingClientRect()

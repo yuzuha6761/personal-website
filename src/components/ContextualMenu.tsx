@@ -116,12 +116,10 @@ const MENU_ARROW_WIDTH = 28
 const MENU_ARROW_HALF_WIDTH = MENU_ARROW_WIDTH / 2
 const MENU_ARROW_CORNER_RADIUS = 5.5
 const MENU_ARROW_EDGE_INSET = 34
-const MENU_SURFACE_BACKGROUND = 'rgba(241, 229, 226, 0.68)'
 const MENU_SURFACE_BACKDROP_FILTER = 'blur(10px) saturate(1.8)'
-const MENU_SURFACE_BORDER = '#cacaca'
 const MENU_RADIUS = 9
 const MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE: CSSProperties = {
-  backgroundColor: 'rgba(255, 255, 255, 0.58)',
+  backgroundColor: 'var(--system-color-menu-parent-highlight)',
 }
 
 function isDivider(item: ContextualMenuItem): item is ContextualMenuDividerItem {
@@ -602,7 +600,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
 
   return (
     <div
-      className={`relative z-1 w-max min-w-[13rem] max-w-[28rem] text-#222 text-[.9rem] transition-opacity duration-200 ${closing ? 'opacity-0' : 'opacity-100'}`}
+      className={`relative z-1 w-max min-w-[13rem] max-w-[28rem] text-[var(--system-text-primary)] text-[.9rem] transition-opacity duration-200 ${closing ? 'opacity-0' : 'opacity-100'}`}
       data-contextual-menu-panel="true"
       onContextMenu={(event) => event.preventDefault()}
       ref={panelRef}
@@ -638,7 +636,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
         style={{
           WebkitBackdropFilter: MENU_SURFACE_BACKDROP_FILTER,
           backdropFilter: MENU_SURFACE_BACKDROP_FILTER,
-          backgroundColor: MENU_SURFACE_BACKGROUND,
+          backgroundColor: 'var(--system-surface-menu)',
           clipPath: panelClipPath,
           zIndex: 1,
         }}
@@ -653,7 +651,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
         <div className="py-[.4rem]">
         {items.map((item) => {
           if (isDivider(item)) {
-            return <div className="h-px my-[.38rem] mx-[1rem] bg-#00000018" key={item.id} />
+            return <div className="h-px my-[.38rem] mx-[1rem] bg-[var(--system-surface-divider)]" key={item.id} />
           }
 
           if (isSearch(item)) {
@@ -696,7 +694,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
             ? selectedHighlightVisible
             : itemHovered
           const itemTextHighlighted = !item.disabled && !parentSubmenuGrayHighlight && itemAccentHighlighted
-          const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-#171717'
+          const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-[var(--system-menu-icon-color)]'
           const selectItem = () => {
             if (hasChildren || item.disabled) return
             onSelectItem({ item, path: childPath })
@@ -815,7 +813,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           <path
             d={panelPath}
             fill="none"
-            stroke={MENU_SURFACE_BORDER}
+            stroke="var(--system-surface-menu-border)"
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
           />

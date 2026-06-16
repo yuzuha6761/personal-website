@@ -6,6 +6,7 @@ import useGlobalStore from "./stores/global";
 import { startupPreloadImages } from "./constants/preloadAssets";
 import { preloadImages } from "./services/preload";
 import { applySystemSettingsAppearance } from "./services/system-settings";
+import { useSystemAppearanceDarkMode } from "./hooks/useSystemAppearanceDarkMode";
 import { useEffect } from "react";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
   const scrollBars = useSystemSettingsStore((state) => state.scrollBars)
   const scrollbarClick = useSystemSettingsStore((state) => state.scrollbarClick)
   const setTimestamp = useGlobalStore((state) => state.setTimestamp)
+  const isDarkMode = useSystemAppearanceDarkMode()
 
   useEffect(() => {
     const startingUpProgressDom = document.getElementById('startingUpProgress')
@@ -68,7 +70,7 @@ function App() {
       wallpaperTint,
       scrollBars,
       scrollbarClick,
-    })
+    }, { isDarkMode })
   }, [
     appearance,
     color,
@@ -77,6 +79,7 @@ function App() {
     wallpaperTint,
     scrollBars,
     scrollbarClick,
+    isDarkMode,
   ]);
 
   return (

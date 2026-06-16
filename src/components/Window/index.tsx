@@ -428,7 +428,7 @@ function Window(props: WindowProps) {
     () => getWindowFramePath(frame.size.width, frame.size.height),
     [frame.size.width, frame.size.height],
   )
-  const windowClassName = `absolute rounded-[.8rem] bg-white text-#1f2933 select-none ${
+  const windowClassName = `absolute rounded-[.8rem] bg-[var(--system-surface-window)] text-[var(--system-text-primary)] select-none ${
     active
       ? 'shadow-[0_1.15rem_3.2rem_#00000038,0_.2rem_.7rem_#0000001f]'
       : 'shadow-[0_.85rem_2.2rem_#00000026,0_.15rem_.45rem_#0000001a]'
@@ -564,7 +564,7 @@ function Window(props: WindowProps) {
             {fullSizeContentView ? (
               <>
                 <div
-                  className="absolute z-2 pointer-events-none"
+                  className="absolute z-100 pointer-events-none"
                   style={{
                     left: `${trafficLightsLeftRem}rem`,
                     top: `${trafficLightsTopRem}rem`,
@@ -583,7 +583,7 @@ function Window(props: WindowProps) {
               </>
             ) : (
               <div className="w-full h-full flex flex-col">
-                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-#fcfcfc' : 'bg-#f0f0f0'} flex items-center justify-center`}>
+                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-[var(--system-surface-window-title)]' : 'bg-[var(--system-surface-window-inactive)]'} flex items-center justify-center`}>
                   <div
                     className="absolute pointer-events-none"
                     style={{

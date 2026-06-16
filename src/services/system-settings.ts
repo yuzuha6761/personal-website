@@ -2,18 +2,14 @@ import {
   ACCENT_COLOR_OPTIONS,
   HIGHLIGHT_COLOR_OPTIONS,
 } from '~/stores/settings/system-settings.constants'
-import type { AppearanceMode, SystemSettingsAppearanceState } from '~types'
+import { applySystemTheme } from './theme'
+import type { SystemSettingsAppearanceState } from '~types'
 
 const SIDEBAR_ICON_SIZE_REM = {
   small: '.78rem',
   medium: '.9rem',
   large: '1.02rem',
 } as const
-
-function resolveColorScheme(appearance: AppearanceMode) {
-  if (appearance === 'auto') return 'light dark'
-  return appearance
-}
 
 function hexToRgba(hex: string, alpha: number) {
   const normalized = hex.replace('#', '')
@@ -86,20 +82,26 @@ function resolveTextHighlightColorValue(textHighlightColor: SystemSettingsAppear
   return '#ffc4df'
 }
 
-export function applySystemSettingsAppearance(state: SystemSettingsAppearanceState) {
+export function applySystemSettingsAppearance(
+  state: SystemSettingsAppearanceState,
+  options: { isDarkMode: boolean },
+) {
   const root = document.documentElement
+  const { isDarkMode } = options
 
   root.dataset.appearance = state.appearance
+  root.dataset.resolvedAppearance = isDarkMode ? 'dark' : 'light'
   root.dataset.scrollBars = state.scrollBars
   root.dataset.scrollbarClick = state.scrollbarClick
   root.dataset.wallpaperTint = state.wallpaperTint ? 'true' : 'false'
-  root.style.colorScheme = resolveColorScheme(state.appearance)
+  root.classList.toggle('dark', isDarkMode)
+  root.style.colorScheme = isDarkMode ? 'dark' : 'light'
+  applySystemTheme(root, isDarkMode)
   root.style.setProperty('--system-color', resolveColorValue(state.color))
   root.style.setProperty('--system-color-solid', resolveSolidColorHex(state.color))
   root.style.setProperty('--system-sidebar-icon-color', resolveSidebarIconColorFocused(state.color))
   root.style.setProperty('--system-sidebar-icon-color-muted', resolveSidebarIconColorMuted(state.color))
   root.style.setProperty('--system-color-menu-highlight', resolveColorMenuHighlight(state.color, 0.75))
-  root.style.setProperty('--system-color-menu-parent-highlight', 'rgba(255, 255, 255, 0.58)')
   root.style.setProperty('--system-text-highlight-color', resolveTextHighlightColorValue(state.textHighlightColor))
   root.style.setProperty('--system-sidebar-icon-size', SIDEBAR_ICON_SIZE_REM[state.sidebarIconSize])
 }

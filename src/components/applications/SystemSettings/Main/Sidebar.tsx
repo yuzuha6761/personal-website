@@ -14,27 +14,27 @@ function Sidebar(props: SidebarProps) {
   const { activeCategoryId, onSelectCategory } = props
   const focused = useWindowFocus()?.focused ?? true
   const sidebarBgClass = focused
-    ? 'bg-#d0cccd/68 backdrop-blur-[20px] backdrop-saturate-180'
-    : 'bg-#f2f2f2'
+    ? 'bg-[var(--system-settings-sidebar-focused)] backdrop-blur-[20px] backdrop-saturate-180'
+    : 'bg-[var(--system-settings-sidebar-unfocused)]'
   const selectedClass = focused
-    ? 'bg-#ec72b1 text-white'
-    : 'bg-#d8d8d8 text-#6e6e6e'
+    ? 'bg-[var(--system-settings-sidebar-selected-focused)] text-white'
+    : 'bg-[var(--system-settings-sidebar-selected-unfocused)] text-[var(--system-settings-sidebar-selected-unfocused-text)]'
   const itemClass = 'flex h-[1.86rem] w-full items-center gap-[.45rem] rounded-[.34rem] border-0 px-[.36rem] text-left text-[.84rem] font-600 cursor-default'
 
   return (
     <aside className={`relative h-full w-[13.5rem] shrink-0 overflow-hidden ${sidebarBgClass}`}>
-      <div className="absolute right-0 top-0 h-full w-px bg-#bfbfbf/58" />
+      <div className="absolute right-0 top-0 h-full w-px bg-[var(--system-settings-sidebar-border)]" />
       <div className="h-[3.25rem]" />
       <div className="px-[.62rem]">
         <div className="relative h-[1.78rem]" {...dragExcludeProps}>
           <AppIcon
-            className="pointer-events-none absolute left-[.48rem] top-1/2 h-[.86rem] w-[.86rem] -translate-y-1/2 text-#5f5f5f"
+            className="pointer-events-none absolute left-[.48rem] top-1/2 h-[.86rem] w-[.86rem] -translate-y-1/2 text-[var(--system-settings-sidebar-search-icon)]"
             icon={Search}
             strokeWidth={2}
           />
           <input
             aria-label="搜索设置"
-            className="h-full w-full rounded-[.34rem] border border-#bdbdbd bg-#c9c9c9/50 pl-[1.55rem] pr-[.48rem] text-[.78rem] outline-none placeholder:text-#8b8b8b"
+            className="h-full w-full rounded-[.34rem] border border-[var(--system-settings-sidebar-search-border)] bg-[var(--system-settings-sidebar-search-bg)] pl-[1.55rem] pr-[.48rem] text-[.78rem] outline-none placeholder:text-[var(--system-settings-sidebar-search-placeholder)]"
             placeholder="搜索"
             type="text"
           />
@@ -45,12 +45,12 @@ function Sidebar(props: SidebarProps) {
 
           return (
             <button
-              className={`mt-[.8rem] ${itemClass} ${selected ? selectedClass : 'bg-transparent text-#1f1f1f'}`}
+              className={`mt-[.8rem] ${itemClass} ${selected ? selectedClass : 'bg-transparent text-[var(--system-settings-sidebar-item-text)]'}`}
               key={category.id}
               onClick={() => onSelectCategory(category.id)}
               type="button"
             >
-              <span className="flex h-[1.18rem] w-[1.18rem] shrink-0 items-center justify-center rounded-[.24rem] bg-#1f1f1f">
+              <span className="flex h-[1.18rem] w-[1.18rem] shrink-0 items-center justify-center rounded-[.24rem] bg-[var(--system-settings-sidebar-category-icon-bg)]">
                 <AppIcon className="h-[.78rem] w-[.78rem] text-white" icon={category.icon} strokeWidth={2.2} />
               </span>
               <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{category.label}</span>

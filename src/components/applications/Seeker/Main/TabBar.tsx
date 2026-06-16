@@ -12,7 +12,7 @@ const TAB_SLOT_TRANSFORM_TRANSITION = 'transform 200ms ease-out'
 const TAB_SLOT_LAYOUT_TRANSITION = 'left 200ms ease-out, width 200ms ease-out'
 const TAB_SETTLE_MS = 200
 const TAB_LAYOUT_TRANSITION_MS = 200
-const DRAG_THRESHOLD_PX = 50
+const DRAG_THRESHOLD_PX = 10
 const ACTIVE_TAB_RISE_PX = 2
 
 function clampDragDeltaX(
@@ -54,14 +54,16 @@ interface TabLayoutAnimState {
 interface HairlineProps {
   className?: string
   color: string
+  style?: React.CSSProperties
 }
 
-function HairlineVertical({ className = '', color }: HairlineProps) {
+function HairlineVertical({ className = '', color, style }: HairlineProps) {
   return (
     <svg
       aria-hidden
       className={`pointer-events-none ${className}`}
       preserveAspectRatio="none"
+      style={style}
       viewBox="0 0 1 1"
       width="1"
     >
@@ -75,6 +77,109 @@ function HairlineVertical({ className = '', color }: HairlineProps) {
         y2="1"
       />
     </svg>
+  )
+}
+
+interface TrackDividersProps {
+  tabCount: number
+  slotWidth: number
+  transition?: string
+}
+
+function TrackDividers({
+  tabCount,
+  slotWidth,
+  transition,
+}: TrackDividersProps) {
+  if (tabCount <= 1) return null
+
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-[3]">
+      {Array.from({ length: tabCount - 1 }, (_, index) => {
+        const boundaryIndex = index + 1
+
+        const left = slotWidth > 0
+          ? boundaryIndex * slotWidth
+          : `${(boundaryIndex / tabCount) * 100}%`
+
+        return (
+          <HairlineVertical
+            className="absolute top-0 h-full"
+            color={SEEKER_TAB_CHROME.divider}
+            key={boundaryIndex}
+            style={{ left, transition }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+interface ActiveTabSideBordersProps {
+  backgroundClass: string
+}
+
+function ActiveTabSideBorders({ backgroundClass }: ActiveTabSideBordersProps) {
+  const style = {
+    top: ACTIVE_TAB_RISE_PX,
+    height: `calc(100% - ${ACTIVE_TAB_RISE_PX}px)`,
+  }
+
+  return (
+    <>
+      <div className={`pointer-events-none absolute left-[-1px] z-[9] w-px ${backgroundClass}`} style={style} />
+      <HairlineVertical
+        className="absolute left-[-1px] z-[10]"
+        color={SEEKER_TAB_CHROME.divider}
+        style={style}
+      />
+      <div className={`pointer-events-none absolute right-[-1px] z-[9] w-px ${backgroundClass}`} style={style} />
+      <HairlineVertical
+        className="absolute right-[-1px] z-[10]"
+        color={SEEKER_TAB_CHROME.divider}
+        style={style}
+      />
+    </>
+  )
+}
+
+interface ActiveTabBorderOverlayProps {
+  backgroundClass: string
+  height: React.CSSProperties['height']
+  left: React.CSSProperties['left']
+  top: React.CSSProperties['top']
+  transform?: string
+  transition?: string
+  width: React.CSSProperties['width']
+  zIndex: number
+}
+
+function ActiveTabBorderOverlay({
+  backgroundClass,
+  height,
+  left,
+  top,
+  transform,
+  transition,
+  width,
+  zIndex,
+}: ActiveTabBorderOverlayProps) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute overflow-visible"
+      style={{
+        height,
+        left,
+        top,
+        transform,
+        transition,
+        width,
+        zIndex,
+      }}
+    >
+      <ActiveTabSideBorders backgroundClass={backgroundClass} />
+    </div>
   )
 }
 
@@ -276,21 +381,28 @@ function TabBar({
   const orderedTabIds = settleState?.previewTabIds
     ?? dragState?.previewTabIds
     ?? tabs.map((tab) => tab.id)
-  const tabBarBgClass = focused ? 'bg-#ececec' : 'bg-#dedede'
-  const activeTabBgClass = focused ? 'bg-#fdfdfd' : 'bg-#f2f2f2'
+  const tabBarBgClass = focused
+    ? 'bg-[var(--seeker-tabbar-focused)]'
+    : 'bg-[var(--seeker-tabbar-unfocused)]'
+  const activeTabBgClass = focused
+    ? 'bg-[var(--seeker-tab-active-focused)]'
+    : 'bg-[var(--seeker-tab-active-unfocused)]'
   const tabBgTransitionClass = suppressBgTransition ? 'transition-none' : TAB_BG_TRANSITION_CLASS
-  const inactiveTabBgClass = isDragging || isSettling
-    ? focused ? 'bg-#f0f0f0' : 'bg-#e3e3e3'
-    : focused
-      ? `bg-#f0f0f0 hover:bg-#e3e3e3 ${tabBgTransitionClass}`
-      : `bg-#e3e3e3 hover:bg-#d6d6d6 ${tabBgTransitionClass}`
-  const addTabBgClass = isDragging || isSettling
-    ? focused ? 'bg-#f0f0f0' : 'bg-#e3e3e3'
-    : focused
-      ? `bg-#f0f0f0 hover:bg-#e3e3e3 active:bg-#cac9c9 ${tabBgTransitionClass}`
-      : `bg-#e3e3e3 hover:bg-#d6d6d6 ${tabBgTransitionClass}`
-  const newTabIconColorClass = focused ? 'text-#6b6b6b' : 'text-#a8a8a8'
-  const tabTextClass = focused ? 'text-#2f2f2f' : 'text-#a0a0a0'
+  const inactiveTabBgClass = focused
+    ? `bg-[var(--seeker-tab-inactive-focused)] hover:bg-[var(--seeker-tab-inactive-focused-hover)] ${tabBgTransitionClass}`
+    : `bg-[var(--seeker-tab-inactive-unfocused)] hover:bg-[var(--seeker-tab-inactive-unfocused-hover)] ${tabBgTransitionClass}`
+  const addTabBgClass = focused
+    ? `bg-[var(--seeker-tab-add-focused)] hover:bg-[var(--seeker-tab-add-focused-hover)] active:bg-[var(--seeker-tab-add-focused-active)] ${tabBgTransitionClass}`
+    : `bg-[var(--seeker-tab-add-unfocused)] hover:bg-[var(--seeker-tab-add-unfocused-hover)] ${tabBgTransitionClass}`
+  const activeTabTextClass = focused
+    ? 'text-[var(--seeker-tab-active-text-focused)]'
+    : 'text-[var(--seeker-tab-active-text-unfocused)]'
+  const inactiveTabTextClass = focused
+    ? 'text-[var(--seeker-tab-inactive-text-focused)]'
+    : 'text-[var(--seeker-tab-inactive-text-unfocused)]'
+  const newTabIconColorClass = focused
+    ? 'text-[var(--seeker-tab-add-icon-focused)]'
+    : 'text-[var(--seeker-tab-add-icon-unfocused)]'
   const tabCount = tabs.length
   const slotWidthPx = tabCount > 0 && trackWidthPx > 0 ? trackWidthPx / tabCount : 0
   const layoutSlotWidth = layoutAnim
@@ -346,6 +458,10 @@ function TabBar({
   const activeDataIndex = tabs.findIndex((tab) => tab.id === activeTabId)
   const activeVisualIndex = orderedTabIds.indexOf(activeTabId)
   const activeTab = activeDataIndex >= 0 ? tabs[activeDataIndex] : undefined
+  const draggedDataIndex = draggedTabId
+    ? tabs.findIndex((tab) => tab.id === draggedTabId)
+    : -1
+  const draggedVisualIndex = draggedTabId ? orderedTabIds.indexOf(draggedTabId) : -1
   const activeSlotOffsetX = activeDataIndex >= 0 && activeVisualIndex >= 0
     ? (layoutAnim ? getLayoutSlotOffsetX : getSlotOffsetX)(activeDataIndex, activeVisualIndex)
     : 0
@@ -520,12 +636,6 @@ function TabBar({
                 transition: getSlotTransition(isDragged),
               }}
             >
-              {visualIndex > 0 ? (
-                <HairlineVertical
-                  className="absolute top-0 left-0 z-[10] h-full"
-                  color={SEEKER_TAB_CHROME.divider}
-                />
-              ) : null}
               {showInactiveInTrack ? (
                 <div
                   className={`flex min-w-0 h-full items-stretch cursor-default ${inactiveTabBgClass}`}
@@ -536,7 +646,7 @@ function TabBar({
                     focused={focused}
                     label={tab.label}
                     onClose={() => handleCloseTab(tab.id)}
-                    tabTextClass={tabTextClass}
+                    tabTextClass={inactiveTabTextClass}
                   />
                 </div>
               ) : (
@@ -549,6 +659,11 @@ function TabBar({
             </div>
           )
         })}
+        <TrackDividers
+          slotWidth={layoutSlotWidth}
+          tabCount={tabCount}
+          transition={layoutAnim?.phase === 'to' ? TAB_SLOT_LAYOUT_TRANSITION : undefined}
+        />
       </div>
 
       <div className="relative z-[2] shrink-0 flex w-8 h-8 items-stretch">
@@ -586,7 +701,7 @@ function TabBar({
             height: `calc(100% + ${ACTIVE_TAB_RISE_PX}px)`,
           }}
         >
-          <div className={`pointer-events-auto flex min-w-0 h-full flex-col cursor-default ${activeTabBgClass}`}>
+          <div className={`pointer-events-auto relative flex min-w-0 h-full flex-col cursor-default ${activeTabBgClass}`}>
             <div className={`shrink-0 ${activeTabBgClass}`} style={{ height: ACTIVE_TAB_RISE_PX }} />
             <div
               className="flex min-w-0 flex-1 items-stretch h-8"
@@ -597,17 +712,32 @@ function TabBar({
                 focused={focused}
                 label={activeTab.label}
                 onClose={() => handleCloseTab(activeTab.id)}
-                tabTextClass={tabTextClass}
+                tabTextClass={activeTabTextClass}
               />
             </div>
           </div>
         </div>
       ) : null}
 
+      {showActiveOverlay ? (
+        <ActiveTabBorderOverlay
+          backgroundClass={activeTabBgClass}
+          height={`calc(100% + ${ACTIVE_TAB_RISE_PX}px)`}
+          left={getLayoutSlotLeft(activeDataIndex)}
+          top={-ACTIVE_TAB_RISE_PX}
+          transform={activeSlotOffsetX !== 0 ? `translateX(${activeSlotOffsetX}px)` : undefined}
+          transition={shouldAnimateSlots
+            ? TAB_SLOT_TRANSFORM_TRANSITION
+            : layoutAnim?.phase === 'to'
+              ? TAB_SLOT_LAYOUT_TRANSITION
+              : undefined}
+          width={getTabSlotWidth(activeTab.id)}
+          zIndex={6}
+        />
+      ) : null}
+
       {draggedTabId ? (() => {
-        const draggedDataIndex = tabs.findIndex((tab) => tab.id === draggedTabId)
         const draggedTab = draggedDataIndex >= 0 ? tabs[draggedDataIndex] : undefined
-        const draggedVisualIndex = orderedTabIds.indexOf(draggedTabId)
         const isDraggedActive = draggedTabId === activeTabId
         if (!draggedTab || draggedVisualIndex < 0 || draggedDataIndex < 0) return null
 
@@ -616,44 +746,59 @@ function TabBar({
           ? getLayoutSlotOffsetX(draggedDataIndex, draggedVisualIndex)
           : getSlotOffsetX(draggedDataIndex, draggedVisualIndex)
         const draggedTranslateX = draggedSlotOffsetX + draggedDeltaX
+        const draggedTransition = isFollowingPointer
+          ? undefined
+          : shouldAnimateSlots
+            ? TAB_SLOT_TRANSFORM_TRANSITION
+            : layoutAnim?.phase === 'to'
+              ? TAB_SLOT_LAYOUT_TRANSITION
+              : undefined
 
         return (
-          <div
-            className={`pointer-events-none absolute z-[20] overflow-hidden ${isDraggedActive ? '' : 'h-8'}`}
-            style={{
-              width: getTabSlotWidth(draggedTab.id),
-              left: getLayoutSlotLeft(draggedDataIndex),
-              transform: draggedTranslateX !== 0 ? `translateX(${draggedTranslateX}px)` : undefined,
-              transition: isFollowingPointer
-                ? undefined
-                : shouldAnimateSlots
-                  ? TAB_SLOT_TRANSFORM_TRANSITION
-                  : layoutAnim?.phase === 'to'
-                    ? TAB_SLOT_LAYOUT_TRANSITION
-                    : undefined,
-              top: isDraggedActive ? -ACTIVE_TAB_RISE_PX : 0,
-              height: isDraggedActive ? `calc(100% + ${ACTIVE_TAB_RISE_PX}px)` : '100%',
-            }}
-          >
+          <>
             <div
-              className={`pointer-events-auto flex min-w-0 h-full flex-col cursor-default ${
-                isDraggedActive ? activeTabBgClass : 'bg-#e6e5e5'
-              }`}
+              className={`pointer-events-none absolute z-[20] overflow-hidden ${isDraggedActive ? '' : 'h-8'}`}
+              style={{
+                width: getTabSlotWidth(draggedTab.id),
+                left: getLayoutSlotLeft(draggedDataIndex),
+                transform: draggedTranslateX !== 0 ? `translateX(${draggedTranslateX}px)` : undefined,
+                transition: draggedTransition,
+                top: isDraggedActive ? -ACTIVE_TAB_RISE_PX : 0,
+                height: isDraggedActive ? `calc(100% + ${ACTIVE_TAB_RISE_PX}px)` : '100%',
+              }}
             >
-              {isDraggedActive ? (
-                <div className={`shrink-0 ${activeTabBgClass}`} style={{ height: ACTIVE_TAB_RISE_PX }} />
-              ) : null}
-              <div className="flex min-w-0 flex-1 items-stretch h-8">
-                <TabContent
-                  active={isDraggedActive}
-                  focused={focused}
-                  label={draggedTab.label}
-                  onClose={() => handleCloseTab(draggedTab.id)}
-                  tabTextClass={tabTextClass}
-                />
+              <div
+                className={`pointer-events-auto relative flex min-w-0 h-full flex-col cursor-default ${
+                  isDraggedActive ? activeTabBgClass : 'bg-#e6e5e5'
+                }`}
+              >
+                {isDraggedActive ? (
+                  <div className={`shrink-0 ${activeTabBgClass}`} style={{ height: ACTIVE_TAB_RISE_PX }} />
+                ) : null}
+                <div className="flex min-w-0 flex-1 items-stretch h-8">
+                  <TabContent
+                    active={isDraggedActive}
+                    focused={focused}
+                    label={draggedTab.label}
+                    onClose={() => handleCloseTab(draggedTab.id)}
+                    tabTextClass={isDraggedActive ? activeTabTextClass : inactiveTabTextClass}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+            {isDraggedActive ? (
+              <ActiveTabBorderOverlay
+                backgroundClass={activeTabBgClass}
+                height={`calc(100% + ${ACTIVE_TAB_RISE_PX}px)`}
+                left={getLayoutSlotLeft(draggedDataIndex)}
+                top={-ACTIVE_TAB_RISE_PX}
+                transform={draggedTranslateX !== 0 ? `translateX(${draggedTranslateX}px)` : undefined}
+                transition={draggedTransition}
+                width={getTabSlotWidth(draggedTab.id)}
+                zIndex={21}
+              />
+            ) : null}
+          </>
         )
       })() : null}
     </div>

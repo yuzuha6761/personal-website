@@ -129,7 +129,7 @@ function Sidebar({ containerRef }: SidebarProps) {
 
   return (
     <aside
-      className={`relative h-full shrink-0 overflow-hidden ${sidebarBgClass}`}
+      className={`relative z-[30] h-full shrink-0 overflow-hidden ${sidebarBgClass}`}
       style={{ width: visible ? `${widthRem}rem` : 0 }}
     >
       {visible ? (

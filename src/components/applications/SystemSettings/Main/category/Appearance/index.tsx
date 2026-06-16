@@ -35,9 +35,9 @@ function Appearance() {
 
   return (
     <div className="max-w-[28.7rem]">
-      <section className="mb-[.7rem] rounded-[.34rem] border border-#dddddd bg-#f7f7f7">
+      <section className="mb-[.7rem] rounded-[.34rem] border border-[var(--system-surface-border)] bg-[var(--system-surface-elevated)]">
         <div className="px-[.7rem] py-[.55rem] flex items-start justify-between gap-[1.1rem]">
-          <div className="pt-[.12rem] text-[.86rem] leading-none text-#1f1f1f">外观</div>
+          <div className="pt-[.12rem] text-[.86rem] leading-none text-[var(--system-text-secondary)]">外观</div>
           <div className="flex gap-[.88rem]">
             {appearancePreviews.map((preview) => (
               <AppearanceTile
@@ -51,7 +51,7 @@ function Appearance() {
         </div>
       </section>
 
-      <section className="mb-[.7rem] rounded-[.34rem] border border-#dddddd bg-#f7f7f7 divide-y divide-#dddddd">
+      <section className="mb-[.7rem] rounded-[.34rem] border border-[var(--system-surface-border)] bg-[var(--system-surface-elevated)] divide-y divide-[var(--system-surface-border)]">
         <SettingsRow label="强调色" className="min-h-[3.45rem] items-start">
           <div className="flex flex-col items-end pt-[.12rem]">
             <div className="flex items-center gap-[.54rem]">
@@ -60,7 +60,9 @@ function Appearance() {
                   aria-label={colorOption.label}
                   aria-pressed={color === colorOption.id}
                   className={`h-[.94rem] w-[.94rem] rounded-full border p-0 cursor-default ${
-                    color === colorOption.id ? 'border-#ffffff shadow-[0_0_0_1px_#9a9a9a]' : 'border-#0000001c'
+                    color === colorOption.id
+                      ? 'border-[var(--system-settings-accent-swatch-selected-border)] shadow-[0_0_0_1px_var(--system-settings-accent-swatch-ring)]'
+                      : 'border-[var(--system-settings-accent-swatch-border)]'
                   }`}
                   key={colorOption.id}
                   onClick={() => setColor(colorOption.id)}
@@ -69,7 +71,7 @@ function Appearance() {
                 />
               ))}
             </div>
-            <div className="mt-[.34rem] mr-[6.02rem] text-[.72rem] leading-none text-#777777">
+            <div className="mt-[.34rem] mr-[6.02rem] text-[.72rem] leading-none text-[var(--system-text-muted)]">
               {selectedAccent.label}
             </div>
           </div>
@@ -110,9 +112,9 @@ function Appearance() {
         </SettingsRow>
       </section>
 
-      <section className="rounded-[.34rem] border border-#dddddd bg-#f7f7f7 divide-y divide-#dddddd">
+      <section className="rounded-[.34rem] border border-[var(--system-surface-border)] bg-[var(--system-surface-elevated)] divide-y divide-[var(--system-surface-border)]">
         <div className="px-[.7rem] py-[.55rem]">
-          <div className="mb-[.36rem] text-[.86rem] leading-none text-#1f1f1f">显示滚动条</div>
+          <div className="mb-[.36rem] text-[.86rem] leading-none text-[var(--system-text-secondary)]">显示滚动条</div>
           <div className="flex flex-col gap-[.32rem]" {...dragExcludeProps} role="radiogroup" aria-label="显示滚动条">
             <Radio
               checked={scrollBars === 'automatic'}
@@ -136,7 +138,7 @@ function Appearance() {
         </div>
 
         <div className="px-[.7rem] py-[.55rem]">
-          <div className="mb-[.36rem] text-[.86rem] leading-none text-#1f1f1f">在滚动条中点按</div>
+          <div className="mb-[.36rem] text-[.86rem] leading-none text-[var(--system-text-secondary)]">在滚动条中点按</div>
           <div className="flex flex-col gap-[.32rem]" {...dragExcludeProps} role="radiogroup" aria-label="在滚动条中点按">
             <Radio
               checked={scrollbarClick === 'next-page'}
