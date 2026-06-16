@@ -2,7 +2,6 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { seekerIcons } from '../icons'
 import type { SeekerTabState } from './types'
-import { SEEKER_TAB_CHROME } from './types'
 
 const NEW_TAB_ICON_CLASS = 'w-[.9rem] h-[.9rem]'
 const TAB_CLOSE_ICON_CLASS = 'w-[.9rem] h-[.9rem]'
@@ -81,12 +80,14 @@ function HairlineVertical({ className = '', color, style }: HairlineProps) {
 }
 
 interface TrackDividersProps {
+  dividerColor: string
   tabCount: number
   slotWidth: number
   transition?: string
 }
 
 function TrackDividers({
+  dividerColor,
   tabCount,
   slotWidth,
   transition,
@@ -105,7 +106,7 @@ function TrackDividers({
         return (
           <HairlineVertical
             className="absolute top-0 h-full"
-            color={SEEKER_TAB_CHROME.divider}
+            color={dividerColor}
             key={boundaryIndex}
             style={{ left, transition }}
           />
@@ -117,9 +118,10 @@ function TrackDividers({
 
 interface ActiveTabSideBordersProps {
   backgroundClass: string
+  dividerColor: string
 }
 
-function ActiveTabSideBorders({ backgroundClass }: ActiveTabSideBordersProps) {
+function ActiveTabSideBorders({ backgroundClass, dividerColor }: ActiveTabSideBordersProps) {
   const style = {
     top: ACTIVE_TAB_RISE_PX,
     height: `calc(100% - ${ACTIVE_TAB_RISE_PX}px)`,
@@ -130,13 +132,13 @@ function ActiveTabSideBorders({ backgroundClass }: ActiveTabSideBordersProps) {
       <div className={`pointer-events-none absolute left-[-1px] z-[9] w-px ${backgroundClass}`} style={style} />
       <HairlineVertical
         className="absolute left-[-1px] z-[10]"
-        color={SEEKER_TAB_CHROME.divider}
+        color={dividerColor}
         style={style}
       />
       <div className={`pointer-events-none absolute right-[-1px] z-[9] w-px ${backgroundClass}`} style={style} />
       <HairlineVertical
         className="absolute right-[-1px] z-[10]"
-        color={SEEKER_TAB_CHROME.divider}
+        color={dividerColor}
         style={style}
       />
     </>
@@ -145,6 +147,7 @@ function ActiveTabSideBorders({ backgroundClass }: ActiveTabSideBordersProps) {
 
 interface ActiveTabBorderOverlayProps {
   backgroundClass: string
+  dividerColor: string
   height: React.CSSProperties['height']
   left: React.CSSProperties['left']
   top: React.CSSProperties['top']
@@ -156,6 +159,7 @@ interface ActiveTabBorderOverlayProps {
 
 function ActiveTabBorderOverlay({
   backgroundClass,
+  dividerColor,
   height,
   left,
   top,
@@ -178,15 +182,14 @@ function ActiveTabBorderOverlay({
         zIndex,
       }}
     >
-      <ActiveTabSideBorders backgroundClass={backgroundClass} />
+      <ActiveTabSideBorders backgroundClass={backgroundClass} dividerColor={dividerColor} />
     </div>
   )
 }
 
 const TAB_TOP_INNER_SHADOW = {
-  // Alpha fades toward 0 at 3px so inactive tab bg (#f0f0f0 / #e3e3e3) shows through at the seam.
-  focused: 'inset 0 1px 0 0 rgba(205, 205, 205, 0.45), inset 0 2px 0 0 rgba(221, 221, 221, 0.22), inset 0 3px 0 0 rgba(240, 240, 240, 0)',
-  unfocused: 'inset 0 1px 0 0 rgba(191, 191, 191, 0.45), inset 0 2px 0 0 rgba(211, 211, 211, 0.22), inset 0 3px 0 0 rgba(227, 227, 227, 0)',
+  focused: 'var(--seeker-tabbar-top-inner-shadow-focused)',
+  unfocused: 'var(--seeker-tabbar-top-inner-shadow-unfocused)',
 } as const
 
 interface TabCloseButtonProps {
@@ -196,13 +199,15 @@ interface TabCloseButtonProps {
 }
 
 function TabCloseButton({ active, focused, onClose }: TabCloseButtonProps) {
-  const iconClass = focused ? 'text-#808080' : 'text-#b8b8b8'
+  const iconClass = focused
+    ? 'text-[var(--seeker-tab-close-icon-focused)]'
+    : 'text-[var(--seeker-tab-close-icon-unfocused)]'
   const iconInteractionClass = focused
-    ? 'group-hover/close:text-#666666 group-active/close:text-#595959'
-    : 'group-hover/close:text-#9a9a9a group-active/close:text-#878787'
+    ? 'group-hover/close:text-[var(--seeker-tab-close-icon-hover-focused)] group-active/close:text-[var(--seeker-tab-close-icon-active-focused)]'
+    : 'group-hover/close:text-[var(--seeker-tab-close-icon-hover-unfocused)] group-active/close:text-[var(--seeker-tab-close-icon-active-unfocused)]'
   const backgroundClass = active
-    ? 'hover:bg-#e3e2e2 active:bg-#d5d4d5'
-    : 'hover:bg-#b5b4b4 active:bg-#8a8989'
+    ? 'hover:bg-[var(--seeker-tab-close-hover-active-tab)] active:bg-[var(--seeker-tab-close-active-active-tab)]'
+    : 'hover:bg-[var(--seeker-tab-close-hover-inactive-tab)] active:bg-[var(--seeker-tab-close-active-inactive-tab)]'
 
   const handleClose = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -403,6 +408,9 @@ function TabBar({
   const newTabIconColorClass = focused
     ? 'text-[var(--seeker-tab-add-icon-focused)]'
     : 'text-[var(--seeker-tab-add-icon-unfocused)]'
+  const tabDividerColor = focused
+    ? 'var(--seeker-tab-divider-focused)'
+    : 'var(--seeker-tab-divider-unfocused)'
   const tabCount = tabs.length
   const slotWidthPx = tabCount > 0 && trackWidthPx > 0 ? trackWidthPx / tabCount : 0
   const layoutSlotWidth = layoutAnim
@@ -660,6 +668,7 @@ function TabBar({
           )
         })}
         <TrackDividers
+          dividerColor={tabDividerColor}
           slotWidth={layoutSlotWidth}
           tabCount={tabCount}
           transition={layoutAnim?.phase === 'to' ? TAB_SLOT_LAYOUT_TRANSITION : undefined}
@@ -669,7 +678,7 @@ function TabBar({
       <div className="relative z-[2] shrink-0 flex w-8 h-8 items-stretch">
         <HairlineVertical
           className="absolute top-0 left-0 z-[10] h-full"
-          color={SEEKER_TAB_CHROME.divider}
+          color={tabDividerColor}
         />
         <div
           className={`w-full h-full cursor-default flex items-center justify-center ${addTabBgClass}`}
@@ -722,6 +731,7 @@ function TabBar({
       {showActiveOverlay ? (
         <ActiveTabBorderOverlay
           backgroundClass={activeTabBgClass}
+          dividerColor={tabDividerColor}
           height={`calc(100% + ${ACTIVE_TAB_RISE_PX}px)`}
           left={getLayoutSlotLeft(activeDataIndex)}
           top={-ACTIVE_TAB_RISE_PX}
@@ -789,6 +799,7 @@ function TabBar({
             {isDraggedActive ? (
               <ActiveTabBorderOverlay
                 backgroundClass={activeTabBgClass}
+                dividerColor={tabDividerColor}
                 height={`calc(100% + ${ACTIVE_TAB_RISE_PX}px)`}
                 left={getLayoutSlotLeft(draggedDataIndex)}
                 top={-ACTIVE_TAB_RISE_PX}

@@ -81,7 +81,9 @@ function Header() {
     }))
   ), [pathMenuPaths, nodes])
 
-  const titleColorClass = focused ? 'text-#444' : 'text-#a2a2a2'
+  const titleColorClass = focused
+    ? 'text-[var(--seeker-header-title-focused)]'
+    : 'text-[var(--seeker-header-title-unfocused)]'
   const headerBgClass = focused
     ? 'bg-[var(--seeker-header-focused)]'
     : 'bg-[var(--seeker-header-unfocused)]'
