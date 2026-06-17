@@ -3,6 +3,7 @@ import type { AppStore } from '~types'
 
 const useAppStore = create<AppStore>((set, get) => ({
   runningAppIds: ['seeker'],
+  loadingAppIds: [],
   activeAppId: 'seeker',
 
   launchApp: (appId) => {
@@ -17,11 +18,12 @@ const useAppStore = create<AppStore>((set, get) => ({
   quitApp: (appId) => {
     set((state) => {
       const runningAppIds = state.runningAppIds.filter((id) => id !== appId)
+      const loadingAppIds = state.loadingAppIds.filter((id) => id !== appId)
       const activeAppId = state.activeAppId === appId
         ? runningAppIds.at(-1) ?? null
         : state.activeAppId
 
-      return { runningAppIds, activeAppId }
+      return { runningAppIds, loadingAppIds, activeAppId }
     })
   },
 
@@ -30,7 +32,22 @@ const useAppStore = create<AppStore>((set, get) => ({
     set({ activeAppId: appId })
   },
 
+  startLoadingApp: (appId) => {
+    set((state) => ({
+      loadingAppIds: state.loadingAppIds.includes(appId)
+        ? state.loadingAppIds
+        : [...state.loadingAppIds, appId],
+    }))
+  },
+
+  finishLoadingApp: (appId) => {
+    set((state) => ({
+      loadingAppIds: state.loadingAppIds.filter((id) => id !== appId),
+    }))
+  },
+
   isAppRunning: (appId) => get().runningAppIds.includes(appId),
+  isAppLoading: (appId) => get().loadingAppIds.includes(appId),
 }))
 
 export default useAppStore

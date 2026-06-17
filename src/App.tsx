@@ -8,6 +8,7 @@ import { preloadImages } from "./services/preload";
 import { applySystemSettingsAppearance } from "./services/system-settings";
 import { useSystemAppearanceDarkMode } from "./hooks/useSystemAppearanceDarkMode";
 import { useEffect } from "react";
+import { preloadApplication } from "./components/applications/registry";
 
 function App() {
   const textSize = useDisplaysSettingStore((state) => state.textSize)
@@ -41,9 +42,12 @@ function App() {
       if (progressInnerDiv.style.width !== '100%') {
         progressInnerDiv.style.transition = 'width .3s linear'
 
-        void preloadImages(startupPreloadImages, (loaded, total) => {
-          progressInnerDiv.style.width = `${Math.round((loaded / total) * 100)}%`
-        }).then(() => {
+        void Promise.all([
+          preloadImages(startupPreloadImages, (loaded, total) => {
+            progressInnerDiv.style.width = `${Math.round((loaded / total) * 100)}%`
+          }),
+          preloadApplication('seeker'),
+        ]).then(() => {
           progressInnerDiv.style.transition = 'width .5s linear'
           progressInnerDiv.style.width = '100%'
           hideStartupScreenTimer = setTimeout(hideStartupScreen, 500)

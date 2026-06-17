@@ -64,6 +64,7 @@ function Dock() {
   const hideApp = useWindowStore((state) => state.hideApp)
   const quitApp = useWindowStore((state) => state.quitApp)
   const runningAppIds = useAppStore((state) => state.runningAppIds)
+  const loadingAppIds = useAppStore((state) => state.loadingAppIds)
   const [dockMenu, setDockMenu] = useState<DockMenuState | null>(null)
   const dockMenuActionRef = useRef<DockMenuState | null>(null)
 
@@ -215,6 +216,7 @@ function Dock() {
             <div
               key={application.id}
               data-add-icon-safe-area={application.addIconSafeArea}
+              data-loading={loadingAppIds.includes(application.id)}
               onClick={() => openApp(application.id)}
               onContextMenu={(event) => onAppContextMenu(application.id, event)}
             >

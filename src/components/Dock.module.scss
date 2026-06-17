@@ -1,5 +1,21 @@
 @use '../styles/public' as *;
 
+@keyframes dock-icon-bounce {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, .2, 1);
+  }
+
+  50% {
+    transform: translateY(-1.05rem);
+    animation-timing-function: cubic-bezier(.8, 0, 1, 1);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
 .dock {
   background-color: #fff2;
   backdrop-filter: blur(40px);
@@ -43,6 +59,10 @@
       }
       &[data-add-icon-safe-area=true] .icon > img {
         padding: 9%;
+      }
+      &[data-loading=true] .icon {
+        animation: dock-icon-bounce .624s linear infinite;
+        will-change: transform;
       }
       & > div:first-child {
         transform: translateY(-50%);
@@ -99,6 +119,10 @@
       &[data-add-icon-safe-area=true] .icon > img {
         padding: 9%;
       }
+      &[data-loading=true] .icon {
+        animation: dock-icon-bounce .624s linear infinite;
+        will-change: transform;
+      }
       & > div:first-child {
         transform: translateX(-50%);
         display: none;
@@ -153,6 +177,10 @@
       }
       &[data-add-icon-safe-area=true] .icon > img {
         padding: 9%;
+      }
+      &[data-loading=true] .icon {
+        animation: dock-icon-bounce .624s linear infinite;
+        will-change: transform;
       }
       & > div:first-child {
         transform: translateY(-50%);

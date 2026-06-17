@@ -1,9 +1,30 @@
 import { create } from 'zustand'
 import type { AppId, WindowStore } from '~types'
-import { getApplicationById, getApplicationWindowHandlers } from '../components/applications/registry'
+import {
+  getApplicationById,
+  getApplicationWindowHandlers,
+  isApplicationLoaded,
+  preloadApplication,
+} from '../components/applications/registry'
 import { findSeekerMainWindow, SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
 import { createWindowState, getNextZIndex } from '../services/window'
 import useAppStore from './app'
+
+const DOCK_ICON_BOUNCE_DURATION_MS = 624
+
+function finishLoadingAppAfterCurrentBounce(appId: AppId, startedAt: number) {
+  const elapsed = Date.now() - startedAt
+  const currentCycleElapsed = elapsed % DOCK_ICON_BOUNCE_DURATION_MS
+  const delay = elapsed < DOCK_ICON_BOUNCE_DURATION_MS
+    ? DOCK_ICON_BOUNCE_DURATION_MS - elapsed
+    : currentCycleElapsed === 0
+      ? 0
+      : DOCK_ICON_BOUNCE_DURATION_MS - currentCycleElapsed
+
+  window.setTimeout(() => {
+    useAppStore.getState().finishLoadingApp(appId)
+  }, delay)
+}
 
 function getAppWindows(windows: WindowStore['windows'], appId: AppId) {
   return windows.filter((window) => window.appId === appId)
@@ -27,6 +48,19 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     const application = getApplicationById(appId)
     if (!application) {
       throw new Error(`Unknown application: ${appId}`)
+    }
+
+    if (!isApplicationLoaded(appId)) {
+      const appStore = useAppStore.getState()
+      if (appStore.isAppLoading(appId)) return ''
+
+      const loadingStartedAt = Date.now()
+      appStore.startLoadingApp(appId)
+      void preloadApplication(appId)
+        .then(() => get().openApp(appId, options))
+        .catch((error) => console.error(`Failed to load application "${appId}"`, error))
+        .finally(() => finishLoadingAppAfterCurrentBounce(appId, loadingStartedAt))
+      return ''
     }
 
     useAppStore.getState().launchApp(appId)
@@ -106,6 +140,19 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     const application = getApplicationById(appId)
     if (!application) {
       throw new Error(`Unknown application: ${appId}`)
+    }
+
+    if (!isApplicationLoaded(appId)) {
+      const appStore = useAppStore.getState()
+      if (appStore.isAppLoading(appId)) return ''
+
+      const loadingStartedAt = Date.now()
+      appStore.startLoadingApp(appId)
+      void preloadApplication(appId)
+        .then(() => get().openWindow(appId, options))
+        .catch((error) => console.error(`Failed to load application "${appId}"`, error))
+        .finally(() => finishLoadingAppAfterCurrentBounce(appId, loadingStartedAt))
+      return ''
     }
 
     useAppStore.getState().launchApp(appId)

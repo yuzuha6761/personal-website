@@ -49,8 +49,12 @@ export type ApplicationMenuBarSelectHandler = (
   event: { itemId: string; context: ApplicationMenuBarSelectContext },
 ) => void
 
+type ApplicationComponentModule = { default: ComponentType }
+type ApplicationComponentLoader = () => Promise<ApplicationComponentModule>
+
 interface ApplicationEntry {
-  Component: ComponentType
+  Component?: ComponentType
+  loadComponent: ApplicationComponentLoader
   dockMenuItems?: ContextualMenuItem[] | ApplicationDockMenuItemsFactory
   onDockMenuSelect?: ApplicationDockMenuSelectHandler
   onMenuBarSelect?: ApplicationMenuBarSelectHandler
@@ -73,9 +77,8 @@ const iconModules = import.meta.glob<string>(
   { eager: true, query: '?url', import: 'default' },
 )
 
-const applicationModules = import.meta.glob<{ default: ComponentType }>(
+const applicationModules = import.meta.glob<ApplicationComponentModule>(
   './*/index.tsx',
-  { eager: true },
 )
 
 const menuModules = import.meta.glob<{
@@ -170,11 +173,11 @@ function buildApplications(): {
       ...pickApplicationMeta(manifestModule.default),
     })
 
-    const componentModule = applicationModules[`./${folderName}/index.tsx`]
-    if (componentModule) {
+    const componentLoader = applicationModules[`./${folderName}/index.tsx`]
+    if (componentLoader) {
       const menuModule = menuModules[`./${folderName}/menu.ts`]
       applicationRegistry.set(appId, {
-        Component: componentModule.default,
+        loadComponent: componentLoader,
         dockMenuItems: menuModule?.dockMenuItems ?? menuModule?.seekerDockMenuItems,
         onDockMenuSelect: menuModule?.onDockMenuSelect ?? menuModule?.onSeekerDockMenuSelect,
         onMenuBarSelect: menuModule?.onMenuBarSelect ?? menuModule?.onSeekerMenuBarSelect,
@@ -192,6 +195,7 @@ function buildApplications(): {
 }
 
 const { applicationList, applicationRegistry, applicationWindowHandlersRegistry } = buildApplications()
+const applicationPreloadPromises = new Map<string, Promise<void>>()
 
 export { applicationList, applicationRegistry }
 
@@ -201,6 +205,31 @@ export function getApplicationById(id: string): Application | undefined {
 
 export function getApplicationEntry(appId: string): ApplicationEntry | undefined {
   return applicationRegistry.get(appId)
+}
+
+export function isApplicationLoaded(appId: string): boolean {
+  return Boolean(getApplicationEntry(appId)?.Component)
+}
+
+export function preloadApplication(appId: string): Promise<void> {
+  const entry = getApplicationEntry(appId)
+
+  if (!entry) return Promise.reject(new Error(`Unknown application: ${appId}`))
+  if (entry.Component) return Promise.resolve()
+
+  const existingPromise = applicationPreloadPromises.get(appId)
+  if (existingPromise) return existingPromise
+
+  const promise = entry.loadComponent().then((module) => {
+    entry.Component = module.default
+    applicationPreloadPromises.delete(appId)
+  }).catch((error) => {
+    applicationPreloadPromises.delete(appId)
+    throw error
+  })
+
+  applicationPreloadPromises.set(appId, promise)
+  return promise
 }
 
 export function getApplicationWindowHandlers(appId: string): ApplicationWindowHandlers | undefined {
@@ -254,6 +283,14 @@ export function resolveApplication(appId: string, window?: WindowState): Applica
 
   if (entry) {
     const { Component, windowOptions } = entry
+
+    if (!Component) {
+      return {
+        children: null,
+        windowOptions: resolveWindowOptions(appId, windowOptions, window),
+      }
+    }
+
     return {
       children: createElement(Component),
       windowOptions: resolveWindowOptions(appId, windowOptions, window),
