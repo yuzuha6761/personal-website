@@ -17,12 +17,6 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
-      remixicon:
-        specifier: ^4.9.1
-        version: 4.9.1
-      usehooks-ts:
-        specifier: ^3.1.1
-        version: 3.1.1(react@19.1.0)
     devDependencies:
       '@eslint/js':
         specifier: ^9.24.0
@@ -69,6 +63,9 @@ importers:
       react-i18next:
         specifier: ^15.4.1
         version: 15.4.1(i18next@24.2.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      remixicon:
+        specifier: ^4.9.1
+        version: 4.9.1
       sass:
         specifier: ^1.86.3
         version: 1.86.3
@@ -84,6 +81,9 @@ importers:
       unplugin-auto-import:
         specifier: ^19.1.2
         version: 19.1.2
+      usehooks-ts:
+        specifier: ^3.1.1
+        version: 3.1.1(react@19.1.0)
       vite:
         specifier: ^6.2.6
         version: 6.2.6(@types/node@22.14.1)(jiti@2.4.2)(lightningcss@1.29.2)(sass@1.86.3)(terser@5.39.0)
