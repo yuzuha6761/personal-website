@@ -1,7 +1,9 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
+import { flushSync } from 'react-dom'
 import type { WindowState } from '~types'
 import { resolveApplication } from '../applications/registry'
 import { resolveRemSizeToPx } from '../../services/window'
+import { createWindowSnapshot, captureWindowSnapshot, publishWindowSnapshot } from '../../services/window-snapshots'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import { Circle, Minus, Plus, X } from 'lucide-react'
 import { AppIcon } from '../icons/AppIcon'
@@ -11,10 +13,13 @@ import { ResizeContext } from './ResizeContext'
 
 interface WindowProps {
   active: boolean
+  minimizing?: boolean
   window: WindowState
   onClose: (windowId: string) => void
   onFocus: (windowId: string) => void
+  onFrameChange: (windowId: string, frame: WindowFrame) => void
   onMinimize: (windowId: string) => void
+  onMinimizeAnimationEnd: (windowId: string) => void
 }
 
 interface TrafficLightsProps {
@@ -82,6 +87,7 @@ const DEFAULT_TRAFFIC_LIGHT_POSITION_REM = { top: 0.55, left: 0.55 }
 const STANDARD_TITLE_BAR_HEIGHT_REM = 2.75
 const WINDOW_TITLE_BAR_HEIGHT = 38
 const WINDOW_RESIZE_HANDLE_SIZE_REM = 0.25
+const WINDOW_MINIMIZE_ANIMATION_DURATION_MS = 420
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
 const SCREEN_EDGE_MARGIN = 24
 const WINDOW_BORDER_RADIUS_REM = 0.8
@@ -155,6 +161,85 @@ function clampDragPosition(position: { x: number; y: number }, frameSize: { widt
       globalThis.window.innerHeight - SCREEN_EDGE_MARGIN,
     ),
   }
+}
+
+function scheduleWindowSnapshotCapture(windowId: string, source: HTMLElement) {
+  const capture = () => (
+    source.isConnected
+      ? captureWindowSnapshot(windowId, source)
+      : Promise.resolve()
+  )
+
+  const capturePromise = new Promise<void>((resolve) => {
+    const runCapture = () => {
+      void capture().finally(resolve)
+    }
+
+    if (globalThis.window.requestIdleCallback) {
+      globalThis.window.requestIdleCallback(runCapture, { timeout: WINDOW_MINIMIZE_ANIMATION_DURATION_MS })
+      return
+    }
+
+    globalThis.window.setTimeout(runCapture, 80)
+  })
+
+  return capturePromise
+}
+
+function measureExpandedMinimizeTarget(target: HTMLElement) {
+  const slot = target.closest<HTMLElement>('[data-minimized-window-id]')
+
+  if (!slot) return target.getBoundingClientRect()
+
+  const previousHeight = slot.style.height
+  const previousTransition = slot.style.transition
+  const previousWidth = slot.style.width
+  const dock = slot.closest<HTMLElement>('[data-position]')
+  const dockPosition = dock?.dataset.position
+  const dockRect = dock?.getBoundingClientRect()
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const slotSize = Math.max(
+    0,
+    ((dockPosition === 'bottom' ? dockRect?.height : dockRect?.width) ?? 0) - (rootFontSize * 0.5),
+  )
+
+  slot.style.transition = 'none'
+
+  if (dockPosition === 'bottom') {
+    slot.style.width = `${slotSize}px`
+  } else {
+    slot.style.height = `${slotSize}px`
+  }
+
+  const rect = target.getBoundingClientRect()
+
+  slot.style.height = previousHeight
+  slot.style.transition = previousTransition
+  slot.style.width = previousWidth
+
+  return rect
+}
+
+function forceExpandedMinimizeSlot(slot: HTMLElement) {
+  const dock = slot.closest<HTMLElement>('[data-position]')
+  const dockPosition = dock?.dataset.position
+  const dockRect = dock?.getBoundingClientRect()
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const slotSize = Math.max(
+    0,
+    ((dockPosition === 'bottom' ? dockRect?.height : dockRect?.width) ?? 0) - (rootFontSize * 0.5),
+  )
+
+  if (dockPosition === 'bottom') {
+    slot.style.width = `${slotSize}px`
+  } else {
+    slot.style.height = `${slotSize}px`
+  }
+}
+
+function clearForcedMinimizeSlot(slot: HTMLElement) {
+  slot.style.height = ''
+  slot.style.width = ''
 }
 
 function getWindowFramePath(width: number, height: number) {
@@ -308,10 +393,13 @@ function TrafficLights(props: TrafficLightsProps) {
 function Window(props: WindowProps) {
   const {
     active,
+    minimizing = false,
     window,
     onClose,
     onFocus,
+    onFrameChange,
     onMinimize,
+    onMinimizeAnimationEnd,
   } = props
   const { children, windowOptions } = resolveApplication(window.appId, window)
   const {
@@ -327,6 +415,11 @@ function Window(props: WindowProps) {
     position: window.position,
     size: window.size,
   })
+  const [minimizeAnimationStyle, setMinimizeAnimationStyle] = useState<{
+    opacity: number
+    transform: string
+    transition: string
+  } | null>(null)
   const frameRef = useRef(frame)
   frameRef.current = frame
   const frameHeightRef = useRef(frame.size.height)
@@ -415,6 +508,70 @@ function Window(props: WindowProps) {
     if (shell) shell.style.willChange = 'transform'
   }, [])
 
+  useLayoutEffect(() => {
+    if (!minimizing) {
+      setMinimizeAnimationStyle(null)
+      return
+    }
+
+    const transition = [
+      `transform ${WINDOW_MINIMIZE_ANIMATION_DURATION_MS}ms cubic-bezier(.2,.8,.2,1)`,
+      `opacity ${WINDOW_MINIMIZE_ANIMATION_DURATION_MS}ms ease`,
+    ].join(', ')
+    let secondFrame: number | null = null
+    let thirdFrame: number | null = null
+    const fallbackTimer = globalThis.window.setTimeout(
+      () => onMinimizeAnimationEnd(window.id),
+      WINDOW_MINIMIZE_ANIMATION_DURATION_MS + 120,
+    )
+    const animationFrame = globalThis.window.requestAnimationFrame(() => {
+      secondFrame = globalThis.window.requestAnimationFrame(() => {
+        thirdFrame = globalThis.window.requestAnimationFrame(() => {
+          const shell = shellRef.current
+          const visibleWindow = visibleWindowRef.current
+          const target = document.querySelector<HTMLElement>(
+            `[data-minimized-window-id="${window.id}"] [data-window-minimize-target="true"]`,
+          ) ?? document.querySelector<HTMLElement>(`[data-minimized-window-id="${window.id}"]`)
+
+          if (!shell || !visibleWindow || !target) {
+            onMinimizeAnimationEnd(window.id)
+            return
+          }
+
+          const shellRect = shell.getBoundingClientRect()
+          const sourceRect = visibleWindow.getBoundingClientRect()
+          const targetRect = measureExpandedMinimizeTarget(target)
+          const scale = Math.max(
+            0.05,
+            Math.min(targetRect.width / sourceRect.width, targetRect.height / sourceRect.height),
+          )
+          const visibleOffsetX = sourceRect.left - shellRect.left
+          const visibleOffsetY = sourceRect.top - shellRect.top
+          const x = targetRect.left + ((targetRect.width - sourceRect.width * scale) / 2) - (visibleOffsetX * scale)
+          const y = targetRect.top + ((targetRect.height - sourceRect.height * scale) / 2) - (visibleOffsetY * scale)
+
+          globalThis.window.clearTimeout(fallbackTimer)
+          globalThis.window.setTimeout(
+            () => onMinimizeAnimationEnd(window.id),
+            WINDOW_MINIMIZE_ANIMATION_DURATION_MS,
+          )
+          setMinimizeAnimationStyle({
+            opacity: 1,
+            transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+            transition,
+          })
+        })
+      })
+    })
+
+    return () => {
+      globalThis.window.cancelAnimationFrame(animationFrame)
+      if (secondFrame !== null) globalThis.window.cancelAnimationFrame(secondFrame)
+      if (thirdFrame !== null) globalThis.window.cancelAnimationFrame(thirdFrame)
+      globalThis.window.clearTimeout(fallbackTimer)
+    }
+  }, [minimizing, onMinimizeAnimationEnd, window.id])
+
   useEffect(() => {
     if (!heightTransition) return
 
@@ -450,7 +607,9 @@ function Window(props: WindowProps) {
         return
       }
 
-      setFrame(resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY, minSizeRef.current))
+      const nextFrame = resizeFrame(interaction.direction, interaction.startFrame, deltaX, deltaY, minSizeRef.current)
+      frameRef.current = nextFrame
+      setFrame(nextFrame)
     }
 
     const handlePointerUp = () => {
@@ -458,10 +617,15 @@ function Window(props: WindowProps) {
       const previewPosition = dragPreviewPositionRef.current
 
       if (interaction?.type === 'drag' && previewPosition) {
-        setFrame((currentFrame) => ({
-          ...currentFrame,
+        const nextFrame = {
+          ...frameRef.current,
           position: previewPosition,
-        }))
+        }
+        frameRef.current = nextFrame
+        setFrame(nextFrame)
+        onFrameChange(window.id, nextFrame)
+      } else if (interaction?.type === 'resize') {
+        onFrameChange(window.id, frameRef.current)
       }
 
       clearDragPreview()
@@ -481,7 +645,7 @@ function Window(props: WindowProps) {
       document.documentElement.style.cursor = ''
       document.body.style.cursor = ''
     }
-  }, [clearDragPreview, scheduleDragTransform])
+  }, [clearDragPreview, onFrameChange, scheduleDragTransform, window.id])
 
   const onWindowMouseMove = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (!resizable) return
@@ -532,9 +696,66 @@ function Window(props: WindowProps) {
     }
   }
 
+  const minimizeToDock = async () => {
+    const source = visibleWindowRef.current
+
+    if (!source || !document.startViewTransition) {
+      if (source) {
+        scheduleWindowSnapshotCapture(window.id, source)
+      }
+      onFrameChange(window.id, frameRef.current)
+      onMinimize(window.id)
+      return
+    }
+
+    const transitionName = `minimize-window-${window.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`
+    const snapshot = await createWindowSnapshot(source)
+
+    if (snapshot) {
+      publishWindowSnapshot(window.id, snapshot)
+    }
+
+    source.style.viewTransitionName = transitionName
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        onFrameChange(window.id, frameRef.current)
+        onMinimize(window.id)
+        onMinimizeAnimationEnd(window.id)
+      })
+
+      const target = document.querySelector<HTMLElement>(
+        `[data-minimized-window-id="${window.id}"] [data-window-minimize-target="true"]`,
+      )
+      const slot = target?.closest<HTMLElement>('[data-minimized-window-id]')
+
+      if (slot) {
+        forceExpandedMinimizeSlot(slot)
+      }
+
+      if (target) {
+        target.style.viewTransitionName = transitionName
+      }
+    })
+
+    void transition.finished.finally(() => {
+      const target = document.querySelector<HTMLElement>(
+        `[data-minimized-window-id="${window.id}"] [data-window-minimize-target="true"]`,
+      )
+      const slot = target?.closest<HTMLElement>('[data-minimized-window-id]')
+
+      if (source.isConnected) source.style.viewTransitionName = ''
+      if (target) target.style.viewTransitionName = ''
+      if (slot) {
+        clearForcedMinimizeSlot(slot)
+      }
+    })
+  }
+
   return (
     <div
       className="absolute"
+      data-window-id={window.id}
       onMouseDown={onWindowMouseDown}
       onMouseLeave={onWindowMouseLeave}
       onMouseMove={onWindowMouseMove}
@@ -543,8 +764,13 @@ function Window(props: WindowProps) {
         width: `calc(${frame.size.width}px + ${hitAreaSizeOffsetRem})`,
         height: `calc(${frame.size.height}px + ${hitAreaSizeOffsetRem})`,
         cursor: cursorStyle,
-        transition: heightTransition,
-        transform: `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`,
+        contain: minimizing ? 'paint' : undefined,
+        opacity: minimizeAnimationStyle?.opacity ?? 1,
+        pointerEvents: minimizing ? 'none' : undefined,
+        transform: minimizeAnimationStyle?.transform ?? `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`,
+        transformOrigin: 'top left',
+        transition: minimizeAnimationStyle?.transition ?? heightTransition,
+        willChange: minimizing ? 'transform, opacity' : undefined,
         zIndex: window.zIndex,
       }}
     >
@@ -576,7 +802,7 @@ function Window(props: WindowProps) {
                     zoomDisabled={zoomDisabled}
                     minimizeDisabled={minimizeDisabled}
                     onClose={() => onClose(window.id)}
-                    onMinimize={() => onMinimize(window.id)}
+                    onMinimize={minimizeToDock}
                   />
                 </div>
                 <div className="w-full h-full">{children}</div>
@@ -597,7 +823,7 @@ function Window(props: WindowProps) {
                       zoomDisabled={zoomDisabled}
                       minimizeDisabled={minimizeDisabled}
                       onClose={() => onClose(window.id)}
-                      onMinimize={() => onMinimize(window.id)}
+                      onMinimize={minimizeToDock}
                     />
                   </div>
                   <div className="max-w-[calc(100%-8rem)] overflow-hidden text-ellipsis whitespace-nowrap text-center text-#2f2f2f text-[.9rem] font-700">

@@ -5,7 +5,7 @@ import useSystemSettingsStore from "./stores/settings/system-settings";
 import useGlobalStore from "./stores/global";
 import { startupPreloadImages } from "./constants/preloadAssets";
 import { preloadImages } from "./services/preload";
-import { applySystemSettingsAppearance } from "./services/system-settings";
+import { applySystemSettingsAppearance, applySystemSettingsDock } from "./services/system-settings";
 import { useSystemAppearanceDarkMode } from "./hooks/useSystemAppearanceDarkMode";
 import { useEffect } from "react";
 import { preloadApplication } from "./components/applications/registry";
@@ -19,6 +19,7 @@ function App() {
   const wallpaperTint = useSystemSettingsStore((state) => state.wallpaperTint)
   const scrollBars = useSystemSettingsStore((state) => state.scrollBars)
   const scrollbarClick = useSystemSettingsStore((state) => state.scrollbarClick)
+  const dockPosition = useSystemSettingsStore((state) => state.dockPosition)
   const setTimestamp = useGlobalStore((state) => state.setTimestamp)
   const isDarkMode = useSystemAppearanceDarkMode()
 
@@ -85,6 +86,10 @@ function App() {
     scrollbarClick,
     isDarkMode,
   ]);
+
+  useEffect(() => {
+    applySystemSettingsDock(dockPosition)
+  }, [dockPosition]);
 
   return (
     <>

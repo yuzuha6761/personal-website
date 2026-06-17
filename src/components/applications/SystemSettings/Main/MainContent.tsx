@@ -3,11 +3,13 @@ import { ChevronLeft, ChevronRight, CircleHelp } from 'lucide-react'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { dragHandleProps } from '~/components/Window/Drag'
 import Appearance from './category/Appearance'
+import DesktopAndDock from './category/DesktopAndDock'
 import { settingsCategories } from './data'
 import type { SettingsCategoryId } from './types'
 
 const categoryComponents: Record<SettingsCategoryId, ComponentType> = {
   appearance: Appearance,
+  'desktop-and-dock': DesktopAndDock,
 }
 
 interface MainContentProps {

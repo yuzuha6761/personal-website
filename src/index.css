@@ -45,6 +45,17 @@ body {
   min-height: 100vh;
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(*) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

@@ -211,6 +211,20 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     useAppStore.getState().activateApp(window.appId)
   },
 
+  updateWindowFrame: (windowId, frame) => {
+    set((state) => ({
+      windows: state.windows.map((window) => (
+        window.id === windowId
+          ? {
+              ...window,
+              position: frame.position,
+              size: frame.size,
+            }
+          : window
+      )),
+    }))
+  },
+
   closeWindow: (windowId) => {
     const closedWindow = get().windows.find((window) => window.id === windowId)
     if (!closedWindow) return

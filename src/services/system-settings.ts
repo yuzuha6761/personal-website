@@ -1,9 +1,11 @@
+import { DockPositionEnum } from '~enums'
 import {
   ACCENT_COLOR_OPTIONS,
   HIGHLIGHT_COLOR_OPTIONS,
 } from '~/stores/settings/system-settings.constants'
+import useDockSettingStore from '~/stores/settings/dock'
 import { applySystemTheme } from './theme'
-import type { SystemSettingsAppearanceState } from '~types'
+import type { DockPosition, SystemSettingsAppearanceState } from '~types'
 
 const SIDEBAR_ICON_SIZE_REM = {
   small: '.78rem',
@@ -80,6 +82,21 @@ function resolveTextHighlightColorValue(textHighlightColor: SystemSettingsAppear
 
   if (option.id === 'pink') return '#ffc4df'
   return '#ffc4df'
+}
+
+function toDockPositionEnum(position: DockPosition) {
+  switch (position) {
+    case 'left':
+      return DockPositionEnum.LEFT
+    case 'right':
+      return DockPositionEnum.RIGHT
+    default:
+      return DockPositionEnum.BOTTOM
+  }
+}
+
+export function applySystemSettingsDock(position: DockPosition) {
+  useDockSettingStore.getState().setPosition(toDockPositionEnum(position))
 }
 
 export function applySystemSettingsAppearance(

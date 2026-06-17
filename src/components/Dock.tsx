@@ -1,5 +1,6 @@
 import styles from './Dock.module.scss'
 import useDockSettingStore from "../stores/settings/dock";
+import useSystemSettingsStore from "../stores/settings/system-settings";
 import {DockPositionEnum} from "~enums";
 import trashIcon from '~assets/application-icon/trash.png'
 import {
@@ -9,6 +10,7 @@ import {
   type ApplicationDockMenuContext,
 } from "../components/applications/registry";
 import { sortWindowsByOpenedAt } from '../services/window'
+import { deleteWindowSnapshot, getWindowSnapshot, subscribeWindowSnapshots } from '../services/window-snapshots'
 import useWindowStore from "../stores/window";
 import useAppStore from "../stores/app";
 import ContextualMenu, {
@@ -17,7 +19,8 @@ import ContextualMenu, {
   type ContextualMenuSelectEvent,
 } from './ContextualMenu'
 import { AppWindowMac } from 'lucide-react'
-import type { MouseEvent as ReactMouseEvent } from 'react'
+import { flushSync } from 'react-dom'
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react'
 import type { AppId } from '~types'
 
 interface DockMenuState {
@@ -52,6 +55,35 @@ function appendSection(target: ContextualMenuItem[], section: ContextualMenuItem
   target.push(...section)
 }
 
+function MinimizedWindowPreview(props: { appIcon: string; windowId: string }) {
+  const { appIcon, windowId } = props
+  const snapshot = useSyncExternalStore(
+    subscribeWindowSnapshots,
+    () => getWindowSnapshot(windowId),
+    () => getWindowSnapshot(windowId),
+  )
+
+  return (
+    <div
+      className={styles['minimized-window-preview']}
+      data-window-minimize-target="true"
+    >
+      {snapshot && (
+        <img
+          className={styles['minimized-window-snapshot']}
+          src={snapshot.dataUrl}
+          alt=""
+        />
+      )}
+      <img
+        className={styles['minimized-app-icon']}
+        src={appIcon}
+        alt=""
+      />
+    </div>
+  )
+}
+
 function Dock() {
   const size = useDockSettingStore((state) => state.size)
   const position = useDockSettingStore((state) => state.position)
@@ -65,12 +97,57 @@ function Dock() {
   const quitApp = useWindowStore((state) => state.quitApp)
   const runningAppIds = useAppStore((state) => state.runningAppIds)
   const loadingAppIds = useAppStore((state) => state.loadingAppIds)
+  const animateOpeningApplications = useSystemSettingsStore((state) => state.animateOpeningApplications)
+  const showIndicatorsForOpenApplications = useSystemSettingsStore((state) => state.showIndicatorsForOpenApplications)
   const [dockMenu, setDockMenu] = useState<DockMenuState | null>(null)
+  const [expandedMinimizedWindowIds, setExpandedMinimizedWindowIds] = useState<Set<string>>(() => new Set())
+  const [restoringMinimizedWindowIds, setRestoringMinimizedWindowIds] = useState<Set<string>>(() => new Set())
   const dockMenuActionRef = useRef<DockMenuState | null>(null)
+  const minimizedWindows = windows.filter((window) => window.minimized)
+  const restoringWindows = windows.filter((window) => restoringMinimizedWindowIds.has(window.id))
+  const dockMinimizedWindows = [...minimizedWindows, ...restoringWindows.filter((window) => !window.minimized)]
+  const minimizedWindowIds = minimizedWindows.map((window) => window.id)
+  const restoringWindowIds = [...restoringMinimizedWindowIds]
+  const visibleMinimizedWindowIds = [...minimizedWindowIds, ...restoringWindowIds]
+  const minimizedWindowIdKey = visibleMinimizedWindowIds.join('\0')
 
   useEffect(() => {
 
   }, [])
+
+  useEffect(() => {
+    const minimizedWindowIdSet = new Set(visibleMinimizedWindowIds)
+    let animationFrame: number | undefined
+
+    setExpandedMinimizedWindowIds((currentIds) => {
+      const nextIds = new Set<string>()
+
+      currentIds.forEach((windowId) => {
+        if (minimizedWindowIdSet.has(windowId)) nextIds.add(windowId)
+      })
+
+      return nextIds
+    })
+
+    animationFrame = window.requestAnimationFrame(() => {
+      setExpandedMinimizedWindowIds((currentIds) => {
+        const nextIds = new Set(currentIds)
+        let changed = false
+
+        visibleMinimizedWindowIds.forEach((windowId) => {
+          if (nextIds.has(windowId)) return
+          nextIds.add(windowId)
+          changed = true
+        })
+
+        return changed ? nextIds : currentIds
+      })
+    })
+
+    return () => {
+      if (animationFrame !== undefined) window.cancelAnimationFrame(animationFrame)
+    }
+  }, [minimizedWindowIdKey])
 
   const dockStyle = useMemo(() => {
     if (position === DockPositionEnum.LEFT) return {width: size, height: 'auto'}
@@ -199,6 +276,79 @@ function Dock() {
     })
   }
 
+  const getMinimizedWindowState = (windowId: string) => {
+    if (restoringMinimizedWindowIds.has(windowId)) return 'restoring'
+    return expandedMinimizedWindowIds.has(windowId) ? 'expanded' : 'collapsed'
+  }
+
+  const getMinimizedWindowStyle = (windowId: string): CSSProperties => {
+    const state = getMinimizedWindowState(windowId)
+    const slotSize = `calc(${size} - .5rem)`
+
+    if (position === DockPositionEnum.BOTTOM) {
+      return { width: state === 'expanded' ? slotSize : 0 }
+    }
+
+    return { height: state === 'expanded' ? slotSize : 0 }
+  }
+
+  const restoreMinimizedWindow = (windowId: string) => {
+    const source = document.querySelector<HTMLElement>(
+      `[data-minimized-window-id="${windowId}"] [data-window-minimize-target="true"]`,
+    )
+
+    const finishRestoringSlot = () => {
+      setRestoringMinimizedWindowIds((currentIds) => {
+        const nextIds = new Set(currentIds)
+        nextIds.add(windowId)
+        return nextIds
+      })
+
+      window.setTimeout(() => {
+        setRestoringMinimizedWindowIds((currentIds) => {
+          const nextIds = new Set(currentIds)
+          nextIds.delete(windowId)
+          return nextIds
+        })
+      }, 280)
+    }
+
+    if (!source || !document.startViewTransition) {
+      focusWindow(windowId)
+      deleteWindowSnapshot(windowId)
+      finishRestoringSlot()
+      return
+    }
+
+    const transitionName = `restore-window-${windowId.replace(/[^a-zA-Z0-9_-]/g, '-')}`
+    source.style.viewTransitionName = transitionName
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        focusWindow(windowId)
+      })
+
+      const target = document.querySelector<HTMLElement>(
+        `[data-window-id="${windowId}"]`,
+      )
+
+      if (target) {
+        target.style.viewTransitionName = transitionName
+      }
+    })
+
+    void transition.finished.finally(() => {
+      const target = document.querySelector<HTMLElement>(
+        `[data-window-id="${windowId}"]`,
+      )
+
+      source.style.viewTransitionName = ''
+      if (target) target.style.viewTransitionName = ''
+      deleteWindowSnapshot(windowId)
+      finishRestoringSlot()
+    })
+  }
+
   return (
     <>
       <div
@@ -216,7 +366,7 @@ function Dock() {
             <div
               key={application.id}
               data-add-icon-safe-area={application.addIconSafeArea}
-              data-loading={loadingAppIds.includes(application.id)}
+              data-loading={animateOpeningApplications && loadingAppIds.includes(application.id)}
               onClick={() => openApp(application.id)}
               onContextMenu={(event) => onAppContextMenu(application.id, event)}
             >
@@ -224,13 +374,35 @@ function Dock() {
               <div className={styles['icon']}>
                 <img src={application.icon} alt=""/>
               </div>
-              {runningAppIds.includes(application.id) && (
+              {showIndicatorsForOpenApplications && runningAppIds.includes(application.id) && (
                 <i className={`ri-circle-fill ${styles['running-indicator']}`} aria-hidden="true" />
               )}
             </div>
           )
         })}
         <div data-spliter={true}></div>
+        {dockMinimizedWindows.map((window) => {
+          const application = getApplicationById(window.appId)
+
+          if (!application) return null
+
+          return (
+            <div
+              key={`minimized-${window.id}`}
+              className={styles['minimized-window']}
+              data-minimized-window-id={window.id}
+              data-state={getMinimizedWindowState(window.id)}
+              onClick={() => restoreMinimizedWindow(window.id)}
+              style={getMinimizedWindowStyle(window.id)}
+            >
+              <div>{window.title}</div>
+              <MinimizedWindowPreview
+                appIcon={application.icon}
+                windowId={window.id}
+              />
+            </div>
+          )
+        })}
         <div>
           <div>Trash</div>
           <div className={styles['icon']}>

@@ -25,6 +25,39 @@
   border-radius: 1rem;
   box-shadow: 0 0 1rem #0003;
   z-index: 1000;
+  .minimized-window {
+    cursor: default;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity .2s ease;
+    &[data-state=restoring] {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+  .minimized-window-preview {
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .minimized-window-snapshot {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+  .minimized-app-icon {
+    position: absolute;
+    right: .12rem;
+    bottom: .12rem;
+    width: 38%;
+    height: 38%;
+    object-fit: contain;
+  }
   &[data-position=left] {
     padding: .3rem .3rem .3rem 0;
     transform: translateY(-50%);
@@ -40,6 +73,11 @@
       width: 100%;
       position: relative;
       @include flex-adapter($jc: flex-end);
+      &.minimized-window {
+        transition:
+          height .28s cubic-bezier(.2,.8,.2,1),
+          opacity .2s ease;
+      }
       .icon {
         width: calc(100% - .5rem);
         aspect-ratio: 1;
@@ -49,13 +87,18 @@
           height: 100%;
         }
       }
+      .minimized-window-preview {
+        width: calc(100% - .5rem);
+        aspect-ratio: 1;
+      }
       .running-indicator {
-        @include a-pos($r: .35rem, $b: .2rem);
+        @include a-pos($l: .55rem, $t: 50%);
         z-index: 1;
         display: block;
         font-size: 0.4rem;
         line-height: 1;
         color: #000;
+        transform: translate(-100%, -50%);
       }
       &[data-add-icon-safe-area=true] .icon > img {
         padding: 9%;
@@ -75,6 +118,9 @@
         @include a-pos($l: 100%, $t: 50%)
       }
       &:active .icon > img {
+        filter: brightness(.6);
+      }
+      &.minimized-window:active .minimized-window-preview {
         filter: brightness(.6);
       }
       &:hover, &:active {
@@ -98,6 +144,11 @@
     & > div:not([data-spliter=true]) {
       height: 100%;
       position: relative;
+      &.minimized-window {
+        transition:
+          width .28s cubic-bezier(.2,.8,.2,1),
+          opacity .2s ease;
+      }
       .icon {
         height: calc(100% - .5rem);
         aspect-ratio: 1;
@@ -106,6 +157,10 @@
           width: 100%;
           height: 100%;
         }
+      }
+      .minimized-window-preview {
+        height: calc(100% - .5rem);
+        aspect-ratio: 1;
       }
       .running-indicator {
         @include a-pos($b: .15rem, $l: 50%);
@@ -136,6 +191,9 @@
       &:active .icon > img {
         filter: brightness(.6);
       }
+      &.minimized-window:active .minimized-window-preview {
+        filter: brightness(.6);
+      }
       &:hover, &:active {
         & > div:first-child {
           display: block;
@@ -158,6 +216,11 @@
       width: 100%;
       position: relative;
       @include flex-adapter($jc: flex-start);
+      &.minimized-window {
+        transition:
+          height .28s cubic-bezier(.2,.8,.2,1),
+          opacity .2s ease;
+      }
       .icon {
         width: calc(100% - .5rem);
         aspect-ratio: 1;
@@ -167,13 +230,18 @@
           height: 100%;
         }
       }
+      .minimized-window-preview {
+        width: calc(100% - .5rem);
+        aspect-ratio: 1;
+      }
       .running-indicator {
-        @include a-pos($l: .35rem, $b: .2rem);
+        @include a-pos($r: .55rem, $t: 50%);
         z-index: 1;
         display: block;
         font-size: 0.4rem;
         line-height: 1;
         color: #000;
+        transform: translate(100%, -50%);
       }
       &[data-add-icon-safe-area=true] .icon > img {
         padding: 9%;
@@ -193,6 +261,9 @@
         @include a-pos($r: 100%, $t: 50%)
       }
       &:active .icon > img {
+        filter: brightness(.6);
+      }
+      &.minimized-window:active .minimized-window-preview {
         filter: brightness(.6);
       }
       &:hover, &:active {

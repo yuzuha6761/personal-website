@@ -64,11 +64,13 @@ function Desktop() {
   const focusedTarget = useWindowStore((state) => state.focusedTarget)
   const closeWindow = useWindowStore((state) => state.closeWindow)
   const minimizeWindow = useWindowStore((state) => state.minimizeWindow)
+  const updateWindowFrame = useWindowStore((state) => state.updateWindowFrame)
   const focusDesktop = useWindowStore((state) => state.focusDesktop)
   const focusWindow = useWindowStore((state) => state.focusWindow)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [selectionBox, setSelectionBox] = useState<DesktopSelectionBox | null>(null)
+  const [minimizingWindowIds, setMinimizingWindowIds] = useState<Set<string>>(() => new Set())
   const selectionActiveRef = useRef(false)
   const selectionClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -148,6 +150,25 @@ function Desktop() {
     setContextMenuOpen(true)
   }
 
+  const onWindowMinimize = useCallback((windowId: string) => {
+    setMinimizingWindowIds((currentIds) => {
+      const nextIds = new Set(currentIds)
+      nextIds.add(windowId)
+      return nextIds
+    })
+    minimizeWindow(windowId)
+  }, [minimizeWindow])
+
+  const onWindowMinimizeAnimationEnd = useCallback((windowId: string) => {
+    setMinimizingWindowIds((currentIds) => {
+      if (!currentIds.has(windowId)) return currentIds
+
+      const nextIds = new Set(currentIds)
+      nextIds.delete(windowId)
+      return nextIds
+    })
+  }, [])
+
   return (
     <div
       className="relative w-full h-full overflow-hidden bg-no-repeat bg-center bg-cover"
@@ -175,14 +196,17 @@ function Desktop() {
           }}
         />
       )}
-      {windows.filter((window) => !window.minimized).map((window) => (
+      {windows.filter((window) => !window.minimized || minimizingWindowIds.has(window.id)).map((window) => (
         <Window
           active={focusedTarget.type === 'window' && focusedTarget.windowId === window.id}
           key={window.id}
+          minimizing={window.minimized && minimizingWindowIds.has(window.id)}
           window={window}
           onClose={closeWindow}
           onFocus={focusWindow}
-          onMinimize={minimizeWindow}
+          onFrameChange={updateWindowFrame}
+          onMinimize={onWindowMinimize}
+          onMinimizeAnimationEnd={onWindowMinimizeAnimationEnd}
         />
       ))}
       <ContextualMenu

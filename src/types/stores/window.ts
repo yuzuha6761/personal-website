@@ -13,6 +13,7 @@ export interface WindowStore {
   openWindow: (appId: AppId, options?: OpenWindowOptions) => string
   closeWindow: (windowId: string) => void
   minimizeWindow: (windowId: string) => void
+  updateWindowFrame: (windowId: string, frame: Pick<WindowState, 'position' | 'size'>) => void
   hideApp: (appId: AppId) => void
   quitApp: (appId: AppId) => void
   focusDesktop: () => void
