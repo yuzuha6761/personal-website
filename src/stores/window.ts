@@ -13,6 +13,15 @@ import useAppStore from './app'
 
 const DOCK_ICON_BOUNCE_DURATION_MS = 624
 
+function startDockOpeningBounce(appId: AppId) {
+  const appStore = useAppStore.getState()
+  if (appStore.isAppRunning(appId) || appStore.isAppLoading(appId)) return
+
+  const loadingStartedAt = Date.now()
+  appStore.startLoadingApp(appId)
+  finishLoadingAppAfterCurrentBounce(appId, loadingStartedAt)
+}
+
 function finishLoadingAppAfterCurrentBounce(appId: AppId, startedAt: number) {
   const elapsed = Date.now() - startedAt
   const currentCycleElapsed = elapsed % DOCK_ICON_BOUNCE_DURATION_MS
@@ -74,6 +83,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       return ''
     }
 
+    startDockOpeningBounce(appId)
     useAppStore.getState().launchApp(appId)
 
     const appWindows = getAppWindows(get().windows, appId)
@@ -137,6 +147,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       return ''
     }
 
+    startDockOpeningBounce(appId)
     useAppStore.getState().launchApp(appId)
 
     const siblings = get().windows.filter((window) => window.appId === appId)

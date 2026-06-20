@@ -101,7 +101,7 @@ const WINDOW_MINIMIZE_ANIMATION_DURATION_MS = 420
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
 const SCREEN_EDGE_MARGIN = 24
 const WINDOW_BORDER_RADIUS_REM = 0.8
-const WINDOW_BORDER_COLOR = '#cacaca'
+const WINDOW_BORDER_COLOR = 'var(--system-window-border)'
 const TITLE_BAR_BORDER_COLOR = '#c6c5c5'
 const cursorMap: Record<ResizeDirection, string> = {
   e: 'ew-resize',
@@ -629,10 +629,11 @@ function Window(props: WindowProps) {
     () => getWindowFramePath(frame.size.width, frame.size.height),
     [frame.size.width, frame.size.height],
   )
-  const windowClassName = `absolute rounded-[.8rem] bg-[var(--system-surface-window)] text-[var(--system-text-primary)] select-none ${
+  const windowBackgroundClass = fullSizeContentView ? 'bg-transparent' : 'bg-[var(--system-surface-window)]'
+  const windowClassName = `absolute rounded-[.8rem] ${windowBackgroundClass} text-[var(--system-text-primary)] select-none ${
     active
-      ? 'shadow-[0_1.15rem_3.2rem_#00000038,0_.2rem_.7rem_#0000001f]'
-      : 'shadow-[0_.85rem_2.2rem_#00000026,0_.15rem_.45rem_#0000001a]'
+      ? 'shadow-[0_1.7rem_5.2rem_#00000066,0_.38rem_1.3rem_#00000042]'
+      : 'shadow-[0_1.2rem_3.7rem_#00000052,0_.28rem_.95rem_#00000036]'
   }`
 
   useEffect(() => {

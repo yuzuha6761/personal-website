@@ -17,13 +17,14 @@
 }
 
 .dock {
-  background-color: #fff2;
-  backdrop-filter: blur(40px);
+  background-color: var(--system-surface-dock);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  backdrop-filter: blur(40px) saturate(1.6);
   gap: 0.2rem;
   box-sizing: border-box;
-  border: 1px solid #fff3;
+  border: 1px solid var(--system-surface-dock-border);
   border-radius: 1rem;
-  box-shadow: 0 0 1rem #0003;
+  box-shadow: var(--system-surface-dock-shadow);
   z-index: 1000;
   .minimized-window {
     cursor: default;
@@ -66,7 +67,7 @@
     @include flex-adapter($fd: column, $ai: flex-start);
     & > div[data-spliter=true] {
       width: 80%;
-      border-top: 1px solid #0005;
+      border-top: 1px solid var(--system-surface-dock-divider);
       align-self: center;
       margin: .7rem 0 .7rem .3rem;
     }
@@ -98,7 +99,7 @@
         display: block;
         font-size: 0.4rem;
         line-height: 1;
-        color: #000;
+        color: var(--system-dock-indicator);
         transform: translate(-100%, -50%);
       }
       &[data-add-icon-safe-area=true] .icon > img {
@@ -112,8 +113,11 @@
         transform: translateY(-50%);
         display: none;
         padding: 0.2rem 1rem;
-        background-color: #fff6;
-        box-shadow: 0 0 0.5rem #0004;
+        background-color: var(--system-surface-dock-tooltip);
+        -webkit-backdrop-filter: blur(22px) saturate(1.6);
+        backdrop-filter: blur(22px) saturate(1.6);
+        border: 1px solid var(--system-surface-dock-tooltip-border);
+        box-shadow: var(--system-surface-dock-tooltip-shadow);
         border-radius: 0.3rem;
         margin-left: 1rem;
         @include a-pos($l: 100%, $t: 50%)
@@ -138,7 +142,7 @@
     @include flex-adapter($ai: flex-end);
     & > div[data-spliter=true] {
       height: 80%;
-      border-left: 1px solid #0005;
+      border-left: 1px solid var(--system-surface-dock-divider);
       align-self: center;
       margin: 0 .7rem .3rem .7rem;
     }
@@ -169,7 +173,7 @@
         display: block;
         font-size: 0.4rem;
         line-height: 1;
-        color: #000;
+        color: var(--system-dock-indicator);
         transform: translateX(-50%);
       }
       &[data-add-icon-safe-area=true] .icon > img {
@@ -183,8 +187,11 @@
         transform: translateX(-50%);
         display: none;
         padding: 0.2rem 1rem;
-        background-color: #fff6;
-        box-shadow: 0 0 0.5rem #0004;
+        background-color: var(--system-surface-dock-tooltip);
+        -webkit-backdrop-filter: blur(22px) saturate(1.6);
+        backdrop-filter: blur(22px) saturate(1.6);
+        border: 1px solid var(--system-surface-dock-tooltip-border);
+        box-shadow: var(--system-surface-dock-tooltip-shadow);
         border-radius: 0.3rem;
         margin-bottom: 1rem;
         @include a-pos($b: 100%, $l: 50%)
@@ -209,7 +216,7 @@
     @include flex-adapter($fd: column, $ai: flex-end);
     & > div[data-spliter=true] {
       width: 80%;
-      border-top: 1px solid #0005;
+      border-top: 1px solid var(--system-surface-dock-divider);
       align-self: center;
       margin: .7rem .3rem .7rem 0;
     }
@@ -241,7 +248,7 @@
         display: block;
         font-size: 0.4rem;
         line-height: 1;
-        color: #000;
+        color: var(--system-dock-indicator);
         transform: translate(100%, -50%);
       }
       &[data-add-icon-safe-area=true] .icon > img {
@@ -255,8 +262,11 @@
         transform: translateY(-50%);
         display: none;
         padding: 0.2rem 1rem;
-        background-color: #fff6;
-        box-shadow: 0 0 0.5rem #0004;
+        background-color: var(--system-surface-dock-tooltip);
+        -webkit-backdrop-filter: blur(22px) saturate(1.6);
+        backdrop-filter: blur(22px) saturate(1.6);
+        border: 1px solid var(--system-surface-dock-tooltip-border);
+        box-shadow: var(--system-surface-dock-tooltip-shadow);
         border-radius: 0.3rem;
         margin-right: 1rem;
         @include a-pos($r: 100%, $t: 50%)

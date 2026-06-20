@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { DockPositionEnum } from '~enums'
 import { AppIcon } from './icons/AppIcon'
+import SystemGlassSurface from './SystemGlassSurface'
 import useDockSettingStore from '../stores/settings/dock'
 
 export interface ContextualMenuPosition {
@@ -78,6 +79,7 @@ interface ContextualMenuPanelProps {
   selectedPathKey: string | null
   zIndex: number
   pointerDownStartedInsideMenuRef: React.RefObject<boolean>
+  pointerReleaseSelectArmedRef: React.RefObject<boolean>
   onClose?: () => void
   onSelectItem: (event: ContextualMenuSelectEvent) => void
   onSubmenuItemHoverChange?: (hovered: boolean) => void
@@ -117,7 +119,6 @@ const MENU_ARROW_WIDTH = 28
 const MENU_ARROW_HALF_WIDTH = MENU_ARROW_WIDTH / 2
 const MENU_ARROW_CORNER_RADIUS = 5.5
 const MENU_ARROW_EDGE_INSET = 34
-const MENU_SURFACE_BACKDROP_FILTER = 'blur(10px) saturate(1.8)'
 const MENU_RADIUS = 9
 const MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE: CSSProperties = {
   backgroundColor: 'var(--system-color-menu-parent-highlight)',
@@ -498,6 +499,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
     selectedPathKey,
     zIndex,
     pointerDownStartedInsideMenuRef,
+    pointerReleaseSelectArmedRef,
     onClose,
     onSelectItem,
     onSubmenuItemHoverChange,
@@ -634,15 +636,10 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           />
         </svg>
       )}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-[.55rem]"
-        style={{
-          WebkitBackdropFilter: MENU_SURFACE_BACKDROP_FILTER,
-          backdropFilter: MENU_SURFACE_BACKDROP_FILTER,
-          backgroundColor: 'var(--system-surface-menu)',
-          clipPath: panelClipPath,
-          zIndex: 1,
-        }}
+      <SystemGlassSurface
+        className="rounded-[.55rem]"
+        clipPath={panelClipPath}
+        style={{ zIndex: 1 }}
       />
       <div
         className="relative"
@@ -737,6 +734,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 onMouseUp={(event) => {
                   event.stopPropagation()
                   if (pointerDownStartedInsideMenuRef.current) return
+                  if (!pointerReleaseSelectArmedRef.current) return
 
                   skipNextClickSelectRef.current = true
                   window.setTimeout(() => {
@@ -806,6 +804,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     items={item.children}
                     path={childPath}
                     pointerDownStartedInsideMenuRef={pointerDownStartedInsideMenuRef}
+                    pointerReleaseSelectArmedRef={pointerReleaseSelectArmedRef}
                     selectedHighlightVisible={selectedHighlightVisible}
                     selectedPathKey={selectedPathKey}
                     zIndex={zIndex}
@@ -861,6 +860,7 @@ function ContextualMenu(props: ContextualMenuProps) {
   const restoreHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingSelectRef = useRef<ContextualMenuSelectEvent | null>(null)
   const pointerDownStartedInsideMenuRef = useRef(false)
+  const pointerReleaseSelectArmedRef = useRef(false)
   const [adjustedPosition, setAdjustedPosition] = useState(position)
   const [positionReady, setPositionReady] = useState(false)
   const [closing, setClosing] = useState(false)
@@ -888,24 +888,35 @@ function ContextualMenu(props: ContextualMenuProps) {
   useEffect(() => {
     if (!open && !closing) {
       pointerDownStartedInsideMenuRef.current = false
+      pointerReleaseSelectArmedRef.current = false
       return
     }
 
     const onMouseDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null
       pointerDownStartedInsideMenuRef.current = Boolean(target?.closest('[data-contextual-menu-panel=true]'))
+      pointerReleaseSelectArmedRef.current = false
+    }
+    const onMouseMove = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      if (!event.buttons || pointerDownStartedInsideMenuRef.current) return
+
+      pointerReleaseSelectArmedRef.current = Boolean(target?.closest('[data-contextual-menu-panel=true]'))
     }
     const onMouseUp = () => {
       window.setTimeout(() => {
         pointerDownStartedInsideMenuRef.current = false
+        pointerReleaseSelectArmedRef.current = false
       }, 0)
     }
 
     document.addEventListener('mousedown', onMouseDown, true)
+    document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
 
     return () => {
       document.removeEventListener('mousedown', onMouseDown, true)
+      document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
   }, [closing, open])
@@ -999,6 +1010,7 @@ function ContextualMenu(props: ContextualMenuProps) {
         items={displayItems}
         path={[]}
         pointerDownStartedInsideMenuRef={pointerDownStartedInsideMenuRef}
+        pointerReleaseSelectArmedRef={pointerReleaseSelectArmedRef}
         selectedHighlightVisible={selectedHighlightVisible}
         selectedPathKey={selectedPathKey}
         zIndex={zIndex}
