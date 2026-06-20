@@ -10,7 +10,8 @@ import {
   type ApplicationDockMenuContext,
 } from "../components/applications/registry";
 import { sortWindowsByOpenedAt } from '../services/window'
-import { deleteWindowSnapshot, getWindowSnapshot, subscribeWindowSnapshots } from '../services/window-snapshots'
+import { WINDOW_RESTORE_TRANSITION_DURATION_MS } from '../services/window-restore-transition'
+import { getWindowSnapshot, subscribeWindowSnapshots } from '../services/window-snapshots'
 import useWindowStore from "../stores/window";
 import useAppStore from "../stores/app";
 import ContextualMenu, {
@@ -19,9 +20,8 @@ import ContextualMenu, {
   type ContextualMenuSelectEvent,
 } from './ContextualMenu'
 import { AppWindowMac } from 'lucide-react'
-import { flushSync } from 'react-dom'
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react'
-import type { AppId } from '~types'
+import type { AppId, WindowState } from '~types'
 
 interface DockMenuState {
   anchor: ContextualMenuAnchor
@@ -45,6 +45,13 @@ const DOCK_OPTIONS_MENU: ContextualMenuItem = {
   ],
 }
 
+function sortWindowsByMinimizedAt(windows: WindowState[]) {
+  return [...windows].sort((left, right) => (
+    (left.minimizedAt ?? 0) - (right.minimizedAt ?? 0)
+    || left.openedAt - right.openedAt
+  ))
+}
+
 function appendSection(target: ContextualMenuItem[], section: ContextualMenuItem[]) {
   if (section.length === 0) return
 
@@ -62,6 +69,11 @@ function MinimizedWindowPreview(props: { appIcon: string; windowId: string }) {
     () => getWindowSnapshot(windowId),
     () => getWindowSnapshot(windowId),
   )
+  const snapshotStyle: CSSProperties | undefined = snapshot
+    ? snapshot.width >= snapshot.height
+      ? { width: '100%', height: 'auto' }
+      : { width: 'auto', height: '100%' }
+    : undefined
 
   return (
     <div
@@ -72,6 +84,7 @@ function MinimizedWindowPreview(props: { appIcon: string; windowId: string }) {
         <img
           className={styles['minimized-window-snapshot']}
           src={snapshot.dataUrl}
+          style={snapshotStyle}
           alt=""
         />
       )}
@@ -103,7 +116,7 @@ function Dock() {
   const [expandedMinimizedWindowIds, setExpandedMinimizedWindowIds] = useState<Set<string>>(() => new Set())
   const [restoringMinimizedWindowIds, setRestoringMinimizedWindowIds] = useState<Set<string>>(() => new Set())
   const dockMenuActionRef = useRef<DockMenuState | null>(null)
-  const minimizedWindows = windows.filter((window) => window.minimized)
+  const minimizedWindows = sortWindowsByMinimizedAt(windows.filter((window) => window.minimized))
   const restoringWindows = windows.filter((window) => restoringMinimizedWindowIds.has(window.id))
   const dockMinimizedWindows = [...minimizedWindows, ...restoringWindows.filter((window) => !window.minimized)]
   const minimizedWindowIds = minimizedWindows.map((window) => window.id)
@@ -293,10 +306,6 @@ function Dock() {
   }
 
   const restoreMinimizedWindow = (windowId: string) => {
-    const source = document.querySelector<HTMLElement>(
-      `[data-minimized-window-id="${windowId}"] [data-window-minimize-target="true"]`,
-    )
-
     const finishRestoringSlot = () => {
       setRestoringMinimizedWindowIds((currentIds) => {
         const nextIds = new Set(currentIds)
@@ -310,43 +319,11 @@ function Dock() {
           nextIds.delete(windowId)
           return nextIds
         })
-      }, 280)
+      }, WINDOW_RESTORE_TRANSITION_DURATION_MS)
     }
 
-    if (!source || !document.startViewTransition) {
-      focusWindow(windowId)
-      deleteWindowSnapshot(windowId)
-      finishRestoringSlot()
-      return
-    }
-
-    const transitionName = `restore-window-${windowId.replace(/[^a-zA-Z0-9_-]/g, '-')}`
-    source.style.viewTransitionName = transitionName
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        focusWindow(windowId)
-      })
-
-      const target = document.querySelector<HTMLElement>(
-        `[data-window-id="${windowId}"]`,
-      )
-
-      if (target) {
-        target.style.viewTransitionName = transitionName
-      }
-    })
-
-    void transition.finished.finally(() => {
-      const target = document.querySelector<HTMLElement>(
-        `[data-window-id="${windowId}"]`,
-      )
-
-      source.style.viewTransitionName = ''
-      if (target) target.style.viewTransitionName = ''
-      deleteWindowSnapshot(windowId)
-      finishRestoringSlot()
-    })
+    focusWindow(windowId)
+    finishRestoringSlot()
   }
 
   return (

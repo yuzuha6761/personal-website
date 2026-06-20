@@ -7,6 +7,7 @@ export interface WindowState {
   position: { x: number; y: number }
   size: { width: number; height: number }
   minimized: boolean
+  minimizedAt?: number
   maximized: boolean
   zIndex: number
   openedAt: number

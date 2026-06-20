@@ -1,9 +1,13 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
-import { flushSync } from 'react-dom'
 import type { WindowState } from '~types'
 import { resolveApplication } from '../applications/registry'
 import { resolveRemSizeToPx } from '../../services/window'
-import { createWindowSnapshot, captureWindowSnapshot, publishWindowSnapshot } from '../../services/window-snapshots'
+import { captureWindowSnapshot, deleteWindowSnapshot } from '../../services/window-snapshots'
+import {
+  consumeWindowRestoreOrigin,
+  type WindowRestoreOrigin,
+  WINDOW_RESTORE_TRANSITION_DURATION_MS,
+} from '../../services/window-restore-transition'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import { Circle, Minus, Plus, X } from 'lucide-react'
 import { AppIcon } from '../icons/AppIcon'
@@ -38,6 +42,12 @@ interface WindowFrame {
 }
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+interface WindowAnimationStyle {
+  opacity: number
+  transform: string
+  transition: string
+}
+
 type WindowInteraction =
   | {
       type: 'drag'
@@ -111,6 +121,27 @@ function getResizeCursor(direction: ResizeDirection) {
 function getResizeHandleSizePx() {
   const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
   return rootFontSize * WINDOW_RESIZE_HANDLE_SIZE_REM
+}
+
+function getWindowRestoreStyle(
+  origin: WindowRestoreOrigin,
+  frame: WindowFrame,
+): WindowAnimationStyle {
+  const resizeHandleSize = getResizeHandleSizePx()
+  const visibleWidth = frame.size.width
+  const visibleHeight = frame.size.height
+  const scale = Math.max(
+    0.05,
+    Math.min(origin.width / visibleWidth, origin.height / visibleHeight),
+  )
+  const x = origin.left + ((origin.width - visibleWidth * scale) / 2) - (resizeHandleSize * scale)
+  const y = origin.top + ((origin.height - visibleHeight * scale) / 2) - (resizeHandleSize * scale)
+
+  return {
+    opacity: 1,
+    transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`,
+    transition: 'none',
+  }
 }
 
 function getRemPx(rem: number) {
@@ -218,28 +249,6 @@ function measureExpandedMinimizeTarget(target: HTMLElement) {
   slot.style.width = previousWidth
 
   return rect
-}
-
-function forceExpandedMinimizeSlot(slot: HTMLElement) {
-  const dock = slot.closest<HTMLElement>('[data-position]')
-  const dockPosition = dock?.dataset.position
-  const dockRect = dock?.getBoundingClientRect()
-  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
-  const slotSize = Math.max(
-    0,
-    ((dockPosition === 'bottom' ? dockRect?.height : dockRect?.width) ?? 0) - (rootFontSize * 0.5),
-  )
-
-  if (dockPosition === 'bottom') {
-    slot.style.width = `${slotSize}px`
-  } else {
-    slot.style.height = `${slotSize}px`
-  }
-}
-
-function clearForcedMinimizeSlot(slot: HTMLElement) {
-  slot.style.height = ''
-  slot.style.width = ''
 }
 
 function getWindowFramePath(width: number, height: number) {
@@ -415,11 +424,14 @@ function Window(props: WindowProps) {
     position: window.position,
     size: window.size,
   })
-  const [minimizeAnimationStyle, setMinimizeAnimationStyle] = useState<{
-    opacity: number
-    transform: string
-    transition: string
-  } | null>(null)
+  const restoreOriginRef = useRef<WindowRestoreOrigin | undefined>(consumeWindowRestoreOrigin(window.id))
+  const [minimizeAnimationStyle, setMinimizeAnimationStyle] = useState<WindowAnimationStyle | null>(null)
+  const [restoreAnimationStyle, setRestoreAnimationStyle] = useState<WindowAnimationStyle | null>(() => (
+    restoreOriginRef.current ? getWindowRestoreStyle(restoreOriginRef.current, {
+      position: window.position,
+      size: window.size,
+    }) : null
+  ))
   const frameRef = useRef(frame)
   frameRef.current = frame
   const frameHeightRef = useRef(frame.size.height)
@@ -435,6 +447,7 @@ function Window(props: WindowProps) {
   minSizeRef.current = minSize
   const resizeHandleSizeRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM}rem`
   const hitAreaSizeOffsetRem = `${WINDOW_RESIZE_HANDLE_SIZE_REM * 2}rem`
+  const baseWindowTransform = `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`
   const trafficLightsTopRem = fullSizeContentView
     ? trafficLightsPosition?.top ?? DEFAULT_TRAFFIC_LIGHT_POSITION_REM.top
     : DEFAULT_TRAFFIC_LIGHT_POSITION_REM.top
@@ -572,6 +585,37 @@ function Window(props: WindowProps) {
     }
   }, [minimizing, onMinimizeAnimationEnd, window.id])
 
+  useLayoutEffect(() => {
+    const origin = restoreOriginRef.current
+    if (!origin) return
+
+    const transition = [
+      `transform ${WINDOW_RESTORE_TRANSITION_DURATION_MS}ms cubic-bezier(.2,.8,.2,1)`,
+      `opacity ${WINDOW_RESTORE_TRANSITION_DURATION_MS}ms ease`,
+    ].join(', ')
+    let secondFrame: number | null = null
+    const animationFrame = globalThis.window.requestAnimationFrame(() => {
+      secondFrame = globalThis.window.requestAnimationFrame(() => {
+        setRestoreAnimationStyle({
+          opacity: 1,
+          transform: baseWindowTransform,
+          transition,
+        })
+      })
+    })
+    const cleanupTimer = globalThis.window.setTimeout(() => {
+      setRestoreAnimationStyle(null)
+      deleteWindowSnapshot(window.id)
+      restoreOriginRef.current = undefined
+    }, WINDOW_RESTORE_TRANSITION_DURATION_MS + 80)
+
+    return () => {
+      globalThis.window.cancelAnimationFrame(animationFrame)
+      if (secondFrame !== null) globalThis.window.cancelAnimationFrame(secondFrame)
+      globalThis.window.clearTimeout(cleanupTimer)
+    }
+  }, [baseWindowTransform, window.id])
+
   useEffect(() => {
     if (!heightTransition) return
 
@@ -696,60 +740,15 @@ function Window(props: WindowProps) {
     }
   }
 
-  const minimizeToDock = async () => {
+  const minimizeToDock = () => {
     const source = visibleWindowRef.current
 
-    if (!source || !document.startViewTransition) {
-      if (source) {
-        scheduleWindowSnapshotCapture(window.id, source)
-      }
-      onFrameChange(window.id, frameRef.current)
-      onMinimize(window.id)
-      return
+    if (source) {
+      scheduleWindowSnapshotCapture(window.id, source)
     }
 
-    const transitionName = `minimize-window-${window.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`
-    const snapshot = await createWindowSnapshot(source)
-
-    if (snapshot) {
-      publishWindowSnapshot(window.id, snapshot)
-    }
-
-    source.style.viewTransitionName = transitionName
-
-    const transition = document.startViewTransition(() => {
-      flushSync(() => {
-        onFrameChange(window.id, frameRef.current)
-        onMinimize(window.id)
-        onMinimizeAnimationEnd(window.id)
-      })
-
-      const target = document.querySelector<HTMLElement>(
-        `[data-minimized-window-id="${window.id}"] [data-window-minimize-target="true"]`,
-      )
-      const slot = target?.closest<HTMLElement>('[data-minimized-window-id]')
-
-      if (slot) {
-        forceExpandedMinimizeSlot(slot)
-      }
-
-      if (target) {
-        target.style.viewTransitionName = transitionName
-      }
-    })
-
-    void transition.finished.finally(() => {
-      const target = document.querySelector<HTMLElement>(
-        `[data-minimized-window-id="${window.id}"] [data-window-minimize-target="true"]`,
-      )
-      const slot = target?.closest<HTMLElement>('[data-minimized-window-id]')
-
-      if (source.isConnected) source.style.viewTransitionName = ''
-      if (target) target.style.viewTransitionName = ''
-      if (slot) {
-        clearForcedMinimizeSlot(slot)
-      }
-    })
+    onFrameChange(window.id, frameRef.current)
+    onMinimize(window.id)
   }
 
   return (
@@ -764,13 +763,13 @@ function Window(props: WindowProps) {
         width: `calc(${frame.size.width}px + ${hitAreaSizeOffsetRem})`,
         height: `calc(${frame.size.height}px + ${hitAreaSizeOffsetRem})`,
         cursor: cursorStyle,
-        contain: minimizing ? 'paint' : undefined,
-        opacity: minimizeAnimationStyle?.opacity ?? 1,
-        pointerEvents: minimizing ? 'none' : undefined,
-        transform: minimizeAnimationStyle?.transform ?? `translate(calc(${frame.position.x}px - ${resizeHandleSizeRem}), calc(${frame.position.y}px - ${resizeHandleSizeRem}))`,
+        contain: minimizing || restoreAnimationStyle ? 'paint' : undefined,
+        opacity: minimizeAnimationStyle?.opacity ?? restoreAnimationStyle?.opacity ?? 1,
+        pointerEvents: minimizing || restoreAnimationStyle ? 'none' : undefined,
+        transform: minimizeAnimationStyle?.transform ?? restoreAnimationStyle?.transform ?? baseWindowTransform,
         transformOrigin: 'top left',
-        transition: minimizeAnimationStyle?.transition ?? heightTransition,
-        willChange: minimizing ? 'transform, opacity' : undefined,
+        transition: minimizeAnimationStyle?.transition ?? restoreAnimationStyle?.transition ?? heightTransition,
+        willChange: minimizing || restoreAnimationStyle ? 'transform, opacity' : undefined,
         zIndex: window.zIndex,
       }}
     >

@@ -8,6 +8,7 @@ import {
 } from '../components/applications/registry'
 import { findSeekerMainWindow, SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
 import { createWindowState, getNextZIndex } from '../services/window'
+import { prepareWindowRestoreTransition } from '../services/window-restore-transition'
 import useAppStore from './app'
 
 const DOCK_ICON_BOUNCE_DURATION_MS = 624
@@ -39,6 +40,16 @@ function getFrontmostWindow(windows: WindowStore['windows'], appId: AppId) {
     .sort((left, right) => right.zIndex - left.zIndex)[0]
 }
 
+function getLastMinimizedWindow(windows: WindowStore['windows']) {
+  return windows
+    .filter((window) => window.minimized)
+    .sort((left, right) => (
+      (right.minimizedAt ?? 0) - (left.minimizedAt ?? 0)
+      || right.zIndex - left.zIndex
+      || right.openedAt - left.openedAt
+    ))[0]
+}
+
 const useWindowStore = create<WindowStore>((set, get) => ({
   windows: [],
   activeWindowId: null,
@@ -65,6 +76,21 @@ const useWindowStore = create<WindowStore>((set, get) => ({
 
     useAppStore.getState().launchApp(appId)
 
+    const appWindows = getAppWindows(get().windows, appId)
+    const visibleWindows = getVisibleAppWindows(get().windows, appId)
+
+    if (visibleWindows.length > 0) {
+      const frontmost = getFrontmostWindow(get().windows, appId)!
+      get().focusWindow(frontmost.id)
+      return frontmost.id
+    }
+
+    if (appWindows.length > 0) {
+      const lastMinimized = getLastMinimizedWindow(appWindows)!
+      get().focusWindow(lastMinimized.id)
+      return lastMinimized.id
+    }
+
     const windowHandlers = getApplicationWindowHandlers(appId)
     if (windowHandlers?.openApp) {
       const handledWindowId = windowHandlers.openApp({
@@ -73,13 +99,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
         options,
         openWindow: (targetAppId, targetOptions) => get().openWindow(targetAppId, targetOptions),
         focusWindow: (windowId) => get().focusWindow(windowId),
-        restoreWindow: (windowId) => {
-          set((state) => ({
-            windows: state.windows.map((window) => (
-              window.id === windowId ? { ...window, minimized: false } : window
-            )),
-          }))
-        },
+        restoreWindow: (windowId) => get().focusWindow(windowId),
       })
 
       if (handledWindowId) return handledWindowId
@@ -88,49 +108,11 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     if (appId === 'seeker') {
       const mainWindow = findSeekerMainWindow(get().windows)
       if (mainWindow) {
-        if (mainWindow.minimized) {
-          set((state) => ({
-            windows: state.windows.map((window) => (
-              window.id === mainWindow.id ? { ...window, minimized: false } : window
-            )),
-          }))
-        }
         get().focusWindow(mainWindow.id)
         return mainWindow.id
       }
 
       return get().openWindow(appId, { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
-    }
-
-    const appWindows = getAppWindows(get().windows, appId)
-    const visibleWindows = getVisibleAppWindows(get().windows, appId)
-
-    if (application.singleInstance) {
-      const existing = appWindows[0]
-      if (existing) {
-        if (existing.minimized) {
-          set((state) => ({
-            windows: state.windows.map((window) => (
-              window.id === existing.id ? { ...window, minimized: false } : window
-            )),
-          }))
-        }
-        get().focusWindow(existing.id)
-        return existing.id
-      }
-    } else if (visibleWindows.length > 0) {
-      const frontmost = getFrontmostWindow(get().windows, appId)!
-      get().focusWindow(frontmost.id)
-      return frontmost.id
-    } else if (appWindows.length > 0) {
-      set((state) => ({
-        windows: state.windows.map((window) => (
-          window.appId === appId ? { ...window, minimized: false } : window
-        )),
-      }))
-      const frontmost = getFrontmostWindow(get().windows, appId)!
-      get().focusWindow(frontmost.id)
-      return frontmost.id
     }
 
     return get().openWindow(appId, options)
@@ -194,6 +176,8 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     const window = get().windows.find((item) => item.id === windowId)
     if (!window || window.minimized) return
 
+    const minimizedAt = Date.now()
+
     set((state) => {
       const { focusedTarget } = state
       const focusedMinimized = focusedTarget.type === 'window'
@@ -201,7 +185,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
 
       return {
         windows: state.windows.map((item) => (
-          item.id === windowId ? { ...item, minimized: true } : item
+          item.id === windowId ? { ...item, minimized: true, minimizedAt } : item
         )),
         activeWindowId: state.activeWindowId === windowId ? null : state.activeWindowId,
         focusedTarget: focusedMinimized ? { type: 'desktop' } : state.focusedTarget,
@@ -266,6 +250,8 @@ const useWindowStore = create<WindowStore>((set, get) => ({
   hideApp: (appId) => {
     if (!useAppStore.getState().isAppRunning(appId)) return
 
+    const minimizedAt = Date.now()
+
     set((state) => {
       const { focusedTarget } = state
       const activeWindow = state.activeWindowId
@@ -279,7 +265,9 @@ const useWindowStore = create<WindowStore>((set, get) => ({
 
       return {
         windows: state.windows.map((window) => (
-          window.appId === appId ? { ...window, minimized: true } : window
+          window.appId === appId
+            ? { ...window, minimized: true, minimizedAt: minimizedAt + window.zIndex }
+            : window
         )),
         activeWindowId: hideActiveWindow ? null : state.activeWindowId,
         focusedTarget: hideFocusedWindow ? { type: 'desktop' } : state.focusedTarget,
@@ -330,7 +318,8 @@ const useWindowStore = create<WindowStore>((set, get) => ({
   },
 
   bringToFront: (windowId) => {
-    set((state) => {
+    const targetWindow = get().windows.find((window) => window.id === windowId)
+    const updateFocusState = () => set((state) => {
       const target = state.windows.find((window) => window.id === windowId)
       if (!target) return state
 
@@ -340,10 +329,15 @@ const useWindowStore = create<WindowStore>((set, get) => ({
         activeWindowId: windowId,
         focusedTarget: { type: 'window', windowId },
         windows: state.windows.map((window) =>
-          window.id === windowId ? { ...window, zIndex, minimized: false } : window,
+          window.id === windowId
+            ? { ...window, zIndex, minimized: false, minimizedAt: undefined }
+            : window,
         ),
       }
     })
+
+    if (targetWindow?.minimized) prepareWindowRestoreTransition(windowId)
+    updateFocusState()
 
     const window = get().windows.find((item) => item.id === windowId)
     if (window) {
