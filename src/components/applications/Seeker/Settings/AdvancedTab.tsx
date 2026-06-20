@@ -12,7 +12,7 @@ function AdvancedTab() {
   const [searchScope, setSearchScope] = useState('this-mac')
 
   return (
-    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-#2f2f2f">
+    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
       <div className="flex flex-col gap-[.42rem]">
         <Checkbox checked={showAllExtensions} label="显示所有文件扩展名" onChange={setShowAllExtensions} />
         <Checkbox checked={warnBeforeExtensionChange} label="更改扩展名之前显示警告" onChange={setWarnBeforeExtensionChange} />

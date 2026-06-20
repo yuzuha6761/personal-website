@@ -1,5 +1,7 @@
 import { Minus, Plus } from 'lucide-react'
+import { useSystemAppearanceDarkMode } from '../../hooks/useSystemAppearanceDarkMode'
 import { AppIcon } from '../icons/AppIcon'
+import './Stepper.scss'
 
 interface StepperProps {
   onIncrement?: () => void
@@ -17,12 +19,13 @@ function Stepper(props: StepperProps) {
     incrementDisabled = false,
     decrementDisabled = false,
   } = props
+  const isDarkMode = useSystemAppearanceDarkMode()
 
   return (
-    <div className="inline-flex items-center gap-[.18rem]">
+    <div className="inline-flex items-center gap-[.18rem]" data-stepper-appearance={isDarkMode ? 'dark' : 'light'}>
       <button
         aria-label="Decrease"
-        className={`${stepperButtonClass} ${decrementDisabled ? 'bg-#e8e8e8 text-#b0b0b0' : 'bg-[var(--system-color-solid,#ef5ba1)] text-white'}`}
+        className={`${stepperButtonClass} ${decrementDisabled ? 'bg-[var(--stepper-disabled-bg,#e8e8e8)] text-[var(--stepper-disabled-text,#b0b0b0)]' : 'bg-[var(--system-color-solid,#ef5ba1)] text-white'}`}
         disabled={decrementDisabled}
         onClick={onDecrement}
         type="button"
@@ -31,7 +34,7 @@ function Stepper(props: StepperProps) {
       </button>
       <button
         aria-label="Increase"
-        className={`${stepperButtonClass} ${incrementDisabled ? 'bg-#e8e8e8 text-#b0b0b0' : 'bg-#f3f3f3 text-#8a8a8a border border-#d8d8d8'}`}
+        className={`${stepperButtonClass} ${incrementDisabled ? 'bg-[var(--stepper-disabled-bg,#e8e8e8)] text-[var(--stepper-disabled-text,#b0b0b0)]' : 'bg-[var(--stepper-control-bg,#f3f3f3)] text-[var(--stepper-muted-text,#8a8a8a)] border border-[var(--stepper-control-border,#d8d8d8)]'}`}
         disabled={incrementDisabled}
         onClick={onIncrement}
         type="button"

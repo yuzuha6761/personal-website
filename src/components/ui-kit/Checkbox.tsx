@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Check, Minus } from 'lucide-react'
+import { useSystemAppearanceDarkMode } from '../../hooks/useSystemAppearanceDarkMode'
 import { AppIcon } from '../icons/AppIcon'
 import { useWindowFocus } from '../Window/FocusContext'
+import './Checkbox.scss'
 
 interface CheckboxProps {
   checked?: boolean
@@ -12,7 +14,7 @@ interface CheckboxProps {
 }
 
 const checkboxBaseClass = 'flex-[0_0_1rem] w-4 h-4 rounded-[.22rem] border flex items-center justify-center'
-const checkboxInactiveBoxClass = 'border-#b8b8b8 bg-white shadow-[inset_0_1px_3px_#0000002e,inset_0_0_0_1px_#00000014]'
+const checkboxInactiveBoxClass = 'checkbox-box--inactive border-[var(--checkbox-empty-border,#b8b8b8)] bg-[var(--checkbox-empty-bg,#ffffff)]'
 
 function Checkbox(props: CheckboxProps) {
   const {
@@ -23,6 +25,7 @@ function Checkbox(props: CheckboxProps) {
     onChange,
   } = props
   const focused = useWindowFocus()?.focused ?? true
+  const isDarkMode = useSystemAppearanceDarkMode()
   const active = checked || indeterminate
   const boxClass = active && focused
     ? 'border-[var(--system-color-solid,#ef5ba1)] bg-[var(--system-color-solid,#ef5ba1)]'
@@ -32,7 +35,10 @@ function Checkbox(props: CheckboxProps) {
     : ''
 
   return (
-    <label className={`inline-flex w-fit max-w-full self-start items-start gap-[.55rem] ${disabled ? 'opacity-45 cursor-default' : 'cursor-default'}`}>
+    <label
+      className={`inline-flex w-fit max-w-full self-start items-start gap-[.55rem] ${disabled ? 'opacity-45 cursor-default' : 'cursor-default'}`}
+      data-checkbox-appearance={isDarkMode ? 'dark' : 'light'}
+    >
       <button
         aria-checked={indeterminate ? 'mixed' : checked}
         className={`${checkboxBaseClass} ${boxClass} border-0 p-0 mt-[.08rem]`}
@@ -47,7 +53,7 @@ function Checkbox(props: CheckboxProps) {
             ? <AppIcon className={`w-[.82rem] h-[.82rem] ${iconClass}`} icon={Check} strokeWidth={3} />
             : null}
       </button>
-      {label ? <span className="min-w-0 text-[.84rem] leading-[1.28rem] text-#2f2f2f">{label}</span> : null}
+      {label ? <span className="min-w-0 text-[.84rem] leading-[1.28rem] text-[var(--checkbox-label-text,#2f2f2f)]">{label}</span> : null}
     </label>
   )
 }

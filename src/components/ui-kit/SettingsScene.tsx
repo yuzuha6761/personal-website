@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { useSystemAppearanceDarkMode } from '../../hooks/useSystemAppearanceDarkMode'
 import { AppIcon } from '../icons/AppIcon'
 import { dragExcludeProps, dragHandleProps } from '../Window/Drag'
 import { useWindowFocus } from '../Window/FocusContext'
 import { useWindowResize } from '../Window/ResizeContext'
+import './SettingsScene.scss'
 
 const TAB_TRANSITION_DURATION = 200
 
@@ -36,7 +38,16 @@ function SettingsScene(props: SettingsSceneProps) {
   const { title, tabs, defaultTabId } = props
   const resizeContext = useWindowResize()
   const focused = useWindowFocus()?.focused ?? true
-  const toolbarBackgroundClass = focused ? 'bg-#fcfcfc' : 'bg-#f0f0f0'
+  const isDarkMode = useSystemAppearanceDarkMode()
+  const backgroundClass = focused
+    ? 'bg-[var(--settings-scene-bg-focused,#f6f6f6)]'
+    : 'bg-[var(--settings-scene-bg-unfocused,#f6f6f6)]'
+  const contentBackgroundClass = focused
+    ? 'bg-[var(--settings-scene-content-bg-focused,#f6f6f6)]'
+    : 'bg-[var(--settings-scene-content-bg-unfocused,#f6f6f6)]'
+  const toolbarBackgroundClass = focused
+    ? 'bg-[var(--settings-scene-toolbar-focused,#fcfcfc)]'
+    : 'bg-[var(--settings-scene-toolbar-unfocused,#f0f0f0)]'
   const initialTabId = defaultTabId ?? tabs[0]?.id ?? ''
   const [activeTabId, setActiveTabId] = useState(initialTabId)
   const [displayedTabId, setDisplayedTabId] = useState(initialTabId)
@@ -93,21 +104,26 @@ function SettingsScene(props: SettingsSceneProps) {
 
   if (!displayedTab) return null
 
-  const titleClass = focused ? 'text-#2f2f2f' : 'text-#a9a8a9'
+  const titleClass = focused
+    ? 'text-[var(--settings-scene-title-focused,#2f2f2f)]'
+    : 'text-[var(--settings-scene-title-unfocused,#a9a8a9)]'
   const getTabContentClass = (selected: boolean) => {
     if (focused) {
       return selected
         ? 'text-[var(--system-color-solid,#ef5ba1)] group-active:text-[var(--system-color-solid,#ef5ba1)]'
-        : 'text-#777777 group-active:text-#272727'
+        : 'text-[var(--settings-scene-tab-text-focused,#777777)] group-active:text-[var(--settings-scene-tab-text-focused-active,#272727)]'
     }
 
     return selected
-      ? 'text-#717171 group-hover:text-#272727'
-      : 'text-#bbbbbb group-hover:text-#717171'
+      ? 'text-[var(--settings-scene-tab-selected-unfocused,#717171)] group-hover:text-[var(--settings-scene-tab-text-focused-active,#272727)]'
+      : 'text-[var(--settings-scene-tab-text-unfocused,#bbbbbb)] group-hover:text-[var(--settings-scene-tab-text-unfocused-hover,#717171)]'
   }
 
   return (
-    <div className={`relative w-full bg-#f6f6f6 flex flex-col ${isTransitioning ? 'h-full' : ''}`}>
+    <div
+      className={`relative w-full flex flex-col ${backgroundClass} ${isTransitioning ? 'h-full' : ''}`}
+      data-settings-scene-appearance={isDarkMode ? 'dark' : 'light'}
+    >
       <div className={toolbarBackgroundClass} ref={toolbarRef} {...dragHandleProps}>
         <div className={`h-[2.15rem] flex items-center justify-center text-[.92rem] font-700 ${titleClass}`}>
           {title}
@@ -121,8 +137,8 @@ function SettingsScene(props: SettingsSceneProps) {
               <div
                 className={`group min-w-[3.4rem] rounded-[.48rem] px-[.42rem] py-[.1rem] cursor-default flex flex-col items-center gap-[.1rem] ${
                   selected
-                    ? 'bg-#e3e2e2 hover:bg-#e3e2e2 active:bg-#e3e2e2'
-                    : 'bg-transparent hover:bg-#e3e2e2 active:bg-#d5d4d5'
+                    ? 'bg-[var(--settings-scene-tab-selected,#e3e2e2)] hover:bg-[var(--settings-scene-tab-selected-hover,#e3e2e2)] active:bg-[var(--settings-scene-tab-selected-active,#e3e2e2)]'
+                    : 'bg-transparent hover:bg-[var(--settings-scene-tab-hover,#e3e2e2)] active:bg-[var(--settings-scene-tab-active,#d5d4d5)]'
                 }`}
                 key={tab.id}
                 onClick={() => switchTab(tab.id)}
@@ -143,16 +159,16 @@ function SettingsScene(props: SettingsSceneProps) {
             )
           })}
         </div>
-        <div className="h-px bg-#d7d7d7" />
+        <div className="h-px bg-[var(--settings-scene-divider,#d7d7d7)]" />
       </div>
 
       {!isTransitioning && (
-        <div ref={contentRef}>
+        <div className={contentBackgroundClass} ref={contentRef}>
           {displayedTab.content}
         </div>
       )}
 
-      {isTransitioning && <div className="flex-1 bg-#f6f6f6" />}
+      {isTransitioning && <div className={`flex-1 ${contentBackgroundClass}`} />}
 
       {isTransitioning && measuringTab && (
         <div

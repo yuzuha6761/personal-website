@@ -1,0 +1,31 @@
+@mixin checkbox-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --checkbox-#{$name}: #{$value};
+  }
+}
+
+$checkbox-light-theme: (
+  empty-bg: #ffffff,
+  empty-border: #b8b8b8,
+  empty-box-shadow: unquote('inset 0 1px 3px #0000002e, inset 0 0 0 1px #00000014'),
+  label-text: #2f2f2f,
+);
+
+$checkbox-dark-theme: (
+  empty-bg: #2a2a2a,
+  empty-border: #565656,
+  empty-box-shadow: unquote('inset 0 1px 3px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06)'),
+  label-text: #eaeaea,
+);
+
+[data-checkbox-appearance='light'] {
+  @include checkbox-theme-variables($checkbox-light-theme);
+}
+
+[data-checkbox-appearance='dark'] {
+  @include checkbox-theme-variables($checkbox-dark-theme);
+}
+
+.checkbox-box--inactive {
+  box-shadow: var(--checkbox-empty-box-shadow, inset 0 1px 3px #0000002e, inset 0 0 0 1px #00000014);
+}

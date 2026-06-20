@@ -15,7 +15,7 @@ function GeneralTab() {
   const [openInTabs, setOpenInTabs] = useState(true)
 
   return (
-    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-#2f2f2f">
+    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
       <div className="mb-[.72rem] font-600">在桌面上显示这些项目：</div>
       <div className="flex flex-col gap-[.42rem] mb-[1rem]">
         <Checkbox
@@ -66,7 +66,7 @@ function GeneralTab() {
           label="同步“桌面与文稿”文件夹"
           onChange={setSyncDesktopDocuments}
         />
-        <div className="pl-[1.55rem] text-[.76rem] leading-[1.2rem] text-#8a8a8a">
+        <div className="pl-[1.55rem] text-[.76rem] leading-[1.2rem] text-[var(--settings-scene-muted-text,#8a8a8a)]">
           你的“桌面与文稿”文件夹正与 iCloud 云盘同步。你也可以从其他设备访问。
         </div>
       </div>

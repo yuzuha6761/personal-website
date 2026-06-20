@@ -1,0 +1,79 @@
+@mixin settings-scene-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --settings-scene-#{$name}: #{$value};
+  }
+}
+
+$settings-scene-light-theme: (
+  bg-focused: #f6f6f6,
+  bg-unfocused: #f6f6f6,
+  content-bg-focused: #f6f6f6,
+  content-bg-unfocused: #f6f6f6,
+  toolbar-focused: #fcfcfc,
+  toolbar-unfocused: #f0f0f0,
+  title-focused: #2f2f2f,
+  title-unfocused: #a9a8a9,
+  text: #2f2f2f,
+  muted-text: #8a8a8a,
+  icon: #8f8f8f,
+  divider: #d7d7d7,
+  panel-bg: #f7f7f7,
+  panel-border: #d5d5d5,
+  row-light: #ffffff,
+  row-dark: #f7f7f7,
+  control-bg: #ffffff,
+  control-border: #d2d2d2,
+  disabled-bg: #e8e8e8,
+  disabled-text: #b0b0b0,
+  tab-selected: #e3e2e2,
+  tab-selected-hover: #e3e2e2,
+  tab-selected-active: #e3e2e2,
+  tab-hover: #e3e2e2,
+  tab-active: #d5d4d5,
+  tab-text-focused: #777777,
+  tab-text-focused-active: #272727,
+  tab-text-unfocused: #bbbbbb,
+  tab-text-unfocused-hover: #717171,
+  tab-selected-unfocused: #717171,
+);
+
+$settings-scene-dark-theme: (
+  bg-focused: #383838,
+  bg-unfocused: #282828,
+  content-bg-focused: #282828,
+  content-bg-unfocused: #282828,
+  toolbar-focused: #383838,
+  toolbar-unfocused: #282828,
+  title-focused: #eaeaea,
+  title-unfocused: #696969,
+  text: #eaeaea,
+  muted-text: #858585,
+  icon: #9a9a9a,
+  divider: #000000,
+  panel-bg: #252525,
+  panel-border: #3a3a3a,
+  row-light: #242424,
+  row-dark: #2b2b2b,
+  control-bg: #2a2a2a,
+  control-border: #464646,
+  disabled-bg: #333333,
+  disabled-text: #6f6f6f,
+  tab-selected: #454545,
+  tab-selected-hover: #454545,
+  tab-selected-active: #4f4f4f,
+  tab-hover: #383838,
+  tab-active: #4f4f4f,
+  tab-text-focused: #bdbdbd,
+  tab-text-focused-active: #ffffff,
+  tab-text-unfocused: #686868,
+  tab-text-unfocused-hover: #9a9a9a,
+  tab-selected-unfocused: #8a8a8a,
+);
+
+[data-settings-scene-appearance='light'] {
+  @include settings-scene-theme-variables($settings-scene-light-theme);
+}
+
+[data-settings-scene-appearance='dark'] {
+  @include settings-scene-theme-variables($settings-scene-dark-theme);
+}

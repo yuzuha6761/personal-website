@@ -19,19 +19,19 @@ const favoriteTags = tagItems.slice(0, 7)
 
 function TagsTab() {
   return (
-    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-#2f2f2f">
+    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
       <div className="mb-[.55rem] font-600">在边栏显示这些标签：</div>
 
-      <div className="rounded-[.42rem] border border-#d5d5d5 overflow-hidden bg-white">
+      <div className="rounded-[.42rem] border border-[var(--settings-scene-panel-border,#d5d5d5)] overflow-hidden bg-[var(--settings-scene-row-light,#ffffff)]">
         {tagItems.map((tag, index) => (
           <div
             className={`h-[1.72rem] px-[.62rem] flex items-center gap-[.55rem] ${
-              index % 2 === 0 ? 'bg-white' : 'bg-#f7f7f7'
+              index % 2 === 0 ? 'bg-[var(--settings-scene-row-light,#ffffff)]' : 'bg-[var(--settings-scene-row-dark,#f7f7f7)]'
             }`}
             key={tag.id}
           >
             <span
-              className="w-[.72rem] h-[.72rem] rounded-full border border-#d0d0d0"
+              className="w-[.72rem] h-[.72rem] rounded-full border border-[var(--settings-scene-panel-border,#d0d0d0)]"
               style={{ backgroundColor: tag.color }}
             />
             <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{tag.label}</span>
@@ -50,22 +50,22 @@ function TagsTab() {
         <Stepper />
       </div>
 
-      <div className="mt-[.72rem] text-[.76rem] leading-[1.2rem] text-#8a8a8a">
+      <div className="mt-[.72rem] text-[.76rem] leading-[1.2rem] text-[var(--settings-scene-muted-text,#8a8a8a)]">
         将你的个人收藏标签拖移到下方区域，以便在“Seeker”菜单中快速使用它们。
       </div>
 
-      <div className="mt-[.55rem] rounded-[.42rem] border border-#d5d5d5 bg-white px-[.72rem] py-[.62rem]">
-        <div className="text-[.76rem] text-#8a8a8a mb-[.45rem]">标签...</div>
+      <div className="mt-[.55rem] rounded-[.42rem] border border-[var(--settings-scene-panel-border,#d5d5d5)] bg-[var(--settings-scene-control-bg,#ffffff)] px-[.72rem] py-[.62rem]">
+        <div className="text-[.76rem] text-[var(--settings-scene-muted-text,#8a8a8a)] mb-[.45rem]">标签...</div>
         <div className="flex items-center justify-center gap-[.55rem] py-[.35rem]">
           {favoriteTags.map((tag) => (
             <span
-              className="w-[.82rem] h-[.82rem] rounded-full border border-#d0d0d0"
+              className="w-[.82rem] h-[.82rem] rounded-full border border-[var(--settings-scene-panel-border,#d0d0d0)]"
               key={tag.id}
               style={{ backgroundColor: tag.color }}
             />
           ))}
         </div>
-        <div className="text-center text-[.76rem] text-#8a8a8a mt-[.35rem]">个人收藏标签</div>
+        <div className="text-center text-[.76rem] text-[var(--settings-scene-muted-text,#8a8a8a)] mt-[.35rem]">个人收藏标签</div>
       </div>
     </div>
   )

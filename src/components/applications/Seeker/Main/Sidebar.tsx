@@ -4,13 +4,14 @@ import { AppIcon } from '~/components/icons/AppIcon'
 import SystemGlassSurface from '~/components/SystemGlassSurface'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { getRootFontSize } from '~/services/window'
-import { sidebarSections, tagItems } from '../data'
 import { seekerIcons } from '../icons'
+import useSeekerGlobalStore from '../store'
 
 const DEFAULT_WIDTH_REM = 10.65
 const MIN_WIDTH_REM = 9
 const HIDE_AT_REM = 4
 const MAIN_MIN_WIDTH_REM = 25
+const TAGS_SECTION_ID = 'tags'
 
 const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] p-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[1.1rem] h-[1.1rem] mr-[.3rem]'
@@ -42,6 +43,63 @@ function HairlineVerticalStrip({ className = '', color }: HairlineStripProps) {
   )
 }
 
+interface SidebarSectionTitleProps {
+  className: string
+  collapsed: boolean
+  sectionId: string
+  title: string
+  toggleCollapsed: (sectionId: string) => void
+}
+
+function SidebarSectionTitle({
+  className,
+  collapsed,
+  sectionId,
+  title,
+  toggleCollapsed,
+}: SidebarSectionTitleProps) {
+  return (
+    <div className={`group flex items-center justify-between ${className}`}>
+      <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{title}</span>
+      <button
+        aria-expanded={!collapsed}
+        aria-label={`${collapsed ? '展开' : '收起'}${title}`}
+        className="ml-[.35rem] flex h-[1.25rem] w-[1.25rem] shrink-0 items-center justify-center border-0 bg-transparent p-0 text-current opacity-0 transition-opacity duration-150 group-hover:opacity-80 hover:opacity-100 focus-visible:opacity-100"
+        onClick={() => toggleCollapsed(sectionId)}
+        type="button"
+      >
+        <AppIcon
+          className={`h-[1rem] w-[1rem] transition-transform duration-180 ease-out ${collapsed ? '' : 'rotate-90'}`}
+          icon={seekerIcons.chevronRight}
+          strokeWidth={2.4}
+        />
+      </button>
+    </div>
+  )
+}
+
+interface CollapsibleSidebarItemsProps {
+  children: React.ReactNode
+  collapsed: boolean
+}
+
+function CollapsibleSidebarItems({ children, collapsed }: CollapsibleSidebarItemsProps) {
+  return (
+    <div
+      className="grid overflow-hidden"
+      style={{
+        gridTemplateRows: collapsed ? '0fr' : '1fr',
+        opacity: collapsed ? 0 : 1,
+        transition: 'grid-template-rows 180ms ease, opacity 140ms ease',
+      }}
+    >
+      <div className="min-h-0 overflow-hidden">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 interface SidebarProps {
   containerRef: RefObject<HTMLDivElement | null>
 }
@@ -57,8 +115,16 @@ function resolveSidebarWidth(pointerRem: number, containerWidthRem: number) {
   return { visible: true, widthRem }
 }
 
+function isSidebarItemVisible(item: { checked?: boolean, indeterminate?: boolean }) {
+  return Boolean(item.checked || item.indeterminate)
+}
+
 function Sidebar({ containerRef }: SidebarProps) {
   const focused = useWindowFocus()?.focused ?? true
+  const sidebarSections = useSeekerGlobalStore((state) => state.sidebarSections)
+  const tagItems = useSeekerGlobalStore((state) => state.tagItems)
+  const collapsedSidebarSectionIds = useSeekerGlobalStore((state) => state.collapsedSidebarSectionIds)
+  const toggleSidebarSectionCollapsed = useSeekerGlobalStore((state) => state.toggleSidebarSectionCollapsed)
   const [widthRem, setWidthRem] = useState(DEFAULT_WIDTH_REM)
   const [visible, setVisible] = useState(true)
   const dragStateRef = useRef<{ pointerId: number } | null>(null)
@@ -78,6 +144,8 @@ function Sidebar({ containerRef }: SidebarProps) {
       ? 'var(--system-color-solid, #c13584)'
       : 'var(--system-sidebar-icon-color-muted, #ffb3da)',
   }
+  const tagSection = sidebarSections.find((section) => section.id === TAGS_SECTION_ID)
+  const showTagsSection = Boolean(tagSection?.items.some(isSidebarItemVisible) && tagItems.length > 0)
 
   const handleResizeMove = useCallback((clientX: number) => {
     const container = containerRef.current
@@ -141,30 +209,57 @@ function Sidebar({ containerRef }: SidebarProps) {
       ) : null}
       <div className="relative z-[1] h-[3.85rem]" />
       <div className="relative z-[1] h-[calc(100%-3.25rem)] overflow-hidden pt-0 pr-[.75rem] pb-[.9rem] pl-[.9rem]">
-        {sidebarSections.map((section) => (
-          <section className="mb-[1.08rem]" key={section.id}>
-            {section.title && <div className={`mb-[.25rem] ${sidebarTitleClass} text-[.78rem] font-700`}>{section.title}</div>}
-            {section.items.map((item) => (
-              <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={item.id}>
-                <AppIcon className={sidebarIconClass} icon={seekerIcons[item.icon]} style={sidebarIconColorStyle} />
-                <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.label}</span>
-              </div>
-            ))}
-          </section>
-        ))}
+        {sidebarSections.filter((section) => section.id !== TAGS_SECTION_ID).map((section) => {
+          const visibleItems = section.items.filter(isSidebarItemVisible)
+          const collapsed = collapsedSidebarSectionIds.includes(section.id)
 
-        <section className="mb-[1.08rem]">
-          <div className={`mb-[.34rem] ${sidebarTitleClass} text-[.74rem] font-700`}>标签</div>
-          {tagItems.map((tag) => (
-            <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={tag.id}>
-              <span
-                className="flex-[0_0_.55rem] h-[.55rem] mr-[.58rem] ml-[.22rem] rounded-full"
-                style={{ backgroundColor: tag.color, opacity: focused ? 1 : 0.42 }}
-              />
-              <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{tag.label}</span>
-            </div>
-          ))}
-        </section>
+          if (visibleItems.length === 0) return null
+
+          return (
+            <section className="mb-[1.08rem]" key={section.id}>
+              {section.title && (
+                <SidebarSectionTitle
+                  className={`mb-[.25rem] ${sidebarTitleClass} text-[.78rem] font-700`}
+                  collapsed={collapsed}
+                  sectionId={section.id}
+                  title={section.title}
+                  toggleCollapsed={toggleSidebarSectionCollapsed}
+                />
+              )}
+              <CollapsibleSidebarItems collapsed={collapsed}>
+                {visibleItems.map((item) => (
+                  <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={item.id}>
+                    <AppIcon className={sidebarIconClass} icon={seekerIcons[item.icon]} style={sidebarIconColorStyle} />
+                    <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.label}</span>
+                  </div>
+                ))}
+              </CollapsibleSidebarItems>
+            </section>
+          )
+        })}
+
+        {showTagsSection ? (
+          <section className="mb-[1.08rem]">
+            <SidebarSectionTitle
+              className={`mb-[.34rem] ${sidebarTitleClass} text-[.74rem] font-700`}
+              collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}
+              sectionId={TAGS_SECTION_ID}
+              title={tagSection?.title ?? '标签'}
+              toggleCollapsed={toggleSidebarSectionCollapsed}
+            />
+            <CollapsibleSidebarItems collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}>
+              {tagItems.map((tag) => (
+                <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={tag.id}>
+                  <span
+                    className="flex-[0_0_.55rem] h-[.55rem] mr-[.58rem] ml-[.22rem] rounded-full"
+                    style={{ backgroundColor: tag.color, opacity: focused ? 1 : 0.42 }}
+                  />
+                  <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{tag.label}</span>
+                </div>
+              ))}
+            </CollapsibleSidebarItems>
+          </section>
+        ) : null}
       </div>
 
       {visible && (

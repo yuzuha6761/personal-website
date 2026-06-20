@@ -19,6 +19,7 @@ export function shouldShowSeekerTabBar(tabCount: number): boolean {
 export type SeekerViewMode = 'icon' | 'list' | 'column' | 'gallery'
 
 export type SeekerSidebarIcon =
+  | 'airdrop'
   | 'clock'
   | 'applications'
   | 'movies'
@@ -32,12 +33,15 @@ export type SeekerSidebarIcon =
   | 'shared'
   | 'computer'
   | 'network'
+  | 'tag'
 
 export interface SeekerSidebarItem {
   id: string
   label: string
   icon: SeekerSidebarIcon
   active?: boolean
+  checked?: boolean
+  indeterminate?: boolean
 }
 
 export interface SeekerSidebarSection {
