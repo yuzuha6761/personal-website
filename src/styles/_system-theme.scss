@@ -1,0 +1,66 @@
+$system-light-theme: (
+  surface-base: #f4f4f4,
+  surface-elevated: #f7f7f7,
+  surface-window: #ffffff,
+  surface-window-inactive: #f0f0f0,
+  surface-window-title: #fcfcfc,
+  window-border: #cacaca,
+  surface-menu: rgba(255, 245, 242, 0.28),
+  surface-menu-border: #cacaca,
+  surface-dock: rgba(255, 255, 255, 0.18),
+  surface-dock-border: rgba(255, 255, 255, 0.2),
+  surface-dock-divider: rgba(0, 0, 0, 0.32),
+  surface-dock-shadow: 0 0 1rem rgba(0, 0, 0, 0.2),
+  surface-dock-tooltip: rgba(255, 255, 255, 0.38),
+  surface-dock-tooltip-border: rgba(255, 255, 255, 0.22),
+  surface-dock-tooltip-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.25),
+  dock-indicator: #000000,
+  surface-border: #dddddd,
+  surface-divider: rgba(0, 0, 0, 0.09),
+  text-primary: #1f2933,
+  text-secondary: #373737,
+  text-muted: #777777,
+  menu-icon-color: #171717,
+  color-menu-parent-highlight: rgba(255, 255, 255, 0.58),
+);
+
+$system-dark-theme: (
+  surface-base: #1e1e1e,
+  surface-elevated: #2c2c2e,
+  surface-window: #323234,
+  surface-window-inactive: #2a2a2c,
+  surface-window-title: #3a3a3c,
+  window-border: #4a4a4f,
+  surface-menu: rgba(6, 6, 12, 0.58),
+  surface-menu-border: #5c5c5e,
+  surface-dock: rgba(42, 42, 48, 0.5),
+  surface-dock-border: rgba(255, 255, 255, 0.18),
+  surface-dock-divider: rgba(255, 255, 255, 0.24),
+  surface-dock-shadow: 0 0 1.05rem rgba(0, 0, 0, 0.34),
+  surface-dock-tooltip: rgba(74, 74, 82, 0.62),
+  surface-dock-tooltip-border: rgba(255, 255, 255, 0.18),
+  surface-dock-tooltip-shadow: 0 0 0.45rem rgba(0, 0, 0, 0.32),
+  dock-indicator: #ffffff,
+  surface-border: #48484a,
+  surface-divider: rgba(255, 255, 255, 0.12),
+  text-primary: #f5f5f7,
+  text-secondary: #d1d1d6,
+  text-muted: #8e8e93,
+  menu-icon-color: #ffffff,
+  color-menu-parent-highlight: rgba(255, 255, 255, 0.12),
+);
+
+@mixin system-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --system-#{$name}: #{$value};
+  }
+}
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include system-theme-variables($system-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include system-theme-variables($system-dark-theme);
+}

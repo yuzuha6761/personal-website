@@ -107,12 +107,9 @@ export function applySystemSettingsAppearance(
   const { isDarkMode } = options
 
   root.dataset.appearance = state.appearance
-  root.dataset.resolvedAppearance = isDarkMode ? 'dark' : 'light'
   root.dataset.scrollBars = state.scrollBars
   root.dataset.scrollbarClick = state.scrollbarClick
   root.dataset.wallpaperTint = state.wallpaperTint ? 'true' : 'false'
-  root.classList.toggle('dark', isDarkMode)
-  root.style.colorScheme = isDarkMode ? 'dark' : 'light'
   applySystemTheme(root, isDarkMode)
   root.style.setProperty('--system-color', resolveColorValue(state.color))
   root.style.setProperty('--system-color-solid', resolveSolidColorHex(state.color))

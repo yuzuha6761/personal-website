@@ -4,6 +4,7 @@ import SeekerSettings from './Settings'
 import { getSeekerWindowKind, SEEKER_WINDOW_KIND } from './windows'
 import { useWindowFocus } from '../../Window/FocusContext'
 import useWindowStore from '../../../stores/window'
+import './theme.scss'
 
 function Seeker() {
   const windowId = useWindowFocus()?.windowId

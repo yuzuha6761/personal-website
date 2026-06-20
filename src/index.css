@@ -7,21 +7,6 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
-  --system-surface-base: #f4f4f4;
-  --system-surface-elevated: #f7f7f7;
-  --system-surface-window: #ffffff;
-  --system-surface-window-inactive: #f0f0f0;
-  --system-surface-window-title: #fcfcfc;
-  --system-surface-menu: rgba(241, 229, 226, 0.68);
-  --system-surface-menu-border: #cacaca;
-  --system-surface-border: #dddddd;
-  --system-surface-divider: rgba(0, 0, 0, 0.09);
-  --system-text-primary: #1f2933;
-  --system-text-secondary: #373737;
-  --system-text-muted: #777777;
-  --system-menu-icon-color: #171717;
-  --system-color-menu-parent-highlight: rgba(255, 255, 255, 0.58);
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
