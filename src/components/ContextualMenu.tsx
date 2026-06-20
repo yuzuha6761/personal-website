@@ -77,6 +77,7 @@ interface ContextualMenuPanelProps {
   selectedHighlightVisible: boolean
   selectedPathKey: string | null
   zIndex: number
+  pointerDownStartedInsideMenuRef: React.RefObject<boolean>
   onClose?: () => void
   onSelectItem: (event: ContextualMenuSelectEvent) => void
   onSubmenuItemHoverChange?: (hovered: boolean) => void
@@ -107,7 +108,7 @@ const MENU_ROW_HEIGHT_REM = 1.55
 const MENU_PANEL_VERTICAL_PADDING_REM = 0.9
 const MENU_SEPARATOR_BLOCK_HEIGHT_REM = 0.77
 const DOCK_EDGE_GAP_REM = 0.4
-const SELECT_HIGHLIGHT_RESTORE_DELAY = 100
+const SELECT_HIGHLIGHT_RESTORE_DELAY = 50
 const SELECT_FADE_OUT_DURATION = 200
 const CONTEXTUAL_MENU_OPEN_EVENT = 'contextual-menu-open'
 const ANCHORED_MENU_GAP = 14
@@ -496,6 +497,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
     selectedHighlightVisible,
     selectedPathKey,
     zIndex,
+    pointerDownStartedInsideMenuRef,
     onClose,
     onSelectItem,
     onSubmenuItemHoverChange,
@@ -507,6 +509,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
   const [submenuEngaged, setSubmenuEngaged] = useState(false)
   const [clipSize, setClipSize] = useState<{ width: number; height: number }>()
   const panelRef = useRef<HTMLDivElement>(null)
+  const skipNextClickSelectRef = useRef(false)
   const reserveCheckColumn = hasCheckColumn(items)
   const rowGridClass = reserveCheckColumn
     ? 'grid grid-cols-[1.35rem_minmax(0,1fr)_max-content] pl-[.48rem] pr-[1rem]'
@@ -696,7 +699,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           const itemTextHighlighted = !item.disabled && !parentSubmenuGrayHighlight && itemAccentHighlighted
           const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-[var(--system-menu-icon-color)]'
           const selectItem = () => {
-            if (hasChildren || item.disabled) return
+            if (item.disabled) return
             onSelectItem({ item, path: childPath })
           }
 
@@ -710,6 +713,10 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 className="relative h-[1.55rem] border-0 bg-transparent text-inherit [font:inherit] cursor-default text-left"
                 onClick={(event) => {
                   event.stopPropagation()
+                  if (skipNextClickSelectRef.current) {
+                    skipNextClickSelectRef.current = false
+                    return
+                  }
                   selectItem()
                 }}
                 onKeyDown={(event) => {
@@ -727,6 +734,16 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                   }
                 }}
                 onMouseLeave={() => setHoveredItemId((currentId) => currentId === item.id ? null : currentId)}
+                onMouseUp={(event) => {
+                  event.stopPropagation()
+                  if (pointerDownStartedInsideMenuRef.current) return
+
+                  skipNextClickSelectRef.current = true
+                  window.setTimeout(() => {
+                    skipNextClickSelectRef.current = false
+                  }, 0)
+                  selectItem()
+                }}
                 role="menuitem"
                 tabIndex={item.disabled ? -1 : 0}
               >
@@ -788,6 +805,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     closing={closing}
                     items={item.children}
                     path={childPath}
+                    pointerDownStartedInsideMenuRef={pointerDownStartedInsideMenuRef}
                     selectedHighlightVisible={selectedHighlightVisible}
                     selectedPathKey={selectedPathKey}
                     zIndex={zIndex}
@@ -842,6 +860,7 @@ function ContextualMenu(props: ContextualMenuProps) {
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const restoreHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingSelectRef = useRef<ContextualMenuSelectEvent | null>(null)
+  const pointerDownStartedInsideMenuRef = useRef(false)
   const [adjustedPosition, setAdjustedPosition] = useState(position)
   const [positionReady, setPositionReady] = useState(false)
   const [closing, setClosing] = useState(false)
@@ -865,6 +884,31 @@ function ContextualMenu(props: ContextualMenuProps) {
   }, [])
 
   useOutsideClose(open && !closing, menuRef, onClose)
+
+  useEffect(() => {
+    if (!open && !closing) {
+      pointerDownStartedInsideMenuRef.current = false
+      return
+    }
+
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      pointerDownStartedInsideMenuRef.current = Boolean(target?.closest('[data-contextual-menu-panel=true]'))
+    }
+    const onMouseUp = () => {
+      window.setTimeout(() => {
+        pointerDownStartedInsideMenuRef.current = false
+      }, 0)
+    }
+
+    document.addEventListener('mousedown', onMouseDown, true)
+    document.addEventListener('mouseup', onMouseUp)
+
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown, true)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [closing, open])
 
   useEffect(() => {
     if (!open) return
@@ -954,6 +998,7 @@ function ContextualMenu(props: ContextualMenuProps) {
         closing={closing}
         items={displayItems}
         path={[]}
+        pointerDownStartedInsideMenuRef={pointerDownStartedInsideMenuRef}
         selectedHighlightVisible={selectedHighlightVisible}
         selectedPathKey={selectedPathKey}
         zIndex={zIndex}
