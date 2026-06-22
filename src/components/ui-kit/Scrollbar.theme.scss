@@ -1,0 +1,24 @@
+@mixin system-scrollbar-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --system-scrollbar-#{$name}: #{$value};
+  }
+}
+
+$system-scrollbar-light-theme: (
+  thumb: rgba(0, 0, 0, 0.34),
+  thumb-active: rgba(0, 0, 0, 0.48),
+);
+
+$system-scrollbar-dark-theme: (
+  thumb: rgba(255, 255, 255, 0.34),
+  thumb-active: rgba(255, 255, 255, 0.48),
+);
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include system-scrollbar-theme-variables($system-scrollbar-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include system-scrollbar-theme-variables($system-scrollbar-dark-theme);
+}

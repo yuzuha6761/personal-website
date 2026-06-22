@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { AppIcon } from '~/components/icons/AppIcon'
 import SystemGlassSurface from '~/components/SystemGlassSurface'
+import { Scrollbar } from '~/components/ui-kit'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { getRootFontSize } from '~/services/window'
 import { seekerIcons } from '../icons'
@@ -197,7 +198,7 @@ function Sidebar({ containerRef }: SidebarProps) {
 
   return (
     <aside
-      className={`relative z-[30] h-full shrink-0 overflow-hidden ${sidebarBgClass}`}
+      className={`relative z-[30] flex h-full shrink-0 flex-col overflow-hidden ${sidebarBgClass}`}
       style={{ width: visible ? `${widthRem}rem` : 0 }}
     >
       {focused ? <SystemGlassSurface style={{ zIndex: 0 }} /> : null}
@@ -207,8 +208,11 @@ function Sidebar({ containerRef }: SidebarProps) {
           color={sidebarBorderColor}
         />
       ) : null}
-      <div className="relative z-[1] h-[3.85rem]" />
-      <div className="relative z-[1] h-[calc(100%-3.25rem)] overflow-hidden pt-0 pr-[.75rem] pb-[.9rem] pl-[.9rem]">
+      <div className="relative z-[1] h-[3.85rem] shrink-0" />
+      <Scrollbar
+        className="relative z-[1] min-h-0 flex-1"
+        contentClassName="pt-0 pr-[.75rem] pb-[.9rem] pl-[.9rem]"
+      >
         {sidebarSections.filter((section) => section.id !== TAGS_SECTION_ID).map((section) => {
           const visibleItems = section.items.filter(isSidebarItemVisible)
           const collapsed = collapsedSidebarSectionIds.includes(section.id)
@@ -260,7 +264,7 @@ function Sidebar({ containerRef }: SidebarProps) {
             </CollapsibleSidebarItems>
           </section>
         ) : null}
-      </div>
+      </Scrollbar>
 
       {visible && (
         <div

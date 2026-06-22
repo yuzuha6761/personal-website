@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import folderIcon from '~assets/common/folder.svg'
 import { AppIcon } from '~/components/icons/AppIcon'
+import { Scrollbar } from '~/components/ui-kit'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import useFsStore from '~/fs'
 import type { FsDirectoryEntry, FsFileIcon } from '~types'
@@ -328,10 +329,11 @@ function List() {
         color="var(--seeker-list-header-bottom-border)"
       />
 
-      <div
-        className="min-h-0 flex-1 overflow-hidden px-[.62rem] py-[.2rem]"
-        onMouseDown={handleListMouseDown}
-        ref={listRef}
+      <Scrollbar
+        className="min-h-0 flex-1"
+        contentClassName="px-[.62rem] py-[.2rem]"
+        contentRef={listRef}
+        viewportProps={{ onMouseDown: handleListMouseDown }}
       >
         {items.map((item, index) => {
           const selected = selection.includes(item.path)
@@ -389,7 +391,7 @@ function List() {
             key={row}
           />
         ))}
-      </div>
+      </Scrollbar>
     </section>
   )
 }

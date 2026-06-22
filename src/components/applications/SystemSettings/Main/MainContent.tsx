@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { ChevronLeft, ChevronRight, CircleHelp } from 'lucide-react'
 import { AppIcon } from '~/components/icons/AppIcon'
+import { Scrollbar } from '~/components/ui-kit'
 import { dragHandleProps } from '~/components/Window/Drag'
 import Appearance from './category/Appearance'
 import DesktopAndDock from './category/DesktopAndDock'
@@ -22,8 +23,8 @@ function MainContent(props: MainContentProps) {
   const CategoryComponent = categoryComponents[activeCategoryId]
 
   return (
-    <main className="relative min-w-0 flex-1 bg-[var(--system-surface-base)]">
-      <div className="h-[3.2rem] px-[1.15rem] flex items-center gap-[.75rem]" {...dragHandleProps}>
+    <main className="relative flex min-w-0 flex-1 flex-col bg-[var(--system-surface-base)]">
+      <div className="flex h-[3.2rem] shrink-0 items-center gap-[.75rem] px-[1.15rem]" {...dragHandleProps}>
         <div className="flex items-center gap-[.55rem] text-[var(--system-text-muted)]">
           <AppIcon className="h-[1.28rem] w-[1.28rem]" icon={ChevronLeft} strokeWidth={1.8} />
           <AppIcon className="h-[1.28rem] w-[1.28rem] opacity-60" icon={ChevronRight} strokeWidth={1.8} />
@@ -31,9 +32,15 @@ function MainContent(props: MainContentProps) {
         <h1 className="m-0 text-[1rem] font-700 leading-none text-[var(--system-text-secondary)]">{activeCategory?.label}</h1>
       </div>
 
-      <div className="h-[calc(100%-3.2rem)] overflow-auto px-[1.25rem] pb-[2.4rem]">
-        <CategoryComponent />
-      </div>
+      {activeCategoryId === 'desktop-and-dock' ? (
+        <Scrollbar className="min-h-0 flex-1" contentClassName="px-[1.25rem] pb-[2.4rem]">
+          <CategoryComponent />
+        </Scrollbar>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-auto px-[1.25rem] pb-[2.4rem]">
+          <CategoryComponent />
+        </div>
+      )}
 
       <button
         aria-label="帮助"

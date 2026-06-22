@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react'
 import { AppIcon } from '~/components/icons/AppIcon'
+import { Scrollbar } from '~/components/ui-kit'
 import { dragExcludeProps } from '~/components/Window/Drag'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { settingsCategories } from './data'
@@ -22,11 +23,11 @@ function Sidebar(props: SidebarProps) {
   const itemClass = 'flex h-[1.86rem] w-full items-center gap-[.45rem] rounded-[.34rem] border-0 px-[.36rem] text-left text-[.84rem] font-600 cursor-default'
 
   return (
-    <aside className={`relative h-full w-[13.5rem] shrink-0 overflow-hidden ${sidebarBgClass}`}>
+    <aside className={`relative flex h-full w-[13.5rem] shrink-0 flex-col overflow-hidden ${sidebarBgClass}`}>
       <div className="absolute right-0 top-0 h-full w-px bg-[var(--system-settings-sidebar-border)]" />
-      <div className="h-[3.25rem]" />
-      <div className="px-[.62rem]">
-        <div className="relative h-[1.78rem]" {...dragExcludeProps}>
+      <div className="h-[3.25rem] shrink-0" />
+      <div className="shrink-0 px-[.62rem]" {...dragExcludeProps}>
+        <div className="relative h-[1.78rem]">
           <AppIcon
             className="pointer-events-none absolute left-[.48rem] top-1/2 h-[.86rem] w-[.86rem] -translate-y-1/2 text-[var(--system-settings-sidebar-search-icon)]"
             icon={Search}
@@ -39,7 +40,9 @@ function Sidebar(props: SidebarProps) {
             type="text"
           />
         </div>
+      </div>
 
+      <Scrollbar className="min-h-0 flex-1" contentClassName="px-[.62rem] pb-[.62rem]">
         {settingsCategories.map((category) => {
           const selected = category.id === activeCategoryId
 
@@ -57,7 +60,7 @@ function Sidebar(props: SidebarProps) {
             </button>
           )
         })}
-      </div>
+      </Scrollbar>
     </aside>
   )
 }

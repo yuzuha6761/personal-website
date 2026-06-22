@@ -107,7 +107,8 @@ export function applySystemSettingsAppearance(
   const { isDarkMode } = options
 
   root.dataset.appearance = state.appearance
-  root.dataset.scrollBars = state.scrollBars
+  const scrollBars = String(state.scrollBars) === 'automatic' ? 'scrolling' : state.scrollBars
+  root.dataset.scrollBars = scrollBars
   root.dataset.scrollbarClick = state.scrollbarClick
   root.dataset.wallpaperTint = state.wallpaperTint ? 'true' : 'false'
   applySystemTheme(root, isDarkMode)

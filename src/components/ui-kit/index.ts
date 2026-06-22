@@ -1,5 +1,6 @@
 export { default as Checkbox } from './Checkbox'
 export { default as Radio } from './Radio'
+export { default as Scrollbar } from './Scrollbar'
 export { default as Select } from './Select'
 export type { SelectOption } from './Select'
 export { default as Slider } from './Slider'

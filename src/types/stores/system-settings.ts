@@ -15,7 +15,7 @@ export type HighlightColorId = 'pink'
 
 export type SidebarIconSize = 'small' | 'medium' | 'large'
 
-export type ScrollBarsVisibility = 'automatic' | 'scrolling' | 'always'
+export type ScrollBarsVisibility = 'scrolling' | 'always'
 
 export type ScrollbarClickAction = 'next-page' | 'clicked-spot'
 

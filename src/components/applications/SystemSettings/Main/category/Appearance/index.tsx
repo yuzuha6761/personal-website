@@ -117,12 +117,6 @@ function Appearance() {
           <div className="mb-[.36rem] text-[.86rem] leading-none text-[var(--system-text-secondary)]">显示滚动条</div>
           <div className="flex flex-col gap-[.32rem]" {...dragExcludeProps} role="radiogroup" aria-label="显示滚动条">
             <Radio
-              checked={scrollBars === 'automatic'}
-              label="根据鼠标或触控板自动显示"
-              name="scroll-bars"
-              onChange={() => setScrollBars('automatic')}
-            />
-            <Radio
               checked={scrollBars === 'scrolling'}
               label="滚动时"
               name="scroll-bars"
