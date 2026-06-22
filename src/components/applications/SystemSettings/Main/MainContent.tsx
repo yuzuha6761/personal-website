@@ -37,7 +37,7 @@ function MainContent(props: MainContentProps) {
 
       <button
         aria-label="帮助"
-        className="absolute bottom-[1.08rem] right-[1.24rem] h-[1.36rem] w-[1.36rem] rounded-full border border-[var(--system-surface-border)] bg-[var(--system-surface-window)] p-0 text-[var(--system-text-secondary)] shadow-[0_.08rem_.2rem_var(--system-settings-help-shadow)] cursor-default flex items-center justify-center"
+        className="absolute bottom-[1.08rem] right-[1.24rem] h-[1.36rem] w-[1.36rem] rounded-full border border-[var(--system-surface-border)] bg-[var(--window-surface)] p-0 text-[var(--system-text-secondary)] shadow-[0_.08rem_.2rem_var(--system-settings-help-shadow)] cursor-default flex items-center justify-center"
         type="button"
       >
         <AppIcon className="h-[.88rem] w-[.88rem]" icon={CircleHelp} strokeWidth={2.1} />

@@ -1,3 +1,4 @@
+import './ContextualMenu.theme.scss'
 import type { LucideIcon } from 'lucide-react'
 import { Check, ChevronRight, Globe } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
@@ -121,7 +122,7 @@ const MENU_ARROW_CORNER_RADIUS = 5.5
 const MENU_ARROW_EDGE_INSET = 34
 const MENU_RADIUS = 9
 const MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE: CSSProperties = {
-  backgroundColor: 'var(--system-color-menu-parent-highlight)',
+  backgroundColor: 'var(--menu-parent-highlight)',
 }
 
 function isDivider(item: ContextualMenuItem): item is ContextualMenuDividerItem {
@@ -651,7 +652,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
         <div className="py-[.4rem]">
         {items.map((item) => {
           if (isDivider(item)) {
-            return <div className="h-px my-[.38rem] mx-[1rem] bg-[var(--system-surface-divider)]" key={item.id} />
+            return <div className="h-px my-[.38rem] mx-[1rem] bg-[var(--menu-divider)]" key={item.id} />
           }
 
           if (isSearch(item)) {
@@ -694,7 +695,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
             ? selectedHighlightVisible
             : itemHovered
           const itemTextHighlighted = !item.disabled && !parentSubmenuGrayHighlight && itemAccentHighlighted
-          const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-[var(--system-menu-icon-color)]'
+          const itemIconClass = itemTextHighlighted ? 'text-white' : 'text-[var(--menu-icon-color)]'
           const selectItem = () => {
             if (item.disabled) return
             onSelectItem({ item, path: childPath })
@@ -750,7 +751,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     className="absolute inset-y-0 left-[.35rem] right-[.35rem] z-0 rounded-[.32rem]"
                     style={
                       itemAccentHighlighted
-                        ? { backgroundColor: 'var(--system-color-menu-highlight, rgba(239, 91, 161, 0.75))' }
+                        ? { backgroundColor: 'var(--menu-highlight, rgba(239, 91, 161, 0.75))' }
                         : parentSubmenuGrayHighlight
                           ? MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE
                           : undefined
@@ -830,7 +831,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
           <path
             d={panelPath}
             fill="none"
-            stroke="var(--system-surface-menu-border)"
+            stroke="var(--menu-glass-border)"
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
           />

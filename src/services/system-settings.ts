@@ -115,7 +115,7 @@ export function applySystemSettingsAppearance(
   root.style.setProperty('--system-color-solid', resolveSolidColorHex(state.color))
   root.style.setProperty('--system-sidebar-icon-color', resolveSidebarIconColorFocused(state.color))
   root.style.setProperty('--system-sidebar-icon-color-muted', resolveSidebarIconColorMuted(state.color))
-  root.style.setProperty('--system-color-menu-highlight', resolveColorMenuHighlight(state.color, 0.75))
+  root.style.setProperty('--menu-highlight', resolveColorMenuHighlight(state.color, 0.75))
   root.style.setProperty('--system-text-highlight-color', resolveTextHighlightColorValue(state.textHighlightColor))
   root.style.setProperty('--system-sidebar-icon-size', SIDEBAR_ICON_SIZE_REM[state.sidebarIconSize])
 }

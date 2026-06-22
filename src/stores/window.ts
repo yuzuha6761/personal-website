@@ -6,7 +6,7 @@ import {
   isApplicationLoaded,
   preloadApplication,
 } from '../components/applications/registry'
-import { findSeekerMainWindow, SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
+import { SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
 import { createWindowState, getNextZIndex } from '../services/window'
 import { prepareWindowRestoreTransition } from '../services/window-restore-transition'
 import useAppStore from './app'
@@ -86,21 +86,6 @@ const useWindowStore = create<WindowStore>((set, get) => ({
     startDockOpeningBounce(appId)
     useAppStore.getState().launchApp(appId)
 
-    const appWindows = getAppWindows(get().windows, appId)
-    const visibleWindows = getVisibleAppWindows(get().windows, appId)
-
-    if (visibleWindows.length > 0) {
-      const frontmost = getFrontmostWindow(get().windows, appId)!
-      get().focusWindow(frontmost.id)
-      return frontmost.id
-    }
-
-    if (appWindows.length > 0) {
-      const lastMinimized = getLastMinimizedWindow(appWindows)!
-      get().focusWindow(lastMinimized.id)
-      return lastMinimized.id
-    }
-
     const windowHandlers = getApplicationWindowHandlers(appId)
     if (windowHandlers?.openApp) {
       const handledWindowId = windowHandlers.openApp({
@@ -115,14 +100,19 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       if (handledWindowId) return handledWindowId
     }
 
-    if (appId === 'seeker') {
-      const mainWindow = findSeekerMainWindow(get().windows)
-      if (mainWindow) {
-        get().focusWindow(mainWindow.id)
-        return mainWindow.id
-      }
+    const appWindows = getAppWindows(get().windows, appId)
+    const visibleWindows = getVisibleAppWindows(get().windows, appId)
 
-      return get().openWindow(appId, { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
+    if (visibleWindows.length > 0) {
+      const frontmost = getFrontmostWindow(get().windows, appId)!
+      get().focusWindow(frontmost.id)
+      return frontmost.id
+    }
+
+    if (appWindows.length > 0) {
+      const lastMinimized = getLastMinimizedWindow(appWindows)!
+      get().focusWindow(lastMinimized.id)
+      return lastMinimized.id
     }
 
     return get().openWindow(appId, options)

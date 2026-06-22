@@ -1,0 +1,22 @@
+@mixin glass-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --glass-#{$name}: #{$value};
+  }
+}
+
+$glass-light-theme: (
+  surface: rgba(255, 245, 242, 0.78),
+);
+
+$glass-dark-theme: (
+  surface: rgba(6, 6, 12, 0.68),
+);
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include glass-theme-variables($glass-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include glass-theme-variables($glass-dark-theme);
+}

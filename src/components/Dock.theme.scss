@@ -1,0 +1,36 @@
+@mixin dock-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --dock-#{$name}: #{$value};
+  }
+}
+
+$dock-light-theme: (
+  surface: rgba(255, 255, 255, 0.18),
+  border: rgba(255, 255, 255, 0.2),
+  divider: rgba(0, 0, 0, 0.32),
+  shadow: 0 0 1rem rgba(0, 0, 0, 0.2),
+  tooltip: rgba(255, 255, 255, 0.38),
+  tooltip-border: rgba(255, 255, 255, 0.22),
+  tooltip-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.25),
+  indicator: #000000,
+);
+
+$dock-dark-theme: (
+  surface: rgba(42, 42, 48, 0.5),
+  border: rgba(255, 255, 255, 0.18),
+  divider: rgba(255, 255, 255, 0.24),
+  shadow: 0 0 1.05rem rgba(0, 0, 0, 0.34),
+  tooltip: rgba(74, 74, 82, 0.62),
+  tooltip-border: rgba(255, 255, 255, 0.18),
+  tooltip-shadow: 0 0 0.45rem rgba(0, 0, 0, 0.32),
+  indicator: #ffffff,
+);
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include dock-theme-variables($dock-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include dock-theme-variables($dock-dark-theme);
+}

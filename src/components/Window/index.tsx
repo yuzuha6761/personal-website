@@ -1,3 +1,4 @@
+import './Window.theme.scss'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import type { WindowState } from '~types'
 import { resolveApplication } from '../applications/registry'
@@ -101,7 +102,7 @@ const WINDOW_MINIMIZE_ANIMATION_DURATION_MS = 420
 const MIN_WINDOW_SIZE = { width: 320, height: 220 }
 const SCREEN_EDGE_MARGIN = 24
 const WINDOW_BORDER_RADIUS_REM = 0.8
-const WINDOW_BORDER_COLOR = 'var(--system-window-border)'
+const WINDOW_BORDER_COLOR = 'var(--window-border)'
 const TITLE_BAR_BORDER_COLOR = '#c6c5c5'
 const cursorMap: Record<ResizeDirection, string> = {
   e: 'ew-resize',
@@ -629,7 +630,7 @@ function Window(props: WindowProps) {
     () => getWindowFramePath(frame.size.width, frame.size.height),
     [frame.size.width, frame.size.height],
   )
-  const windowBackgroundClass = fullSizeContentView ? 'bg-transparent' : 'bg-[var(--system-surface-window)]'
+  const windowBackgroundClass = fullSizeContentView ? 'bg-transparent' : 'bg-[var(--window-surface)]'
   const windowClassName = `absolute rounded-[.8rem] ${windowBackgroundClass} text-[var(--system-text-primary)] select-none ${
     active
       ? 'shadow-[0_1.7rem_5.2rem_#00000066,0_.38rem_1.3rem_#00000042]'
@@ -809,7 +810,7 @@ function Window(props: WindowProps) {
               </>
             ) : (
               <div className="w-full h-full flex flex-col">
-                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-[var(--system-surface-window-title)]' : 'bg-[var(--system-surface-window-inactive)]'} flex items-center justify-center`}>
+                <div className={`relative box-border h-[2rem] flex-[0_0_2rem] ${active ? 'bg-[var(--window-title)]' : 'bg-[var(--window-inactive)]'} flex items-center justify-center`}>
                   <div
                     className="absolute pointer-events-none"
                     style={{

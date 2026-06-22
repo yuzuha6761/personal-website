@@ -1,3 +1,4 @@
+import './Dock.theme.scss'
 import styles from './Dock.module.scss'
 import useDockSettingStore from "../stores/settings/dock";
 import useSystemSettingsStore from "../stores/settings/system-settings";
@@ -247,6 +248,7 @@ function Dock() {
 
   const onDockMenuSelect = (event: ContextualMenuSelectEvent) => {
     const menu = dockMenuActionRef.current
+    dockMenuActionRef.current = null
     if (!menu) return
 
     const itemId = event.item.id
@@ -343,6 +345,7 @@ function Dock() {
             <div
               key={application.id}
               data-add-icon-safe-area={application.addIconSafeArea}
+              data-context-menu-active={dockMenu?.appId === application.id}
               data-loading={animateOpeningApplications && loadingAppIds.includes(application.id)}
               onClick={() => openApp(application.id)}
               onContextMenu={(event) => onAppContextMenu(application.id, event)}
@@ -393,7 +396,9 @@ function Dock() {
         items={dockMenuItems}
         open={Boolean(dockMenu)}
         position={dockMenu?.position ?? { x: 0, y: 0 }}
-        onClose={() => setDockMenu(null)}
+        onClose={() => {
+          setDockMenu(null)
+        }}
         onSelect={onDockMenuSelect}
       />
     </>

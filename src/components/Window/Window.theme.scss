@@ -1,0 +1,28 @@
+@mixin window-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --window-#{$name}: #{$value};
+  }
+}
+
+$window-light-theme: (
+  surface: #ffffff,
+  inactive: #f0f0f0,
+  title: #fcfcfc,
+  border: #cacaca,
+);
+
+$window-dark-theme: (
+  surface: #323234,
+  inactive: #2a2a2c,
+  title: #3a3a3c,
+  border: #4a4a4f,
+);
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include window-theme-variables($window-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include window-theme-variables($window-dark-theme);
+}

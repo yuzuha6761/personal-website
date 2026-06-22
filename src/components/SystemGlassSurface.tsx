@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import './SystemGlassSurface.theme.scss'
 
 export const SYSTEM_GLASS_BACKDROP_FILTER = 'blur(22px) saturate(1.8)'
 
@@ -17,7 +18,7 @@ function SystemGlassSurface(props: SystemGlassSurfaceProps) {
       style={{
         WebkitBackdropFilter: SYSTEM_GLASS_BACKDROP_FILTER,
         backdropFilter: SYSTEM_GLASS_BACKDROP_FILTER,
-        backgroundColor: 'var(--system-surface-menu)',
+        backgroundColor: 'var(--glass-surface)',
         clipPath,
         ...style,
       }}

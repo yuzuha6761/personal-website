@@ -1,4 +1,10 @@
-import type { FocusTarget, WindowDisplayOptions, OpenWindowOptions, WindowState } from '~types'
+import type {
+  ApplicationWindowHandlers,
+  FocusTarget,
+  WindowDisplayOptions,
+  OpenWindowOptions,
+  WindowState,
+} from '~types'
 import { aboutWindowOptions } from './About/window'
 import { mainWindowOptions } from './Main/window'
 import { settingsWindowOptions } from './Settings/window'
@@ -105,4 +111,24 @@ export function createSeekerSettingsWindowOptions(): OpenWindowOptions {
     position: centerWindowPosition(size),
     payload: { windowKind: SEEKER_WINDOW_KIND.SETTINGS },
   }
+}
+
+export const applicationWindowHandlers: ApplicationWindowHandlers = {
+  openApp({ windows, openWindow, focusWindow, restoreWindow }) {
+    const mainWindow = findSeekerMainWindow(windows)
+    if (!mainWindow) {
+      return openWindow('seeker', { payload: { windowKind: SEEKER_WINDOW_KIND.MAIN } })
+    }
+
+    if (mainWindow.minimized) {
+      restoreWindow(mainWindow.id)
+    }
+
+    focusWindow(mainWindow.id)
+    return mainWindow.id
+  },
+
+  resolveOpenWindowPayload() {
+    return { windowKind: SEEKER_WINDOW_KIND.MAIN }
+  },
 }

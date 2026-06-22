@@ -1,0 +1,30 @@
+@mixin menu-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --menu-#{$name}: #{$value};
+  }
+}
+
+$menu-light-theme: (
+  icon-color: #171717,
+  parent-highlight: rgba(0, 0, 0, 0.12),
+  highlight: rgba(239, 91, 161, 0.75),
+  divider: rgba(0, 0, 0, 0.09),
+  glass-border: #cacaca,
+);
+
+$menu-dark-theme: (
+  icon-color: #ffffff,
+  parent-highlight: rgba(255, 255, 255, 0.12),
+  highlight: rgba(239, 91, 161, 0.75),
+  divider: rgba(255, 255, 255, 0.12),
+  glass-border: #5c5c5e,
+);
+
+:root,
+:root[data-resolved-appearance='light'] {
+  @include menu-theme-variables($menu-light-theme);
+}
+
+:root[data-resolved-appearance='dark'] {
+  @include menu-theme-variables($menu-dark-theme);
+}
