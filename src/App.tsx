@@ -3,11 +3,14 @@ import Dock from "./components/Dock.tsx";
 import useDisplaysSettingStore from "./stores/settings/displays";
 import useSystemSettingsStore from "./stores/settings/system-settings";
 import useGlobalStore from "./stores/global";
+import useSessionStore from "~/session/store";
+import useFsStore from "~/fs";
 import { startupPreloadImages } from "./constants/preloadAssets";
 import { preloadImages } from "./services/preload";
 import { applySystemSettingsAppearance, applySystemSettingsDock } from "./services/system-settings";
 import { useSystemAppearanceDarkMode } from "./hooks/useSystemAppearanceDarkMode";
 import { useGlobalShortcuts } from "~/shortcuts";
+import { bootstrapPersistence } from "~/persistence";
 import { useEffect } from "react";
 import { preloadApplication } from "./components/applications/registry";
 
@@ -22,6 +25,8 @@ function App() {
   const scrollbarClick = useSystemSettingsStore((state) => state.scrollbarClick)
   const dockPosition = useSystemSettingsStore((state) => state.dockPosition)
   const setTimestamp = useGlobalStore((state) => state.setTimestamp)
+  const isSessionReady = useSessionStore((state) => state.isReady)
+  const isFsReady = useFsStore((state) => state.isReady)
   const isDarkMode = useSystemAppearanceDarkMode()
   useGlobalShortcuts()
 
@@ -50,6 +55,7 @@ function App() {
             progressInnerDiv.style.width = `${Math.round((loaded / total) * 100)}%`
           }),
           preloadApplication('seeker'),
+          bootstrapPersistence(),
         ]).then(() => {
           progressInnerDiv.style.transition = 'width .5s linear'
           progressInnerDiv.style.width = '100%'
@@ -69,6 +75,8 @@ function App() {
   }, [textSize]);
 
   useEffect(() => {
+    if (!isSessionReady) return
+
     applySystemSettingsAppearance({
       appearance,
       color,
@@ -87,11 +95,17 @@ function App() {
     scrollBars,
     scrollbarClick,
     isDarkMode,
+    isSessionReady,
   ]);
 
   useEffect(() => {
+    if (!isSessionReady) return
     applySystemSettingsDock(dockPosition)
-  }, [dockPosition]);
+  }, [dockPosition, isSessionReady]);
+
+  if (!isSessionReady || !isFsReady) {
+    return null
+  }
 
   return (
     <>

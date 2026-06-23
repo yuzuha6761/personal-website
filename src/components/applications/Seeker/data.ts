@@ -13,7 +13,7 @@ export const sidebarSections: SeekerSidebarSection[] = [
       { id: 'movies', label: '影片', icon: 'movies', checked: true },
       { id: 'music', label: '音乐', icon: 'music', checked: true },
       { id: 'pictures', label: '图片', icon: 'pictures', checked: true },
-      { id: 'home', label: 'yuki', icon: 'home', checked: true },
+      { id: 'home', label: 'yuzuha', icon: 'home', checked: true },
     ],
   },
   {

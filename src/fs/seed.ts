@@ -1,6 +1,9 @@
 import type { FsNode, FsNodeKind } from '~types'
+import type { UserProfile } from '~/session/types'
+import { BUILTIN_USERS } from '~/session/users'
 import { getAllStorageDevices } from '~/storages'
 import type { StorageTreeNode } from '~/storages/types'
+import { getBuiltinUserHomeTree, getRuntimeUserHomeTemplate } from './userHomes'
 import { FS_COMPUTER_ROOT_PATH, FS_NETWORK_PATH, joinPath } from './paths'
 import { resolveSymlinkTargetPath } from './symlinks'
 
@@ -63,7 +66,65 @@ function flattenStorageTree(
   }
 }
 
-export function createInitialFsNodes(): Record<string, FsNode> {
+function materializeUserHomeTree(
+  nodes: Record<string, FsNode>,
+  usersPath: string,
+  user: UserProfile,
+  tree: StorageTreeNode[],
+  fallbackTimestamp: number,
+  volumePath: string,
+): void {
+  const homePath = joinPath(usersPath, user.id)
+  const createdAt = user.createdAt ?? fallbackTimestamp
+
+  nodes[homePath] = createFsNode(
+    user.id,
+    homePath,
+    usersPath,
+    'folder',
+    createdAt,
+  )
+
+  const homeNode = nodes[homePath]
+
+  for (const child of tree) {
+    flattenStorageTree(child, homeNode, nodes, createdAt, volumePath)
+  }
+}
+
+export function materializeUserHomes(
+  nodes: Record<string, FsNode>,
+  volumePath: string,
+  runtimeUsers: UserProfile[],
+  fallbackTimestamp: number,
+): void {
+  const usersPath = joinPath(volumePath, 'Users')
+  if (!nodes[usersPath]) return
+
+  for (const user of BUILTIN_USERS) {
+    materializeUserHomeTree(
+      nodes,
+      usersPath,
+      user,
+      getBuiltinUserHomeTree(user.id),
+      fallbackTimestamp,
+      volumePath,
+    )
+  }
+
+  for (const user of runtimeUsers) {
+    materializeUserHomeTree(
+      nodes,
+      usersPath,
+      user,
+      getRuntimeUserHomeTemplate(),
+      fallbackTimestamp,
+      volumePath,
+    )
+  }
+}
+
+export function createInitialFsNodes(runtimeUsers: UserProfile[] = []): Record<string, FsNode> {
   const nodes: Record<string, FsNode> = {}
   const fallbackTimestamp = Date.parse('2025-06-12T06:50:00.000Z')
 
@@ -98,6 +159,8 @@ export function createInitialFsNodes(): Record<string, FsNode> {
     for (const child of device.tree) {
       flattenStorageTree(child, volumeNode, nodes, createdAt, device.path)
     }
+
+    materializeUserHomes(nodes, device.path, runtimeUsers, fallbackTimestamp)
   }
 
   return nodes

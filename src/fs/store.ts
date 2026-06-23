@@ -1,15 +1,22 @@
 import { create } from 'zustand'
 import type { FsNode, FsStore } from '~types'
 import useGlobalStore from '~/stores/global'
+import { schedulePersistUserFs, getMemoryFsOverlay, setMemoryFsOverlay } from '~/persistence/userFs'
+import { extractBaseHomeNodes } from '~/persistence/rebase'
+import useSessionStore from '~/session/store'
 import { toDirectoryEntry } from './metadata'
 import { filterVisibleFsNodes } from './hidden'
 import { collectDescendantPaths, joinPath } from './paths'
 import { resolveFsPath } from './symlinks'
 import { listFsDirectoryChildren, resolveVolumesMountNode } from './volumes'
-import { createInitialFsNodes } from './seed'
+import { getBaseFsNodes } from './baseNodes'
+import { recordFsNodeCreation, recordFsNodeRemoval } from './overlay'
 
 const useFsStore = create<FsStore>((set, get) => ({
-  nodes: createInitialFsNodes(),
+  nodes: {},
+  isReady: false,
+
+  replaceNodes: (nodes) => set({ nodes, isReady: true }),
 
   getNodeByPath: (path) => get().nodes[path] ?? resolveVolumesMountNode(get().nodes, path),
 
@@ -48,6 +55,8 @@ const useFsStore = create<FsStore>((set, get) => ({
       },
     }))
 
+    persistFsCreation(folder)
+
     return folder
   },
 
@@ -64,7 +73,44 @@ const useFsStore = create<FsStore>((set, get) => ({
       }
       return { nodes: nextNodes }
     })
+
+    persistFsRemoval(pathsToRemove)
   },
 }))
+
+function persistFsCreation(node: FsNode) {
+  if (!useSessionStore.getState().currentUserId) return
+
+  const user = useSessionStore.getState().getCurrentUser()
+  if (node.path !== user.homePath && !node.path.startsWith(`${user.homePath}/`)) return
+
+  const baseNodes = getBaseFsNodes()
+  const baseHomeNodes = extractBaseHomeNodes(baseNodes, user.homePath)
+  const overlay = recordFsNodeCreation(getMemoryFsOverlay(user.id), node, baseNodes)
+
+  setMemoryFsOverlay(user.id, overlay)
+  schedulePersistUserFs(user, overlay, baseHomeNodes)
+}
+
+function persistFsRemoval(removedPaths: string[]) {
+  if (!useSessionStore.getState().currentUserId) return
+
+  const user = useSessionStore.getState().getCurrentUser()
+  const touchesHome = removedPaths.some((path) => (
+    path === user.homePath || path.startsWith(`${user.homePath}/`)
+  ))
+  if (!touchesHome) return
+
+  const baseNodes = getBaseFsNodes()
+  const baseHomeNodes = extractBaseHomeNodes(baseNodes, user.homePath)
+  let overlay = getMemoryFsOverlay(user.id)
+
+  for (const path of removedPaths) {
+    overlay = recordFsNodeRemoval(overlay, path, baseNodes)
+  }
+
+  setMemoryFsOverlay(user.id, overlay)
+  schedulePersistUserFs(user, overlay, baseHomeNodes)
+}
 
 export default useFsStore

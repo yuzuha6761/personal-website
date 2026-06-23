@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      localforage:
+        specifier: ^1.10.0
+        version: 1.10.0
       lucide-react:
         specifier: ^1.17.0
         version: 1.17.0(react@19.1.0)
@@ -54,9 +57,6 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.0.0
-      localforage:
-        specifier: ^1.10.0
-        version: 1.10.0
       luxon:
         specifier: ^3.6.1
         version: 3.6.1

@@ -13,7 +13,7 @@ import { getRootFontSize } from '~/services/window'
 import { getPathContextMenuIcon, getPathTitleIcon } from '~/components/applications/Seeker/pathIcons'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
 import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
-import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
+import { resolveSeekerNewWindowPath, getCurrentUserHomeLabel } from '~/components/applications/Seeker/newWindowPath'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
 import useSeekerWindowStore from './store'
 import { HeaderToolbarArea } from './HeaderToolbar'
@@ -94,7 +94,7 @@ function Header() {
     }))
   ), [pathMenuPaths, nodes])
 
-  const titleLabel = activeTab?.label ?? 'yuzuha'
+  const titleLabel = activeTab?.label ?? getCurrentUserHomeLabel()
 
   const titleColorClass = focused
     ? 'text-[var(--seeker-header-title-focused)]'

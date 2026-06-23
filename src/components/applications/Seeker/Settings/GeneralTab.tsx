@@ -5,7 +5,7 @@ import folderIcon from '~assets/common/folder.svg'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
 import type { SeekerNewWindowPathOption } from '~/components/applications/Seeker/newWindowPath'
-import { getBootStorageDeviceLabel } from '~/components/applications/Seeker/newWindowPath'
+import { getBootStorageDeviceLabel, getCurrentUserHomeLabel } from '~/components/applications/Seeker/newWindowPath'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
 import { Checkbox, Select, type SelectOption } from '~/components/ui-kit'
 
@@ -48,8 +48,8 @@ function GeneralTab() {
     },
     { type: 'separator', id: 'new-window-path-divider-1' },
     {
-      value: 'yuzuha',
-      label: 'yuzuha',
+      value: 'home',
+      label: getCurrentUserHomeLabel(),
       menuIconNode: selectFolderMenuIcon(),
       icon: selectFolderIcon(),
     },

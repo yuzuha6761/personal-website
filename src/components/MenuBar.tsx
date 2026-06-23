@@ -12,7 +12,10 @@ import {
 import useAppStore from '~/stores/app'
 import useWindowStore from '~/stores/window'
 
-const appleMenuItems: ContextualMenuItem[] = [
+import useSessionStore from '~/session/store'
+
+function createAppleMenuItems(displayName: string): ContextualMenuItem[] {
+  return [
   { id: 'about-this-mac', label: '关于本机' },
   { id: 'divider-1', type: 'separator' },
   { id: 'system-settings', label: '系统设置...' },
@@ -35,8 +38,9 @@ const appleMenuItems: ContextualMenuItem[] = [
   { id: 'shutdown', label: '关机...' },
   { id: 'divider-5', type: 'separator' },
   { id: 'lock-screen', label: '锁定屏幕', shortcut: '⌃⌘Q' },
-  { id: 'log-out', label: '退出登录 “yuzuha”...', shortcut: '⇧⌘Q' },
-]
+  { id: 'log-out', label: `退出登录 “${displayName}”...`, shortcut: '⇧⌘Q' },
+  ]
+}
 
 function MenuBar() {
   const [activeMenuId, setActiveMenuId] = useState('')
@@ -44,6 +48,13 @@ function MenuBar() {
   const [menuItems, setMenuItems] = useState<ContextualMenuItem[]>([])
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const timestamp = useGlobalStore((state) => state.timestamp)
+  const currentUser = useSessionStore((state) => (
+    state.currentUserId ? state.getCurrentUser() : null
+  ))
+  const appleMenuItems = useMemo(
+    () => createAppleMenuItems(currentUser?.displayName ?? 'yuzuha'),
+    [currentUser?.displayName],
+  )
   const activeAppId = useAppStore((state) => state.activeAppId)
   const windows = useWindowStore((state) => state.windows)
   const openApp = useWindowStore((state) => state.openApp)

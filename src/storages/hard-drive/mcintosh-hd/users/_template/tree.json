@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Desktop",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Documents",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Downloads",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Movies",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Music",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Pictures",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Public",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2024-01-01T00:00:00.000Z"
+  }
+]

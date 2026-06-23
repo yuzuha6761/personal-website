@@ -12,23 +12,29 @@ import type {
   ApplicationMenuBarSelectHandler,
 } from '~/components/applications/registry'
 import type { ContextualMenuItem } from '~/components/ContextualMenu'
-import { FS_HOME_PATH, joinPath } from '~/fs/paths'
+import { getHomePath } from '~/session/paths'
+import { getCurrentUserHomeLabel } from './newWindowPath'
+import { joinPath } from '~/fs/paths'
 import { seekerIcons } from './icons'
 
-const seekerDockPaths = [
-  { id: 'downloads', label: '下载', path: joinPath(FS_HOME_PATH, 'Downloads') },
-  { id: 'applications', label: 'applications', path: joinPath(FS_HOME_PATH, 'components/applications') },
-  { id: 'assets', label: 'assets', path: joinPath(FS_HOME_PATH, 'components/assets') },
-  { id: 'components', label: 'components', path: joinPath(FS_HOME_PATH, 'components') },
-  { id: 'fuyi', label: 'fuyi', path: joinPath(FS_HOME_PATH, 'fuyi') },
-  { id: 'cloud-drive', label: '云盘', path: joinPath(FS_HOME_PATH, 'Cloud Drive') },
-  { id: 'ios-wallpapers', label: 'ios 壁纸', path: joinPath(FS_HOME_PATH, 'ios 壁纸') },
-  { id: 'iptv', label: 'iptv', path: joinPath(FS_HOME_PATH, 'iptv') },
-  { id: 'public', label: 'public', path: joinPath(FS_HOME_PATH, 'Public') },
-  { id: 'wallpaper', label: 'wallpaper', path: joinPath(FS_HOME_PATH, 'wallpaper') },
-]
+function getSeekerDockPaths() {
+  const homePath = getHomePath()
 
-export const seekerDockMenuItems: ContextualMenuItem[] = [
+  return [
+    { id: 'downloads', label: '下载', path: joinPath(homePath, 'Downloads') },
+    { id: 'applications', label: 'applications', path: joinPath(homePath, 'components/applications') },
+    { id: 'assets', label: 'assets', path: joinPath(homePath, 'components/assets') },
+    { id: 'components', label: 'components', path: joinPath(homePath, 'components') },
+    { id: 'fuyi', label: 'fuyi', path: joinPath(homePath, 'fuyi') },
+    { id: 'cloud-drive', label: '云盘', path: joinPath(homePath, 'Cloud Drive') },
+    { id: 'ios-wallpapers', label: 'ios 壁纸', path: joinPath(homePath, 'ios 壁纸') },
+    { id: 'iptv', label: 'iptv', path: joinPath(homePath, 'iptv') },
+    { id: 'public', label: 'public', path: joinPath(homePath, 'Public') },
+    { id: 'wallpaper', label: 'wallpaper', path: joinPath(homePath, 'wallpaper') },
+  ]
+}
+
+export const seekerDockMenuItems = (): ContextualMenuItem[] => [
   { id: 'new-seeker-window', label: '新建 “Seeker” 窗口' },
   { id: 'new-smart-folder', label: '新建智能文件夹' },
   { id: 'find', label: '查找...' },
@@ -36,7 +42,7 @@ export const seekerDockMenuItems: ContextualMenuItem[] = [
   { id: 'go-folder', label: '前往文件夹...' },
   { id: 'connect-server', label: '连接服务器...' },
   { id: 'dock-divider-2', type: 'separator' },
-  ...seekerDockPaths.map((item) => ({
+  ...getSeekerDockPaths().map((item) => ({
     id: `open-path:${item.path}`,
     label: item.label,
   })),
@@ -256,7 +262,7 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
       { id: 'recent-folders', label: '最近使用的文件夹', children: [
         { id: 'downloads-folder', label: '下载' },
         { id: 'sf-symbols-folder', label: 'sf-symbols' },
-        { id: 'yuzuha-folder', label: 'yuzuha' },
+        { id: 'yuzuha-folder', label: getCurrentUserHomeLabel() },
       ] },
       { id: 'divider-3', type: 'separator' },
       { id: 'go-folder', label: '前往文件夹...', shortcut: '⇧⌘G' },

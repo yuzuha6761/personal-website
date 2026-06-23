@@ -1,6 +1,8 @@
-import { FS_HOME_PATH } from '~/fs/paths'
+import { getHomePath } from '~/session/paths'
 
-export const SEEKER_DEFAULT_TAB_PATH = FS_HOME_PATH
+export function getSeekerDefaultTabPath(): string {
+  return getHomePath()
+}
 
 export const SEEKER_TAB_CHROME = {
   activeBackground: '#f4f4f4',

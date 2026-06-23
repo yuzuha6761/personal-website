@@ -15,7 +15,10 @@ export function joinPath(parentPath: string, name: string): string {
   return `${parentPath}/${name}`
 }
 
-export const FS_HOME_PATH = joinPath(FS_BOOT_VOLUME_PATH, 'Users/yuzuha')
+/** @deprecated Use getHomePath() from ~/session */
+export function getLegacyHomePath(): string {
+  return joinPath(FS_BOOT_VOLUME_PATH, 'Users/yuzuha')
+}
 
 export function buildPathChainFromCurrent(path: string): string[] {
   const chain: string[] = []
@@ -32,13 +35,6 @@ export function buildPathChainFromCurrent(path: string): string[] {
   return chain
 }
 
-export function getPathDisplayLabel(path: string, nodes: Record<string, FsNode>): string {
-  const node = nodes[path]
-  if (!node) return path.split('/').at(-1) ?? path
-  if (path === FS_HOME_PATH) return 'yuzuha'
-  return node.name
-}
-
 export function listChildNodes(nodes: Record<string, FsNode>, directoryPath: string): FsNode[] {
   return Object.values(nodes)
     .filter((node) => node.parentPath === directoryPath)
@@ -49,4 +45,8 @@ export function collectDescendantPaths(nodes: Record<string, FsNode>, targetPath
   return Object.keys(nodes).filter((path) => (
     path === targetPath || path.startsWith(`${targetPath}/`)
   ))
+}
+
+export function getUsersVolumePath(): string {
+  return joinPath(FS_BOOT_VOLUME_PATH, 'Users')
 }

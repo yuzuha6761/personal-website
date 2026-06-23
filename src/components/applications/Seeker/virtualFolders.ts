@@ -1,6 +1,6 @@
 import type { FsDirectoryEntry, FsNode } from '~types'
 import { filterVisibleFsNodes } from '~/fs/hidden'
-import { getPathDisplayLabel } from '~/fs/paths'
+import { getPathDisplayLabel } from '~/fs/pathDisplay'
 import { toDirectoryEntry } from '~/fs/metadata'
 import { listFsDirectoryChildren } from '~/fs/volumes'
 import { resolveFsPath } from '~/fs/symlinks'

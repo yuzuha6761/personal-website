@@ -31,6 +31,8 @@ export interface FsDirectoryEntry {
 
 export interface FsStore {
   nodes: Record<string, FsNode>
+  isReady: boolean
+  replaceNodes: (nodes: Record<string, FsNode>) => void
   getNodeByPath: (path: string) => FsNode | undefined
   listDirectory: (path: string) => FsDirectoryEntry[]
   createFolder: (parentPath: string, name: string) => FsNode | undefined

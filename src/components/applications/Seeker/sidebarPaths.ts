@@ -3,28 +3,30 @@ import { resolveStorageDevicePath } from '~/storages'
 import {
   FS_BOOT_VOLUME_PATH,
   FS_COMPUTER_ROOT_PATH,
-  FS_HOME_PATH,
   FS_NETWORK_PATH,
   joinPath,
 } from '~/fs/paths'
-
-const SIDEBAR_ITEM_PATHS: Partial<Record<string, string>> = {
-  recents: SEEKER_RECENTS_PATH,
-  applications: joinPath(FS_BOOT_VOLUME_PATH, 'Applications'),
-  downloads: joinPath(FS_HOME_PATH, 'Downloads'),
-  movies: joinPath(FS_HOME_PATH, 'Movies'),
-  music: joinPath(FS_HOME_PATH, 'Music'),
-  pictures: joinPath(FS_HOME_PATH, 'Pictures'),
-  home: FS_HOME_PATH,
-  'cloud-drive': joinPath(FS_HOME_PATH, 'Cloud Drive'),
-  desktop: joinPath(FS_HOME_PATH, 'Desktop'),
-  documents: joinPath(FS_HOME_PATH, 'Documents'),
-  'yuzuha-website': FS_COMPUTER_ROOT_PATH,
-  network: FS_NETWORK_PATH,
-}
+import { getHomePath } from '~/session/paths'
 
 export function resolveSidebarItemPath(itemId: string): string | undefined {
-  return SIDEBAR_ITEM_PATHS[itemId] ?? resolveStorageDevicePath(itemId)
+  const homePath = getHomePath()
+
+  const sidebarItemPaths: Partial<Record<string, string>> = {
+    recents: SEEKER_RECENTS_PATH,
+    applications: joinPath(FS_BOOT_VOLUME_PATH, 'Applications'),
+    downloads: joinPath(homePath, 'Downloads'),
+    movies: joinPath(homePath, 'Movies'),
+    music: joinPath(homePath, 'Music'),
+    pictures: joinPath(homePath, 'Pictures'),
+    home: homePath,
+    'cloud-drive': joinPath(homePath, 'Cloud Drive'),
+    desktop: joinPath(homePath, 'Desktop'),
+    documents: joinPath(homePath, 'Documents'),
+    'yuzuha-website': FS_COMPUTER_ROOT_PATH,
+    network: FS_NETWORK_PATH,
+  }
+
+  return sidebarItemPaths[itemId] ?? resolveStorageDevicePath(itemId)
 }
 
 export function isSidebarItemActive(itemId: string, currentPath: string): boolean {

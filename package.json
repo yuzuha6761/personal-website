@@ -20,6 +20,7 @@
     "analyze": "tsc -b && vite build --mode analyze"
   },
   "dependencies": {
+    "localforage": "^1.10.0",
     "lucide-react": "^1.17.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
@@ -37,19 +38,18 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "localforage": "^1.10.0",
     "luxon": "^3.6.1",
     "react-i18next": "^15.4.1",
+    "remixicon": "^4.9.1",
     "sass": "^1.86.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
     "unocss": "66.1.0-beta.11",
     "unplugin-auto-import": "^19.1.2",
+    "usehooks-ts": "^3.1.1",
     "vite": "^6.2.6",
     "vite-bundle-analyzer": "^0.18.1",
     "vite-plugin-html": "^3.2.2",
-    "zustand": "^5.0.3",
-    "remixicon": "^4.9.1",
-    "usehooks-ts": "^3.1.1"
+    "zustand": "^5.0.3"
   }
 }
