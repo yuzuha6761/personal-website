@@ -7,7 +7,7 @@ import {
   SIDEBAR_ICON_SIZE_OPTIONS,
 } from '~/stores/settings/system-settings.constants'
 import type { HighlightColorId, SidebarIconSize } from '~types'
-import SettingsRow from '../../shared/SettingsRow'
+import SettingsRow from '~/components/applications/SystemSettings/Main/shared/SettingsRow'
 import AppearanceTile, { type AppearancePreview } from './AppearanceTile'
 
 const appearancePreviews: AppearancePreview[] = [

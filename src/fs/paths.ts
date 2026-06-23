@@ -1,9 +1,21 @@
 import type { FsNode } from '~types'
+import { getBootStorageDevice } from '~/storages'
+
+export const FS_COMPUTER_ROOT_PATH = '/'
+export const FS_NETWORK_PATH = '/网络'
+
+const bootStorageDevice = getBootStorageDevice()
+
+export const FS_BOOT_VOLUME_PATH = bootStorageDevice.path
+/** @deprecated Use FS_BOOT_VOLUME_PATH */
+export const FS_MCINTOSH_HD_PATH = FS_BOOT_VOLUME_PATH
 
 export function joinPath(parentPath: string, name: string): string {
   if (parentPath === '/') return `/${name}`
   return `${parentPath}/${name}`
 }
+
+export const FS_HOME_PATH = joinPath(FS_BOOT_VOLUME_PATH, 'Users/yuzuha')
 
 export function buildPathChainFromCurrent(path: string): string[] {
   const chain: string[] = []
@@ -23,7 +35,7 @@ export function buildPathChainFromCurrent(path: string): string[] {
 export function getPathDisplayLabel(path: string, nodes: Record<string, FsNode>): string {
   const node = nodes[path]
   if (!node) return path.split('/').at(-1) ?? path
-  if (path === '/Users/yuzuha') return 'yuzuha'
+  if (path === FS_HOME_PATH) return 'yuzuha'
   return node.name
 }
 

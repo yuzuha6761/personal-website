@@ -6,10 +6,18 @@ import { Scrollbar } from '~/components/ui-kit'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import useFsStore from '~/fs'
 import type { FsDirectoryEntry, FsFileIcon } from '~types'
-import { seekerIcons } from '../icons'
-import { useSeekerWindow } from '../useSeekerWindow'
+import useGlobalStore from '~/stores/global'
+import { listSeekerDirectory } from '~/components/applications/Seeker/virtualFolders'
+import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
+import useSeekerGlobalStore from '~/components/applications/Seeker/store'
+import { seekerIcons } from '~/components/applications/Seeker/icons'
+import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
 import TabBar from './TabBar'
-import { SEEKER_DEFAULT_TAB_PATH, shouldShowSeekerTabBar } from './types'
+import { shouldShowSeekerTabBar, type SeekerSidebarIcon } from './types'
+
+function isSeekerSidebarIcon(value: string): value is SeekerSidebarIcon {
+  return value in seekerIcons
+}
 
 function HairlineHorizontal({ className = '', color }: { className?: string; color: string }) {
   return (
@@ -55,14 +63,50 @@ type SelectionDragState = {
 }
 
 function isFolderEntry(entry: FsDirectoryEntry): boolean {
-  return entry.icon === 'folder'
+  return entry.navigable
 }
 
-function FileIconBadge({ icon, selected }: { icon: FsFileIcon; selected: boolean }) {
+function FileIconBadge({
+  deviceIcon,
+  icon,
+  isAlias,
+  selected,
+}: {
+  deviceIcon?: string
+  icon: FsFileIcon
+  isAlias?: boolean
+  selected: boolean
+}) {
+  const aliasBadgeClass = selected ? 'text-white/90' : 'text-#737373'
+
+  const aliasBadge = isAlias ? (
+    <AppIcon
+      className={`absolute left-[-.02rem] bottom-[-.02rem] w-[.52rem] h-[.52rem] ${aliasBadgeClass}`}
+      icon={seekerIcons.aliasBadge}
+      strokeWidth={2.75}
+    />
+  ) : null
+
+  if (deviceIcon && isSeekerSidebarIcon(deviceIcon)) {
+    const deviceIconClass = selected ? 'text-white/90' : 'text-#737373'
+
+    return (
+      <span className="relative flex-[0_0_1.14rem] h-[1.14rem] flex items-center justify-center">
+        <AppIcon
+          className={`${fileIconClass} ${deviceIconClass}`}
+          icon={seekerIcons[deviceIcon]}
+          strokeWidth={1.75}
+        />
+        {aliasBadge}
+      </span>
+    )
+  }
+
   if (icon === 'folder') {
     return (
       <span className="relative flex-[0_0_1.14rem] h-[1.14rem] flex items-center justify-center">
         <img alt="" className={fileIconClass} src={folderIcon} />
+        {aliasBadge}
       </span>
     )
   }
@@ -82,6 +126,7 @@ function FileIconBadge({ icon, selected }: { icon: FsFileIcon; selected: boolean
         <span className={`absolute font-800 ${icon === 'scss' ? `left-[.43rem] top-[.34rem] ${selectedScssBadgeClass} text-[.42rem]` : `left-[.33rem] top-[.32rem] ${selectedTsBadgeClass} text-[.34rem]`}`}>
           {icon === 'scss' ? 'S' : 'TS'}
         </span>
+        {aliasBadge}
       </span>
     )
   }
@@ -100,6 +145,7 @@ function FileIconBadge({ icon, selected }: { icon: FsFileIcon; selected: boolean
       <span className={`absolute font-800 ${icon === 'scss' ? `left-[.43rem] top-[.34rem] ${scssBadgeClass} text-[.42rem]` : `left-[.33rem] top-[.32rem] ${tsBadgeClass} text-[.34rem]`}`}>
         {icon === 'scss' ? 'S' : 'TS'}
       </span>
+      {aliasBadge}
     </span>
   )
 }
@@ -117,15 +163,18 @@ function List() {
     closeTab,
     moveTabs,
   } = useSeekerWindow()
+  const newWindowPathOption = useSeekerGlobalStore((state) => state.newWindowPathOption)
+  const showHiddenFiles = useGlobalStore((state) => state.showHiddenFiles)
+  const defaultTabPath = resolveSeekerNewWindowPath(newWindowPathOption)
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
-  const currentPath = activeTab?.path ?? SEEKER_DEFAULT_TAB_PATH
+  const currentPath = activeTab?.path ?? defaultTabPath
   const tabs = windowState?.tabs ?? []
   const activeTabId = windowState?.activeTabId
   const showTabBar = shouldShowSeekerTabBar(tabs.length)
   const nodes = useFsStore((state) => state.nodes)
   const items = useMemo(
-    () => useFsStore.getState().listDirectory(currentPath),
-    [nodes, currentPath],
+    () => listSeekerDirectory(currentPath, nodes, showHiddenFiles),
+    [currentPath, nodes, showHiddenFiles],
   )
   const itemPaths = useMemo(() => items.map((item) => item.path), [items])
   const selection = windowState?.selection ?? []
@@ -161,7 +210,8 @@ function List() {
       const paddingY = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom)
       const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
       const rowHeight = ROW_HEIGHT_REM * rootFontSize
-      const totalRows = Math.ceil((list.clientHeight - paddingY) / rowHeight)
+      const availableHeight = Math.max(0, list.clientHeight - paddingY)
+      const totalRows = Math.floor(availableHeight / rowHeight)
       setFillerRowCount(Math.max(0, totalRows - items.length))
     }
 
@@ -283,7 +333,7 @@ function List() {
 
   const handleOpen = (entry: FsDirectoryEntry) => {
     if (!isFolderEntry(entry)) return
-    navigateTo(entry.path)
+    navigateTo(entry.resolvePath)
   }
 
   const handleRowDoubleClick = (entry: FsDirectoryEntry) => {
@@ -291,7 +341,7 @@ function List() {
   }
 
   const handleAddTab = () => {
-    addTab(SEEKER_DEFAULT_TAB_PATH)
+    addTab(defaultTabPath)
   }
 
   const handleCloseTab = (tabId: string) => {
@@ -352,6 +402,7 @@ function List() {
             : getListRowStripeClass(index)
           const fileNameClass = selected && focused ? 'text-white' : fileNameTextClass
           const itemMetadataTextClass = selected && focused ? 'text-white/85' : metadataTextClass
+          const hiddenContentClass = item.hidden ? 'opacity-45' : ''
 
           return (
             <div
@@ -368,9 +419,9 @@ function List() {
                   />
                 </span>
               ) : null}
-              <span className="min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] gap-[.28rem]">
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] gap-[.28rem] ${hiddenContentClass}`}>
                 <span className="w-[.48rem] h-[.72rem] shrink-0" />
-                <FileIconBadge icon={item.icon} selected={selected} />
+                <FileIconBadge deviceIcon={item.deviceIcon} icon={item.icon} isAlias={item.isAlias} selected={selected} />
                 <span
                   className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${fileNameClass}`}
                   data-seeker-file-name
@@ -379,9 +430,9 @@ function List() {
                   {item.name}
                 </span>
               </span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass}`}>{item.modified}</span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass}`}>{item.size}</span>
-              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass}`}>{item.kind}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass} ${hiddenContentClass}`}>{item.modified}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass} ${hiddenContentClass}`}>{item.size}</span>
+              <span className={`min-w-0 px-[.72rem] overflow-hidden text-ellipsis whitespace-nowrap flex items-center text-[.9rem] ${itemMetadataTextClass} ${hiddenContentClass}`}>{item.kind}</span>
             </div>
           )
         })}

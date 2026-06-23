@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { ShellStore } from '~types'
-import { wallpaper as defaultWallpaper } from '../constants/preloadAssets'
+import { wallpaper as defaultWallpaper } from '~/constants/preloadAssets'
 
 const useShellStore = create<ShellStore>((set) => ({
   wallpaper: defaultWallpaper,

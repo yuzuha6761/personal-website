@@ -1,6 +1,6 @@
 import styles from './MenuBar.module.scss'
 import appleLogo from '~assets/logo/apple.svg'
-import useGlobalStore from "../stores/global";
+import useGlobalStore from '~/stores/global'
 import { DateTime } from 'luxon'
 import ContextualMenu, { type ContextualMenuItem } from './ContextualMenu'
 import {
@@ -8,9 +8,9 @@ import {
   getApplicationMenuBarItems,
   selectApplicationMenuBarItem,
   type ApplicationMenuBarItem,
-} from './applications/registry'
-import useAppStore from '../stores/app'
-import useWindowStore from '../stores/window'
+} from '~/components/applications/registry'
+import useAppStore from '~/stores/app'
+import useWindowStore from '~/stores/window'
 
 const appleMenuItems: ContextualMenuItem[] = [
   { id: 'about-this-mac', label: '关于本机' },

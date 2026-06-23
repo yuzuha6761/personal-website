@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { sidebarSections, tagItems } from './data'
+import { DEFAULT_SEEKER_NEW_WINDOW_PATH_OPTION } from './newWindowPath'
 import type { SeekerGlobalStore } from './types'
 
 const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({
   sidebarSections,
   tagItems,
   collapsedSidebarSectionIds: [],
-  showHiddenFiles: false,
   defaultViewMode: 'list',
+  newWindowPathOption: DEFAULT_SEEKER_NEW_WINDOW_PATH_OPTION,
 
   setSidebarItemChecked: (sectionId, itemId, checked) => {
     set((state) => ({
@@ -31,8 +32,8 @@ const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({
         : [...state.collapsedSidebarSectionIds, sectionId],
     }))
   },
-  setShowHiddenFiles: (showHiddenFiles) => set({ showHiddenFiles }),
   setDefaultViewMode: (defaultViewMode) => set({ defaultViewMode }),
+  setNewWindowPathOption: (newWindowPathOption) => set({ newWindowPathOption }),
 }))
 
 export default useSeekerGlobalStore

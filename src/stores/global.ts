@@ -3,7 +3,10 @@ import type {GlobalStore} from '~types'
 
 const useGlobalStore = create<GlobalStore>((set) => ({
   timestamp: 0,
-  setTimestamp: (value: number) => set(() => ({ timestamp: value }))
+  showHiddenFiles: false,
+  setTimestamp: (value: number) => set(() => ({ timestamp: value })),
+  setShowHiddenFiles: (showHiddenFiles) => set({ showHiddenFiles }),
+  toggleShowHiddenFiles: () => set((state) => ({ showHiddenFiles: !state.showHiddenFiles })),
 }))
 
 export default useGlobalStore

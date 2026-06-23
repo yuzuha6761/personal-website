@@ -1,4 +1,4 @@
-export type FsNodeKind = 'volume' | 'folder' | 'file'
+export type FsNodeKind = 'volume' | 'folder' | 'file' | 'symlink'
 
 export type FsFileIcon = 'folder' | 'scss' | 'tsx'
 
@@ -10,16 +10,23 @@ export interface FsNode {
   createdAt: number
   modifiedAt: number
   size: number
+  hidden?: boolean
+  targetPath?: string
 }
 
 export interface FsDirectoryEntry {
   name: string
   path: string
+  resolvePath: string
   created: string
   modified: string
   size: string
   kind: string
   icon: FsFileIcon
+  hidden: boolean
+  navigable: boolean
+  isAlias: boolean
+  deviceIcon?: string
 }
 
 export interface FsStore {

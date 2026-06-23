@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Checkbox, Select } from '../../../ui-kit'
+import { Checkbox, Select } from '~/components/ui-kit'
 
 function AdvancedTab() {
   const [showAllExtensions, setShowAllExtensions] = useState(true)
   const [warnBeforeExtensionChange, setWarnBeforeExtensionChange] = useState(true)
-  const [warnBeforeIcloudRemove, setWarnBeforeIcloudRemove] = useState(false)
+  const [warnBeforeCloudDriveRemove, setWarnBeforeCloudDriveRemove] = useState(false)
   const [warnBeforeTrashEmpty, setWarnBeforeTrashEmpty] = useState(true)
   const [removeTrashAfter30Days, setRemoveTrashAfter30Days] = useState(true)
   const [keepFoldersOnTopInWindows, setKeepFoldersOnTopInWindows] = useState(false)
@@ -12,11 +12,11 @@ function AdvancedTab() {
   const [searchScope, setSearchScope] = useState('this-mac')
 
   return (
-    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
+    <div className="bg-[var(--settings-scene-content-bg)] px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
       <div className="flex flex-col gap-[.42rem]">
         <Checkbox checked={showAllExtensions} label="显示所有文件扩展名" onChange={setShowAllExtensions} />
         <Checkbox checked={warnBeforeExtensionChange} label="更改扩展名之前显示警告" onChange={setWarnBeforeExtensionChange} />
-        <Checkbox checked={warnBeforeIcloudRemove} label="从 iCloud 云盘中移除前显示警告" onChange={setWarnBeforeIcloudRemove} />
+        <Checkbox checked={warnBeforeCloudDriveRemove} label="从云盘中移除前显示警告" onChange={setWarnBeforeCloudDriveRemove} />
         <Checkbox checked={warnBeforeTrashEmpty} label="清倒废纸篓之前显示警告" onChange={setWarnBeforeTrashEmpty} />
         <Checkbox checked={removeTrashAfter30Days} label="30 天后移除废纸篓中的项目" onChange={setRemoveTrashAfter30Days} />
       </div>

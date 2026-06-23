@@ -1,0 +1,81 @@
+@mixin button-theme-variables($theme) {
+  @each $name, $value in $theme {
+    --button-#{$name}: #{$value};
+  }
+}
+
+$button-light-theme: (
+  bg: #ffffff,
+  bg-active: #f0f0f0,
+  box-shadow: unquote(
+    '0 1px 0 #ebebeb, ' +
+    'inset 0 1px 0 #eeeeee, ' +
+    'inset 0 -1px 0 #bcbcbc, ' +
+    'inset 3px 0 3px -2px #ebebeb, ' +
+    'inset -3px 0 3px -2px #ebebeb, ' +
+    'inset 0 3px 3px -2px #eeeeee, ' +
+    'inset 0 -3px 2px -2px rgba(188, 188, 188, 0.45), ' +
+    'inset 0 0 0 1px #ebebeb'
+  ),
+);
+
+$button-dark-theme: (
+  bg: #2a2a2a,
+  bg-active: #252525,
+  box-shadow: unquote(
+    '0 1px 0 #1a1a1a, ' +
+    'inset 0 1px 0 rgba(255, 255, 255, 0.1), ' +
+    'inset 0 -1px 0 rgba(0, 0, 0, 0.45), ' +
+    'inset 3px 0 3px -2px rgba(255, 255, 255, 0.04), ' +
+    'inset -3px 0 3px -2px rgba(255, 255, 255, 0.04), ' +
+    'inset 0 3px 3px -2px rgba(255, 255, 255, 0.06), ' +
+    'inset 0 -3px 2px -2px rgba(0, 0, 0, 0.35), ' +
+    'inset 0 0 0 1px #464646'
+  ),
+);
+
+[data-button-appearance='light'] {
+  @include button-theme-variables($button-light-theme);
+}
+
+[data-button-appearance='dark'] {
+  @include button-theme-variables($button-dark-theme);
+}
+
+.ui-kit-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  height: 1.85rem;
+  padding-left: .5rem;
+  padding-right: .5rem;
+  border: 0;
+  border-radius: .5rem;
+  cursor: default;
+  background-color: var(--button-bg);
+  box-shadow: var(--button-box-shadow);
+
+  &:active:not(:disabled) {
+    background-color: var(--button-bg-active);
+  }
+
+  &--has-trailing {
+    padding-right: 2.15rem;
+  }
+}
+
+.ui-kit-button__trailing {
+  position: absolute;
+  right: .35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: .3rem;
+  background-color: var(--system-color-solid, #ef5ba1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

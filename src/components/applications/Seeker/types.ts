@@ -1,4 +1,5 @@
 import type { SeekerSidebarSection, SeekerViewMode } from './Main/types'
+import type { SeekerNewWindowPathOption } from './newWindowPath'
 
 export interface SeekerTagItem {
   id: string
@@ -10,10 +11,10 @@ export interface SeekerGlobalStore {
   sidebarSections: SeekerSidebarSection[]
   tagItems: SeekerTagItem[]
   collapsedSidebarSectionIds: string[]
-  showHiddenFiles: boolean
   defaultViewMode: SeekerViewMode
+  newWindowPathOption: SeekerNewWindowPathOption
   setSidebarItemChecked: (sectionId: string, itemId: string, checked: boolean) => void
   toggleSidebarSectionCollapsed: (sectionId: string) => void
-  setShowHiddenFiles: (showHiddenFiles: boolean) => void
   setDefaultViewMode: (viewMode: SeekerViewMode) => void
+  setNewWindowPathOption: (option: SeekerNewWindowPathOption) => void
 }

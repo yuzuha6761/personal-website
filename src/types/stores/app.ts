@@ -1,4 +1,4 @@
-import type { AppId } from '../app'
+import type { AppId } from '~/types/app'
 
 export interface AppStore {
   runningAppIds: AppId[]

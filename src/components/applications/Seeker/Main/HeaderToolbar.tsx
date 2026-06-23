@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react'
 import ContextualMenu, { type ContextualMenuItem } from '~/components/ContextualMenu'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { getRootFontSize } from '~/services/window'
-import { seekerIcons } from '../icons'
+import { seekerIcons } from '~/components/applications/Seeker/icons'
 import type { SeekerViewMode } from './types'
 
 const TITLE_MIN_REM = 7.5

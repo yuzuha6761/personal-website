@@ -1,22 +1,28 @@
 import { create } from 'zustand'
-import useFsStore, { getPathDisplayLabel } from '~/fs'
-import useWindowStore from '~stores/window'
-import useSeekerGlobalStore from '../store'
-import { resolveTargetSeekerMainWindowId, SEEKER_WINDOW_KIND } from '../windows'
+import useFsStore from '~/fs'
+import { getSeekerPathLabel } from '~/components/applications/Seeker/virtualFolders'
+import useWindowStore from '~/stores/window'
+import useSeekerGlobalStore from '~/components/applications/Seeker/store'
+import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
+import { resolveTargetSeekerMainWindowId, SEEKER_WINDOW_KIND } from '~/components/applications/Seeker/windows'
 import type {
   SeekerTabState,
   SeekerWindowState,
   SeekerWindowStore,
 } from './types'
-import { SEEKER_DEFAULT_TAB_PATH as DEFAULT_PATH } from './types'
+
+function getDefaultTabPath(): string {
+  const { newWindowPathOption } = useSeekerGlobalStore.getState()
+  return resolveSeekerNewWindowPath(newWindowPathOption)
+}
 
 function getInitialPathFromPayload(payload?: Record<string, unknown>): string {
   const initialPath = payload?.initialPath
-  return typeof initialPath === 'string' ? initialPath : DEFAULT_PATH
+  return typeof initialPath === 'string' ? initialPath : getDefaultTabPath()
 }
 
 function getPathLabel(path: string): string {
-  return getPathDisplayLabel(path, useFsStore.getState().nodes)
+  return getSeekerPathLabel(path, useFsStore.getState().nodes)
 }
 
 function createTab(path: string, label?: string): SeekerTabState {
@@ -296,7 +302,7 @@ const useSeekerWindowStore = create<SeekerWindowStore>((set, get) => ({
   },
 }))
 
-export function addTabToTargetMainWindow(path: string = DEFAULT_PATH): void {
+export function addTabToTargetMainWindow(path: string = getDefaultTabPath()): void {
   const windowStore = useWindowStore.getState()
   const seekerStore = useSeekerWindowStore.getState()
   const { windows, focusedTarget } = windowStore

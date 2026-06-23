@@ -1,4 +1,6 @@
-export const SEEKER_DEFAULT_TAB_PATH = '/Users/yuzuha'
+import { FS_HOME_PATH } from '~/fs/paths'
+
+export const SEEKER_DEFAULT_TAB_PATH = FS_HOME_PATH
 
 export const SEEKER_TAB_CHROME = {
   activeBackground: '#f4f4f4',
@@ -32,7 +34,12 @@ export type SeekerSidebarIcon =
   | 'desktop'
   | 'shared'
   | 'computer'
+  | 'hard-drive'
+  | 'external-disk'
+  | 'disc'
+  | 'server'
   | 'network'
+  | 'globe'
   | 'tag'
 
 export interface SeekerSidebarItem {

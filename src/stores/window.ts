@@ -5,10 +5,10 @@ import {
   getApplicationWindowHandlers,
   isApplicationLoaded,
   preloadApplication,
-} from '../components/applications/registry'
-import { SEEKER_WINDOW_KIND } from '../components/applications/Seeker/windows'
-import { createWindowState, getNextZIndex } from '../services/window'
-import { prepareWindowRestoreTransition } from '../services/window-restore-transition'
+} from '~/components/applications/registry'
+import { SEEKER_WINDOW_KIND } from '~/components/applications/Seeker/windows'
+import { createWindowState, getNextZIndex } from '~/services/window'
+import { prepareWindowRestoreTransition } from '~/services/window-restore-transition'
 import useAppStore from './app'
 
 const DOCK_ICON_BOUNCE_DURATION_MS = 624

@@ -1,6 +1,6 @@
 import { Minus } from 'lucide-react'
-import { AppIcon } from '../../../icons/AppIcon'
-import { Stepper } from '../../../ui-kit'
+import { AppIcon } from '~/components/icons/AppIcon'
+import { Stepper } from '~/components/ui-kit'
 
 const tagItems = [
   { id: 'red', label: '红色', color: '#ff6b67' },
@@ -19,7 +19,7 @@ const favoriteTags = tagItems.slice(0, 7)
 
 function TagsTab() {
   return (
-    <div className="px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
+    <div className="bg-[var(--settings-scene-content-bg)] px-[1.35rem] py-[1rem] text-[.84rem] text-[var(--settings-scene-text,#2f2f2f)]">
       <div className="mb-[.55rem] font-600">在边栏显示这些标签：</div>
 
       <div className="rounded-[.42rem] border border-[var(--settings-scene-panel-border,#d5d5d5)] overflow-hidden bg-[var(--settings-scene-row-light,#ffffff)]">

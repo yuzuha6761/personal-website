@@ -1,5 +1,5 @@
 import { PanelLeft, Settings, Settings2, Tag } from 'lucide-react'
-import { SettingsScene } from '../../../ui-kit'
+import { SettingsScene } from '~/components/ui-kit'
 import AdvancedTab from './AdvancedTab'
 import GeneralTab from './GeneralTab'
 import SidebarTab from './SidebarTab'

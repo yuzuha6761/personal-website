@@ -135,6 +135,15 @@ function Scrollbar(props: ScrollbarProps) {
     }
   }, [scrollBarsVisibility])
 
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport || metrics.scrollable) return
+
+    if (viewport.scrollTop !== 0) {
+      viewport.scrollTop = 0
+    }
+  }, [metrics.scrollable])
+
   const assignViewportRef = useCallback((node: HTMLDivElement | null) => {
     viewportRef.current = node
 
@@ -274,6 +283,7 @@ function Scrollbar(props: ScrollbarProps) {
         className={`${styles.viewport} ${contentClassName}`}
         onScroll={handleScroll}
         ref={assignViewportRef}
+        style={{ overflowY: metrics.scrollable ? 'auto' : 'hidden' }}
         {...viewportProps}
       >
         {children}

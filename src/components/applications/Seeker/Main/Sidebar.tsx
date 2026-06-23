@@ -5,8 +5,13 @@ import SystemGlassSurface from '~/components/SystemGlassSurface'
 import { Scrollbar } from '~/components/ui-kit'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { getRootFontSize } from '~/services/window'
-import { seekerIcons } from '../icons'
-import useSeekerGlobalStore from '../store'
+import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
+import { isSidebarItemActive, resolveSidebarItemPath } from '~/components/applications/Seeker/sidebarPaths'
+import { buildVisibleSidebarEntries, isSidebarItemVisible } from '~/components/applications/Seeker/locationSidebar'
+import { seekerIcons } from '~/components/applications/Seeker/icons'
+import useSeekerGlobalStore from '~/components/applications/Seeker/store'
+import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
+import type { SeekerSidebarItem } from './types'
 
 const DEFAULT_WIDTH_REM = 10.65
 const MIN_WIDTH_REM = 9
@@ -14,8 +19,49 @@ const HIDE_AT_REM = 4
 const MAIN_MIN_WIDTH_REM = 25
 const TAGS_SECTION_ID = 'tags'
 
-const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] p-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center'
+const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] pr-[.25rem] py-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center text-left'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[1.1rem] h-[1.1rem] mr-[.3rem]'
+
+interface SidebarNavItemProps {
+  active: boolean
+  depth: number
+  focused: boolean
+  item: SeekerSidebarItem
+  onNavigate: (path: string) => void
+  sidebarIconColorStyle: { color: string }
+  sidebarTextClass: string
+}
+
+function SidebarNavItem(props: SidebarNavItemProps) {
+  const { active, depth, focused, item, onNavigate, sidebarIconColorStyle, sidebarTextClass } = props
+  const path = resolveSidebarItemPath(item.id)
+  const depthClass = depth > 0 ? 'pl-[1.35rem]' : 'pl-[.3rem]'
+  const className = `${sidebarItemClass} ${depthClass} ${sidebarTextClass}`
+  const activeBackground = focused
+    ? 'var(--seeker-sidebar-item-active-focused)'
+    : 'var(--seeker-sidebar-item-active-unfocused)'
+  const content = (
+    <>
+      <AppIcon className={sidebarIconClass} icon={seekerIcons[item.icon]} style={sidebarIconColorStyle} />
+      <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.label}</span>
+    </>
+  )
+
+  if (!path) {
+    return <div className={className}>{content}</div>
+  }
+
+  return (
+    <button
+      className={className}
+      onClick={() => onNavigate(path)}
+      style={active ? { backgroundColor: activeBackground } : undefined}
+      type="button"
+    >
+      {content}
+    </button>
+  )
+}
 
 interface HairlineStripProps {
   className?: string
@@ -116,12 +162,13 @@ function resolveSidebarWidth(pointerRem: number, containerWidthRem: number) {
   return { visible: true, widthRem }
 }
 
-function isSidebarItemVisible(item: { checked?: boolean, indeterminate?: boolean }) {
-  return Boolean(item.checked || item.indeterminate)
-}
-
 function Sidebar({ containerRef }: SidebarProps) {
   const focused = useWindowFocus()?.focused ?? true
+  const { windowState, navigateTo } = useSeekerWindow()
+  const newWindowPathOption = useSeekerGlobalStore((state) => state.newWindowPathOption)
+  const defaultTabPath = resolveSeekerNewWindowPath(newWindowPathOption)
+  const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
+  const currentPath = activeTab?.path ?? defaultTabPath
   const sidebarSections = useSeekerGlobalStore((state) => state.sidebarSections)
   const tagItems = useSeekerGlobalStore((state) => state.tagItems)
   const collapsedSidebarSectionIds = useSeekerGlobalStore((state) => state.collapsedSidebarSectionIds)
@@ -130,9 +177,6 @@ function Sidebar({ containerRef }: SidebarProps) {
   const [visible, setVisible] = useState(true)
   const dragStateRef = useRef<{ pointerId: number } | null>(null)
 
-  const sidebarBgClass = focused
-    ? ''
-    : 'bg-[var(--seeker-sidebar-unfocused)]'
   const sidebarBorderColor = 'var(--seeker-sidebar-border)'
   const sidebarTitleClass = focused
     ? 'text-[var(--seeker-sidebar-title-focused)]'
@@ -147,6 +191,10 @@ function Sidebar({ containerRef }: SidebarProps) {
   }
   const tagSection = sidebarSections.find((section) => section.id === TAGS_SECTION_ID)
   const showTagsSection = Boolean(tagSection?.items.some(isSidebarItemVisible) && tagItems.length > 0)
+
+  const handleNavigate = useCallback((path: string) => {
+    navigateTo(path)
+  }, [navigateTo])
 
   const handleResizeMove = useCallback((clientX: number) => {
     const container = containerRef.current
@@ -198,10 +246,10 @@ function Sidebar({ containerRef }: SidebarProps) {
 
   return (
     <aside
-      className={`relative z-[30] flex h-full shrink-0 flex-col overflow-hidden ${sidebarBgClass}`}
+      className="relative z-[30] flex h-full shrink-0 flex-col overflow-hidden"
       style={{ width: visible ? `${widthRem}rem` : 0 }}
     >
-      {focused ? <SystemGlassSurface style={{ zIndex: 0 }} /> : null}
+      <SystemGlassSurface style={{ zIndex: 0 }} />
       {visible ? (
         <HairlineVerticalStrip
           className="absolute top-0 right-0 z-[1] h-full"
@@ -211,13 +259,13 @@ function Sidebar({ containerRef }: SidebarProps) {
       <div className="relative z-[1] h-[3.85rem] shrink-0" />
       <Scrollbar
         className="relative z-[1] min-h-0 flex-1"
-        contentClassName="pt-0 pr-[.75rem] pb-[.9rem] pl-[.9rem]"
+        contentClassName="pt-0 pr-[.5rem] pb-[.9rem] pl-[.6rem]"
       >
         {sidebarSections.filter((section) => section.id !== TAGS_SECTION_ID).map((section) => {
-          const visibleItems = section.items.filter(isSidebarItemVisible)
+          const visibleEntries = buildVisibleSidebarEntries(section.id, section.items)
           const collapsed = collapsedSidebarSectionIds.includes(section.id)
 
-          if (visibleItems.length === 0) return null
+          if (visibleEntries.length === 0) return null
 
           return (
             <section className="mb-[1.08rem]" key={section.id}>
@@ -231,11 +279,17 @@ function Sidebar({ containerRef }: SidebarProps) {
                 />
               )}
               <CollapsibleSidebarItems collapsed={collapsed}>
-                {visibleItems.map((item) => (
-                  <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={item.id}>
-                    <AppIcon className={sidebarIconClass} icon={seekerIcons[item.icon]} style={sidebarIconColorStyle} />
-                    <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{item.label}</span>
-                  </div>
+                {visibleEntries.map(({ item, depth }) => (
+                  <SidebarNavItem
+                    active={isSidebarItemActive(item.id, currentPath)}
+                    depth={depth}
+                    focused={focused}
+                    item={item}
+                    key={item.id}
+                    onNavigate={handleNavigate}
+                    sidebarIconColorStyle={sidebarIconColorStyle}
+                    sidebarTextClass={sidebarTextClass}
+                  />
                 ))}
               </CollapsibleSidebarItems>
             </section>
@@ -253,7 +307,7 @@ function Sidebar({ containerRef }: SidebarProps) {
             />
             <CollapsibleSidebarItems collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}>
               {tagItems.map((tag) => (
-                <div className={`${sidebarItemClass} ${sidebarTextClass}`} key={tag.id}>
+                <div className={`${sidebarItemClass} pl-[.3rem] ${sidebarTextClass}`} key={tag.id}>
                   <span
                     className="flex-[0_0_.55rem] h-[.55rem] mr-[.58rem] ml-[.22rem] rounded-full"
                     style={{ backgroundColor: tag.color, opacity: focused ? 1 : 0.42 }}

@@ -1,6 +1,6 @@
 import { Minus, Plus } from 'lucide-react'
-import { useSystemAppearanceDarkMode } from '../../hooks/useSystemAppearanceDarkMode'
-import { AppIcon } from '../icons/AppIcon'
+import { useSystemAppearanceDarkMode } from '~/hooks/useSystemAppearanceDarkMode'
+import { AppIcon } from '~/components/icons/AppIcon'
 import './Stepper.scss'
 
 interface StepperProps {

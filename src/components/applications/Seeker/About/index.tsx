@@ -1,4 +1,4 @@
-import seekerIcon from '../icon.svg'
+import seekerIcon from '~/components/applications/Seeker/icon.svg'
 import packageJson from '../../../../../package.json'
 
 function SeekerAbout() {

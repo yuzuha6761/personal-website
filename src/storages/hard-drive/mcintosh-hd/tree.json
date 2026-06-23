@@ -1,0 +1,284 @@
+[
+  {
+    "name": "Applications",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "Library",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "System",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "Volumes",
+    "kind": "folder",
+    "hidden": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "usr",
+    "kind": "folder",
+    "hidden": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "bin",
+    "kind": "folder",
+    "hidden": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "sbin",
+    "kind": "folder",
+    "hidden": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "private",
+    "kind": "folder",
+    "hidden": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z",
+    "children": [
+      {
+        "name": "etc",
+        "kind": "folder",
+        "hidden": true,
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "modifiedAt": "2025-06-12T06:50:00.000Z"
+      },
+      {
+        "name": "var",
+        "kind": "folder",
+        "hidden": true,
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "modifiedAt": "2025-06-12T06:50:00.000Z"
+      },
+      {
+        "name": "tmp",
+        "kind": "folder",
+        "hidden": true,
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "modifiedAt": "2025-06-12T06:50:00.000Z"
+      }
+    ]
+  },
+  {
+    "name": "etc",
+    "kind": "symlink",
+    "hidden": true,
+    "target": "private/etc",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "var",
+    "kind": "symlink",
+    "hidden": true,
+    "target": "private/var",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "tmp",
+    "kind": "symlink",
+    "hidden": true,
+    "target": "private/tmp",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z"
+  },
+  {
+    "name": "Users",
+    "kind": "folder",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-12T06:50:00.000Z",
+    "children": [
+      {
+        "name": "yuzuha",
+        "kind": "folder",
+        "createdAt": "2024-03-15T08:00:00.000Z",
+        "modifiedAt": "2025-06-12T06:50:00.000Z",
+        "children": [
+          {
+            "name": "Desktop",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z",
+            "children": [
+              {
+                "name": ".DS_Store",
+                "kind": "file",
+                "createdAt": "2024-03-15T08:00:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z",
+                "size": 6144
+              },
+              {
+                "name": "desktop-private",
+                "kind": "file",
+                "hidden": true,
+                "createdAt": "2024-03-15T08:00:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z",
+                "size": 512
+              }
+            ]
+          },
+          {
+            "name": "Documents",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Downloads",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Movies",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Music",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Pictures",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Public",
+            "kind": "folder",
+            "createdAt": "2024-03-15T08:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "Cloud Drive",
+            "kind": "folder",
+            "createdAt": "2024-06-01T00:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "fuyi",
+            "kind": "folder",
+            "createdAt": "2024-08-10T12:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "ios 壁纸",
+            "kind": "folder",
+            "createdAt": "2024-09-01T00:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "iptv",
+            "kind": "folder",
+            "createdAt": "2024-10-01T00:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "wallpaper",
+            "kind": "folder",
+            "createdAt": "2024-11-01T00:00:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z"
+          },
+          {
+            "name": "components",
+            "kind": "folder",
+            "createdAt": "2025-04-18T04:27:00.000Z",
+            "modifiedAt": "2025-06-12T06:50:00.000Z",
+            "children": [
+              {
+                "name": "applications",
+                "kind": "folder",
+                "createdAt": "2025-06-12T06:50:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z"
+              },
+              {
+                "name": "assets",
+                "kind": "folder",
+                "createdAt": "2025-06-12T06:50:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z"
+              },
+              {
+                "name": "ApplicationWindow.module.scss",
+                "kind": "file",
+                "createdAt": "2025-06-12T06:51:00.000Z",
+                "modifiedAt": "2025-06-12T06:51:00.000Z",
+                "size": 1024
+              },
+              {
+                "name": "Desktop.tsx",
+                "kind": "file",
+                "createdAt": "2025-06-12T06:50:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z",
+                "size": 1024
+              },
+              {
+                "name": "Dock.module.scss",
+                "kind": "file",
+                "createdAt": "2025-04-18T04:27:00.000Z",
+                "modifiedAt": "2025-04-18T04:27:00.000Z",
+                "size": 3072
+              },
+              {
+                "name": "Dock.tsx",
+                "kind": "file",
+                "createdAt": "2025-06-12T06:50:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z",
+                "size": 2048
+              },
+              {
+                "name": "MenuBar.module.scss",
+                "kind": "file",
+                "createdAt": "2025-04-18T04:27:00.000Z",
+                "modifiedAt": "2025-04-18T04:27:00.000Z",
+                "size": 1024
+              },
+              {
+                "name": "MenuBar.tsx",
+                "kind": "file",
+                "createdAt": "2025-04-18T04:27:00.000Z",
+                "modifiedAt": "2025-04-18T04:27:00.000Z",
+                "size": 2048
+              },
+              {
+                "name": "Window",
+                "kind": "folder",
+                "createdAt": "2025-06-12T06:50:00.000Z",
+                "modifiedAt": "2025-06-12T06:50:00.000Z",
+                "children": [
+                  {
+                    "name": "index.tsx",
+                    "kind": "file",
+                    "createdAt": "2025-06-12T06:50:00.000Z",
+                    "modifiedAt": "2025-06-12T06:50:00.000Z",
+                    "size": 2048
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

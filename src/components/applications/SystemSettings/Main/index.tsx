@@ -4,7 +4,7 @@ import Sidebar from './Sidebar'
 import { settingsCategories } from './data'
 import type { SettingsCategoryId } from './types'
 import { useSystemAppearanceDarkMode } from '~/hooks/useSystemAppearanceDarkMode'
-import { applySystemSettingsTheme } from '../theme'
+import { applySystemSettingsTheme } from '~/components/applications/SystemSettings/theme'
 
 function SystemSettingsMain() {
   const containerRef = useRef<HTMLDivElement>(null)

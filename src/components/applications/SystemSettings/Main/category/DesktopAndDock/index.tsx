@@ -21,7 +21,7 @@ import type {
   WidgetStyle,
   WindowMinimizeEffect,
 } from '~types'
-import SettingsRow from '../../shared/SettingsRow'
+import SettingsRow from '~/components/applications/SystemSettings/Main/shared/SettingsRow'
 
 const sectionClass = 'mb-[.7rem] rounded-[.34rem] border border-[var(--system-surface-border)] bg-[var(--system-surface-elevated)] divide-y divide-[var(--system-surface-border)]'
 const labelTextClass = 'text-[.86rem] leading-[1.16rem] text-[var(--system-settings-row-label)]'

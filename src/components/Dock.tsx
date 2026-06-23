@@ -1,7 +1,7 @@
 import './Dock.theme.scss'
 import styles from './Dock.module.scss'
-import useDockSettingStore from "../stores/settings/dock";
-import useSystemSettingsStore from "../stores/settings/system-settings";
+import useDockSettingStore from '~/stores/settings/dock'
+import useSystemSettingsStore from '~/stores/settings/system-settings'
 import {DockPositionEnum} from "~enums";
 import trashIcon from '~assets/application-icon/trash.png'
 import {
@@ -9,12 +9,12 @@ import {
   getApplicationDockMenuItems,
   selectApplicationDockMenuItem,
   type ApplicationDockMenuContext,
-} from "../components/applications/registry";
-import { sortWindowsByOpenedAt } from '../services/window'
-import { WINDOW_RESTORE_TRANSITION_DURATION_MS } from '../services/window-restore-transition'
-import { getWindowSnapshot, subscribeWindowSnapshots } from '../services/window-snapshots'
-import useWindowStore from "../stores/window";
-import useAppStore from "../stores/app";
+} from '~/components/applications/registry'
+import { sortWindowsByOpenedAt } from '~/services/window'
+import { WINDOW_RESTORE_TRANSITION_DURATION_MS } from '~/services/window-restore-transition'
+import { getWindowSnapshot, subscribeWindowSnapshots } from '~/services/window-snapshots'
+import useWindowStore from '~/stores/window'
+import useAppStore from '~/stores/app'
 import ContextualMenu, {
   type ContextualMenuAnchor,
   type ContextualMenuItem,

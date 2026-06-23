@@ -4,17 +4,26 @@ import ContextualMenu, { type ContextualMenuItem, type ContextualMenuSelectEvent
 import { AppIcon } from '~/components/icons/AppIcon'
 import { dragExcludeProps, dragHandleProps } from '~/components/Window/Drag'
 import { useWindowFocus } from '~/components/Window/FocusContext'
-import useFsStore, { buildPathChainFromCurrent, getPathDisplayLabel } from '~/fs'
+import useFsStore from '~/fs'
+import {
+  buildSeekerPathChain,
+  getSeekerPathLabel,
+} from '~/components/applications/Seeker/virtualFolders'
 import { getRootFontSize } from '~/services/window'
-import { seekerIcons } from '../icons'
-import { useSeekerWindow } from '../useSeekerWindow'
+import { getPathContextMenuIcon, getPathTitleIcon } from '~/components/applications/Seeker/pathIcons'
+import { seekerIcons } from '~/components/applications/Seeker/icons'
+import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
+import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
+import useSeekerGlobalStore from '~/components/applications/Seeker/store'
 import useSeekerWindowStore from './store'
-import { SEEKER_DEFAULT_TAB_PATH } from './types'
 import { HeaderToolbarArea } from './HeaderToolbar'
 
 const historyIconClass = 'w-[1.4rem] h-[1.4rem]'
 const PATH_MENU_ROW_LEFT_OFFSET_REM = 0.48 + 1.35
 const PATH_MENU_PANEL_TOP_PADDING_REM = 0.4
+const TITLE_ICON_REVEAL_DURATION_MS = 200
+const TITLE_ICON_WIDTH_REM = 1.15
+const TITLE_ICON_GAP_REM = 0.25
 
 interface HistoryButtonProps {
   ariaLabel: string
@@ -61,25 +70,31 @@ function Header() {
   const [pathMenuOpen, setPathMenuOpen] = useState(false)
   const [pathMenuPaths, setPathMenuPaths] = useState<string[]>([])
   const [pathMenuPosition, setPathMenuPosition] = useState({ x: 0, y: 0 })
+  const [titleHovered, setTitleHovered] = useState(false)
   const {
     windowState,
     goBack,
     goForward,
   } = useSeekerWindow()
   const nodes = useFsStore((state) => state.nodes)
+  const newWindowPathOption = useSeekerGlobalStore((state) => state.newWindowPathOption)
+  const defaultTabPath = resolveSeekerNewWindowPath(newWindowPathOption)
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
-  const currentPath = activeTab?.path ?? SEEKER_DEFAULT_TAB_PATH
+  const currentPath = activeTab?.path ?? defaultTabPath
   const canGoBack = (windowState?.historyBack.length ?? 0) > 0
   const canGoForward = (windowState?.historyForward.length ?? 0) > 0
 
   const pathMenuItems = useMemo<ContextualMenuItem[]>(() => (
     pathMenuPaths.map((path, index) => ({
       id: `path-${index}`,
-      label: getPathDisplayLabel(path, nodes),
+      label: getSeekerPathLabel(path, nodes),
       checked: index === 0,
       checkable: true,
+      ...getPathContextMenuIcon(path),
     }))
   ), [pathMenuPaths, nodes])
+
+  const titleLabel = activeTab?.label ?? 'yuzuha'
 
   const titleColorClass = focused
     ? 'text-[var(--seeker-header-title-focused)]'
@@ -92,7 +107,7 @@ function Header() {
     const titleRect = titleRef.current?.getBoundingClientRect()
     if (!titleRect) return
 
-    const paths = buildPathChainFromCurrent(currentPath)
+    const paths = buildSeekerPathChain(currentPath)
     pathMenuPathsRef.current = paths
     setPathMenuPaths(paths)
 
@@ -148,13 +163,31 @@ function Header() {
           className="min-w-[7.5rem] flex-1 flex items-center min-w-0"
           {...dragHandleProps}
         >
-          <span
-            className={`truncate ${titleColorClass} text-[1.04rem] font-[760] cursor-default select-none`}
+          <div
+            className="flex min-w-0 max-w-full items-center"
             onContextMenu={handleTitleContextMenu}
-            ref={titleRef}
+            onMouseEnter={() => setTitleHovered(true)}
+            onMouseLeave={() => setTitleHovered(false)}
           >
-            {activeTab?.label ?? 'yuzuha'}
-          </span>
+            <span
+              aria-hidden={!titleHovered}
+              className="flex shrink-0 items-center justify-center overflow-hidden transition-[width,margin,opacity] ease-out"
+              style={{
+                width: titleHovered ? `${TITLE_ICON_WIDTH_REM}rem` : 0,
+                marginRight: titleHovered ? `${TITLE_ICON_GAP_REM}rem` : 0,
+                opacity: titleHovered ? 1 : 0,
+                transitionDuration: `${TITLE_ICON_REVEAL_DURATION_MS}ms`,
+              }}
+            >
+              {getPathTitleIcon(currentPath, titleColorClass)}
+            </span>
+            <span
+              className={`truncate ${titleColorClass} text-[1.04rem] font-[760] cursor-default select-none`}
+              ref={titleRef}
+            >
+              {titleLabel}
+            </span>
+          </div>
         </div>
 
         <div className="flex min-w-0 shrink-0 justify-end overflow-visible">

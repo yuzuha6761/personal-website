@@ -10,21 +10,22 @@ import type {
   ApplicationDockMenuSelectHandler,
   ApplicationMenuBarItem,
   ApplicationMenuBarSelectHandler,
-} from '../registry'
-import type { ContextualMenuItem } from '../../ContextualMenu'
+} from '~/components/applications/registry'
+import type { ContextualMenuItem } from '~/components/ContextualMenu'
+import { FS_HOME_PATH, joinPath } from '~/fs/paths'
 import { seekerIcons } from './icons'
 
 const seekerDockPaths = [
-  { id: 'downloads', label: '下载', path: '/Users/yuzuha/Downloads' },
-  { id: 'applications', label: 'applications', path: '/Users/yuzuha/components/applications' },
-  { id: 'assets', label: 'assets', path: '/Users/yuzuha/components/assets' },
-  { id: 'components', label: 'components', path: '/Users/yuzuha/components' },
-  { id: 'fuyi', label: 'fuyi', path: '/Users/yuzuha/fuyi' },
-  { id: 'icloud-drive', label: 'iCloud 云盘', path: '/Users/yuzuha/iCloud Drive' },
-  { id: 'ios-wallpapers', label: 'ios 壁纸', path: '/Users/yuzuha/ios 壁纸' },
-  { id: 'iptv', label: 'iptv', path: '/Users/yuzuha/iptv' },
-  { id: 'public', label: 'public', path: '/Users/yuzuha/Public' },
-  { id: 'wallpaper', label: 'wallpaper', path: '/Users/yuzuha/wallpaper' },
+  { id: 'downloads', label: '下载', path: joinPath(FS_HOME_PATH, 'Downloads') },
+  { id: 'applications', label: 'applications', path: joinPath(FS_HOME_PATH, 'components/applications') },
+  { id: 'assets', label: 'assets', path: joinPath(FS_HOME_PATH, 'components/assets') },
+  { id: 'components', label: 'components', path: joinPath(FS_HOME_PATH, 'components') },
+  { id: 'fuyi', label: 'fuyi', path: joinPath(FS_HOME_PATH, 'fuyi') },
+  { id: 'cloud-drive', label: '云盘', path: joinPath(FS_HOME_PATH, 'Cloud Drive') },
+  { id: 'ios-wallpapers', label: 'ios 壁纸', path: joinPath(FS_HOME_PATH, 'ios 壁纸') },
+  { id: 'iptv', label: 'iptv', path: joinPath(FS_HOME_PATH, 'iptv') },
+  { id: 'public', label: 'public', path: joinPath(FS_HOME_PATH, 'Public') },
+  { id: 'wallpaper', label: 'wallpaper', path: joinPath(FS_HOME_PATH, 'wallpaper') },
 ]
 
 export const seekerDockMenuItems: ContextualMenuItem[] = [
@@ -246,7 +247,7 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
       { id: 'home', label: '个人', shortcut: '⇧⌘H', icon: seekerIcons.home },
       { id: 'computer', label: '电脑', shortcut: '⇧⌘C', icon: seekerIcons.computer },
       { id: 'airdrop', label: '隔空投送', shortcut: '⇧⌘R', icon: seekerIcons.airdrop },
-      { id: 'network', label: '网络', shortcut: '⇧⌘K', icon: seekerIcons.network },
+      { id: 'network', label: '网络', shortcut: '⇧⌘K', icon: seekerIcons.globe },
       { id: 'cloud-drive', label: '云盘', shortcut: '⇧⌘I', icon: seekerIcons['cloud-drive'] },
       { id: 'shared', label: '共享', shortcut: '⇧⌘S', icon: seekerIcons.shared },
       { id: 'applications', label: '应用程序', shortcut: '⇧⌘A', icon: seekerIcons.applications },

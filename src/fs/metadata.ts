@@ -1,4 +1,7 @@
 import type { FsDirectoryEntry, FsFileIcon, FsNode, FsNodeKind } from '~types'
+import { isFsNodeHidden } from './hidden'
+import { isFsNodeNavigable, resolveFsNavigationPath } from './symlinks'
+import { getVolumesMountDeviceIcon } from './volumes'
 
 const FILE_KIND_BY_EXTENSION: Record<string, string> = {
   scss: 'SASS file',
@@ -25,7 +28,7 @@ function getExtension(name: string): string {
 }
 
 export function resolveFsFileIcon(name: string, kind: FsNodeKind): FsFileIcon {
-  if (kind === 'folder' || kind === 'volume') return 'folder'
+  if (kind === 'folder' || kind === 'volume' || kind === 'symlink') return 'folder'
 
   const extension = getExtension(name)
   if (extension === 'scss' || extension === 'sass') return 'scss'
@@ -35,6 +38,7 @@ export function resolveFsFileIcon(name: string, kind: FsNodeKind): FsFileIcon {
 export function resolveFsKindLabel(name: string, kind: FsNodeKind): string {
   if (kind === 'volume') return '宗卷'
   if (kind === 'folder') return '文件夹'
+  if (kind === 'symlink') return '替身'
 
   const extension = getExtension(name)
   return FILE_KIND_BY_EXTENSION[extension] ?? '文件'
@@ -66,14 +70,19 @@ export function formatFsTimestamp(timestamp: number): string {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${time}`
 }
 
-export function toDirectoryEntry(node: FsNode): FsDirectoryEntry {
+export function toDirectoryEntry(node: FsNode, nodes: Record<string, FsNode>): FsDirectoryEntry {
   return {
     name: node.name,
     path: node.path,
+    resolvePath: resolveFsNavigationPath(node, nodes),
     created: formatFsTimestamp(node.createdAt),
     modified: formatFsTimestamp(node.modifiedAt),
     size: node.kind === 'file' ? formatFsBytes(node.size) : '--',
     kind: resolveFsKindLabel(node.name, node.kind),
     icon: resolveFsFileIcon(node.name, node.kind),
+    hidden: isFsNodeHidden(node),
+    navigable: isFsNodeNavigable(node, nodes),
+    isAlias: node.kind === 'symlink',
+    deviceIcon: getVolumesMountDeviceIcon(node),
   }
 }

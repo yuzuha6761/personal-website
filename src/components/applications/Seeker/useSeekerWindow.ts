@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import useSeekerWindowStore from './Main/store'
 import type { SeekerViewMode, SeekerWindowState } from './Main/types'
-import { useWindowFocus } from '../../Window/FocusContext'
+import { useWindowFocus } from '~/components/Window/FocusContext'
 
 export function useSeekerWindow(): {
   windowId: string | undefined

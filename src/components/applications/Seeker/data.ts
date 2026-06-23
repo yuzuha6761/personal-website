@@ -9,7 +9,7 @@ export const sidebarSections: SeekerSidebarSection[] = [
       { id: 'airdrop', label: '隔空投送', icon: 'airdrop', checked: true },
       { id: 'applications', label: '应用程序', icon: 'applications', checked: true },
       { id: 'downloads', label: '下载', icon: 'downloads', checked: true },
-      { id: 'my-mac', label: '我的 Mac', icon: 'computer', checked: false },
+      { id: 'my-mac', label: '我的 McIntosh', icon: 'computer', checked: false },
       { id: 'movies', label: '影片', icon: 'movies', checked: true },
       { id: 'music', label: '音乐', icon: 'music', checked: true },
       { id: 'pictures', label: '图片', icon: 'pictures', checked: true },
@@ -17,8 +17,8 @@ export const sidebarSections: SeekerSidebarSection[] = [
     ],
   },
   {
-    id: 'icloud',
-    title: 'iCloud',
+    id: 'cloud',
+    title: '云端',
     items: [
       { id: 'cloud-drive', label: '云盘', icon: 'cloud-drive', checked: true },
       { id: 'shared', label: '共享', icon: 'shared', checked: true },
@@ -30,13 +30,13 @@ export const sidebarSections: SeekerSidebarSection[] = [
     id: 'locations',
     title: '位置',
     items: [
-      { id: 'macbook-pro', label: 'yuzuha个人网站', icon: 'computer', checked: true },
-      { id: 'hard-disks', label: '硬盘', icon: 'computer', indeterminate: true },
-      { id: 'external-disks', label: '外置磁盘', icon: 'computer', checked: true },
-      { id: 'disc-devices', label: 'CD、DVD 和 iOS 设备', icon: 'computer', checked: true },
+      { id: 'yuzuha-website', label: 'yuzuha website', icon: 'computer', checked: true },
+      { id: 'hard-disks', label: '硬盘', icon: 'hard-drive', checked: true },
+      { id: 'external-disks', label: '外置磁盘', icon: 'external-disk', checked: true },
+      { id: 'disc-devices', label: 'CD、DVD 和 iOS 设备', icon: 'disc', checked: true },
       { id: 'cloud-storage', label: '云端储存空间', icon: 'cloud-drive', checked: true },
       { id: 'bonjour', label: 'Bonjour 电脑', icon: 'network', checked: true },
-      { id: 'connected-servers', label: '已连接的服务器', icon: 'network', checked: true },
+      { id: 'connected-servers', label: '已连接的服务器', icon: 'server', checked: true },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useWindowFocus } from '../Window/FocusContext'
+import { useWindowFocus } from '~/components/Window/FocusContext'
 
 interface RadioProps {
   checked?: boolean

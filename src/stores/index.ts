@@ -5,4 +5,4 @@ export { default as useSystemSettingsStore } from './settings/system-settings.ts
 export * from './window.ts'
 export { default as useAppStore } from './app.ts'
 export { default as useShellStore } from './shell.ts'
-export { default as useFsStore } from '../fs/index.ts'
+export { default as useFsStore } from '~/fs'

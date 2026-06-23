@@ -1,19 +1,26 @@
 import { create } from 'zustand'
 import type { FsNode, FsStore } from '~types'
+import useGlobalStore from '~/stores/global'
 import { toDirectoryEntry } from './metadata'
-import { collectDescendantPaths, joinPath, listChildNodes } from './paths'
+import { filterVisibleFsNodes } from './hidden'
+import { collectDescendantPaths, joinPath } from './paths'
+import { resolveFsPath } from './symlinks'
+import { listFsDirectoryChildren, resolveVolumesMountNode } from './volumes'
 import { createInitialFsNodes } from './seed'
 
 const useFsStore = create<FsStore>((set, get) => ({
   nodes: createInitialFsNodes(),
 
-  getNodeByPath: (path) => get().nodes[path],
+  getNodeByPath: (path) => get().nodes[path] ?? resolveVolumesMountNode(get().nodes, path),
 
   listDirectory: (path) => {
-    const directory = get().getNodeByPath(path)
+    const resolvedPath = resolveFsPath(get().nodes, path)
+    const directory = get().nodes[resolvedPath]
     if (!directory || directory.kind === 'file') return []
 
-    return listChildNodes(get().nodes, path).map(toDirectoryEntry)
+    const showHiddenFiles = useGlobalStore.getState().showHiddenFiles
+    return filterVisibleFsNodes(listFsDirectoryChildren(get().nodes, resolvedPath), showHiddenFiles)
+      .map((node) => toDirectoryEntry(node, get().nodes))
   },
 
   createFolder: (parentPath, name) => {

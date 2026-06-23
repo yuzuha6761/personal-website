@@ -1,5 +1,5 @@
-import type { AppId } from '../app'
-import type { OpenWindowOptions, WindowState } from '../window'
+import type { AppId } from '~/types/app'
+import type { OpenWindowOptions, WindowState } from '~/types/window'
 
 export type FocusTarget =
   | { type: 'desktop' }

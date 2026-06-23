@@ -1,5 +1,5 @@
 import { createElement, type ComponentType, type ReactNode } from 'react'
-import type { ContextualMenuItem } from '../ContextualMenu'
+import type { ContextualMenuItem } from '~/components/ContextualMenu'
 import { getSeekerWindowKind, resolveSeekerWindowOptions } from './Seeker/windows'
 import type {
   AppId,

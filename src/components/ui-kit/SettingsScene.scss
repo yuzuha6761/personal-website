@@ -1,22 +1,14 @@
-@mixin settings-scene-theme-variables($theme) {
-  @each $name, $value in $theme {
+@mixin settings-scene-vars($vars) {
+  @each $name, $value in $vars {
     --settings-scene-#{$name}: #{$value};
   }
 }
 
-$settings-scene-light-theme: (
-  bg-focused: #f6f6f6,
-  bg-unfocused: #f6f6f6,
-  content-bg-focused: #f6f6f6,
-  content-bg-unfocused: #f6f6f6,
-  toolbar-focused: #fcfcfc,
-  toolbar-unfocused: #f0f0f0,
-  title-focused: #2f2f2f,
-  title-unfocused: #a9a8a9,
+$settings-scene-light-shared: (
+  divider: #d7d7d7,
   text: #2f2f2f,
   muted-text: #8a8a8a,
   icon: #8f8f8f,
-  divider: #d7d7d7,
   panel-bg: #f7f7f7,
   panel-border: #d5d5d5,
   row-light: #ffffff,
@@ -25,31 +17,13 @@ $settings-scene-light-theme: (
   control-border: #d2d2d2,
   disabled-bg: #e8e8e8,
   disabled-text: #b0b0b0,
-  tab-selected: #e3e2e2,
-  tab-selected-hover: #e3e2e2,
-  tab-selected-active: #e3e2e2,
-  tab-hover: #e3e2e2,
-  tab-active: #d5d4d5,
-  tab-text-focused: #777777,
-  tab-text-focused-active: #272727,
-  tab-text-unfocused: #bbbbbb,
-  tab-text-unfocused-hover: #717171,
-  tab-selected-unfocused: #717171,
 );
 
-$settings-scene-dark-theme: (
-  bg-focused: #383838,
-  bg-unfocused: #282828,
-  content-bg-focused: #282828,
-  content-bg-unfocused: #282828,
-  toolbar-focused: #383838,
-  toolbar-unfocused: #282828,
-  title-focused: #eaeaea,
-  title-unfocused: #696969,
+$settings-scene-dark-shared: (
+  divider: #000000,
   text: #eaeaea,
   muted-text: #858585,
   icon: #9a9a9a,
-  divider: #000000,
   panel-bg: #252525,
   panel-border: #3a3a3a,
   row-light: #242424,
@@ -58,22 +32,112 @@ $settings-scene-dark-theme: (
   control-border: #464646,
   disabled-bg: #333333,
   disabled-text: #6f6f6f,
-  tab-selected: #454545,
-  tab-selected-hover: #454545,
-  tab-selected-active: #4f4f4f,
-  tab-hover: #383838,
-  tab-active: #4f4f4f,
-  tab-text-focused: #bdbdbd,
-  tab-text-focused-active: #ffffff,
-  tab-text-unfocused: #686868,
-  tab-text-unfocused-hover: #9a9a9a,
-  tab-selected-unfocused: #8a8a8a,
 );
 
-[data-settings-scene-appearance='light'] {
-  @include settings-scene-theme-variables($settings-scene-light-theme);
+$settings-scene-light-focused: (
+  bg: #f6f6f6,
+  content-bg: #f6f6f6,
+  toolbar-bg: #fcfcfc,
+  title: #2f2f2f,
+);
+
+$settings-scene-light-unfocused: (
+  bg: #f6f6f6,
+  content-bg: #f6f6f6,
+  toolbar-bg: #f0f0f0,
+  title: #a9a8a9,
+);
+
+$settings-scene-dark-focused: (
+  bg: #383838,
+  content-bg: #282828,
+  toolbar-bg: #383838,
+  title: #eaeaea,
+);
+
+$settings-scene-dark-unfocused: (
+  bg: #282828,
+  content-bg: #282828,
+  toolbar-bg: #282828,
+  title: #696969,
+);
+
+$settings-scene-light-focused-tabs: (
+  tab-bg-selected: #eeeeee,
+  tab-bg-selected-hover: #eeeeee,
+  tab-bg-selected-active: #eeeeee,
+  tab-bg-hover: #eeeeee,
+  tab-bg-active: #e1e1e1,
+  tab-text: #777777,
+  tab-text-hover: #777777,
+  tab-text-active: #272727,
+);
+
+$settings-scene-light-unfocused-tabs: (
+  tab-bg-selected: #e3e3e3,
+  tab-bg-selected-hover: #e3e3e3,
+  tab-bg-selected-active: #e3e3e3,
+  tab-bg-hover: #e3e3e3,
+  tab-bg-active: #e1e1e1,
+  tab-text-selected: #717171,
+  tab-text-selected-hover: #272727,
+  tab-text-selected-active: #717171,
+  tab-text: #bbbbbb,
+  tab-text-hover: #717171,
+  tab-text-active: #bbbbbb,
+);
+
+$settings-scene-dark-focused-tabs: (
+  tab-bg-selected: #454545,
+  tab-bg-selected-hover: #454545,
+  tab-bg-selected-active: #4f4f4f,
+  tab-bg-hover: #454545,
+  tab-bg-active: #4f4f4f,
+  tab-text: #bdbdbd,
+  tab-text-hover: #bdbdbd,
+  tab-text-active: #ffffff,
+);
+
+$settings-scene-dark-unfocused-tabs: (
+  tab-bg-selected: #454545,
+  tab-bg-selected-hover: #454545,
+  tab-bg-selected-active: #4f4f4f,
+  tab-bg-hover: #454545,
+  tab-bg-active: #4f4f4f,
+  tab-text-selected: #8a8a8a,
+  tab-text-selected-hover: #ffffff,
+  tab-text-selected-active: #8a8a8a,
+  tab-text: #686868,
+  tab-text-hover: #9a9a9a,
+  tab-text-active: #686868,
+);
+
+[data-settings-scene-appearance='light'][data-settings-scene-focus='focused'] {
+  @include settings-scene-vars($settings-scene-light-shared);
+  @include settings-scene-vars($settings-scene-light-focused);
+  @include settings-scene-vars($settings-scene-light-focused-tabs);
+  --settings-scene-tab-text-selected: var(--system-color-solid, #ef5ba1);
+  --settings-scene-tab-text-selected-hover: var(--system-color-solid, #ef5ba1);
+  --settings-scene-tab-text-selected-active: color-mix(in srgb, var(--system-color-solid, #ef5ba1) 85%, black);
 }
 
-[data-settings-scene-appearance='dark'] {
-  @include settings-scene-theme-variables($settings-scene-dark-theme);
+[data-settings-scene-appearance='light'][data-settings-scene-focus='unfocused'] {
+  @include settings-scene-vars($settings-scene-light-shared);
+  @include settings-scene-vars($settings-scene-light-unfocused);
+  @include settings-scene-vars($settings-scene-light-unfocused-tabs);
+}
+
+[data-settings-scene-appearance='dark'][data-settings-scene-focus='focused'] {
+  @include settings-scene-vars($settings-scene-dark-shared);
+  @include settings-scene-vars($settings-scene-dark-focused);
+  @include settings-scene-vars($settings-scene-dark-focused-tabs);
+  --settings-scene-tab-text-selected: var(--system-color-solid, #ef5ba1);
+  --settings-scene-tab-text-selected-hover: var(--system-color-solid, #ef5ba1);
+  --settings-scene-tab-text-selected-active: var(--system-color-solid, #ef5ba1);
+}
+
+[data-settings-scene-appearance='dark'][data-settings-scene-focus='unfocused'] {
+  @include settings-scene-vars($settings-scene-dark-shared);
+  @include settings-scene-vars($settings-scene-dark-unfocused);
+  @include settings-scene-vars($settings-scene-dark-unfocused-tabs);
 }

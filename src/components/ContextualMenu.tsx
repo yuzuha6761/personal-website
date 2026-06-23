@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { DockPositionEnum } from '~enums'
 import { AppIcon } from './icons/AppIcon'
 import SystemGlassSurface from './SystemGlassSurface'
-import useDockSettingStore from '../stores/settings/dock'
+import useDockSettingStore from '~/stores/settings/dock'
 
 export interface ContextualMenuPosition {
   x: number
@@ -25,6 +25,7 @@ export interface ContextualMenuActionItem {
   color?: string
   disabled?: boolean
   icon?: LucideIcon
+  iconNode?: ReactNode
   iconScale?: number
   shortcut?: string
   children?: ContextualMenuItem[]
@@ -638,7 +639,8 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
         </svg>
       )}
       <SystemGlassSurface
-        className="rounded-[.55rem]"
+        className="rounded-[.42rem]"
+        ignoreWindowFocus
         clipPath={panelClipPath}
         style={{ zIndex: 1 }}
       />
@@ -771,14 +773,16 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                     </span>
                   )}
                   <span className={`min-w-0 whitespace-nowrap flex items-center gap-[.45rem] ${item.disabled ? 'opacity-45' : itemTextHighlighted ? 'text-white' : ''}`}>
-                    {item.icon && (
+                    {(item.iconNode || item.icon) && (
                       <span className="w-[.9rem] h-[.9rem] shrink-0 flex items-center justify-center">
-                        <AppIcon
-                          className={`w-[.9rem] h-[.9rem] ${itemIconClass}`}
-                          icon={item.icon}
-                          scale={item.iconScale ?? 1}
-                          strokeWidth={2}
-                        />
+                        {item.iconNode ?? (
+                          <AppIcon
+                            className={`w-[.9rem] h-[.9rem] ${itemIconClass}`}
+                            icon={item.icon!}
+                            scale={item.iconScale ?? 1}
+                            strokeWidth={2}
+                          />
+                        )}
                       </span>
                     )}
                     <span className="min-w-0 overflow-hidden text-ellipsis">{item.label}</span>

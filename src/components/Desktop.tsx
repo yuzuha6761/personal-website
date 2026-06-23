@@ -1,7 +1,7 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import MenuBar from "./MenuBar.tsx";
-import useShellStore from "../stores/shell";
-import useWindowStore from "../stores/window";
+import useShellStore from '~/stores/shell'
+import useWindowStore from '~/stores/window'
 import Window from './Window'
 import ContextualMenu, { type ContextualMenuItem } from "./ContextualMenu";
 

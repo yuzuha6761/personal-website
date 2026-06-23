@@ -7,6 +7,7 @@ import { startupPreloadImages } from "./constants/preloadAssets";
 import { preloadImages } from "./services/preload";
 import { applySystemSettingsAppearance, applySystemSettingsDock } from "./services/system-settings";
 import { useSystemAppearanceDarkMode } from "./hooks/useSystemAppearanceDarkMode";
+import { useGlobalShortcuts } from "~/shortcuts";
 import { useEffect } from "react";
 import { preloadApplication } from "./components/applications/registry";
 
@@ -22,6 +23,7 @@ function App() {
   const dockPosition = useSystemSettingsStore((state) => state.dockPosition)
   const setTimestamp = useGlobalStore((state) => state.setTimestamp)
   const isDarkMode = useSystemAppearanceDarkMode()
+  useGlobalShortcuts()
 
   useEffect(() => {
     const startingUpProgressDom = document.getElementById('startingUpProgress')

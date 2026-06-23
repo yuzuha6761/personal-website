@@ -6,10 +6,12 @@
 
 $glass-light-theme: (
   surface: rgba(255, 245, 242, 0.78),
+  surface-unfocused: #f2f2f2,
 );
 
 $glass-dark-theme: (
   surface: rgba(6, 6, 12, 0.68),
+  surface-unfocused: #282828,
 );
 
 :root,

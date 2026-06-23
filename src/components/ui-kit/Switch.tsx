@@ -1,4 +1,4 @@
-import { useWindowFocus } from '../Window/FocusContext'
+import { useWindowFocus } from '~/components/Window/FocusContext'
 
 interface SwitchProps {
   checked?: boolean

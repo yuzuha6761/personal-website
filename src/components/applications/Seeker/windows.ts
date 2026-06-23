@@ -8,7 +8,7 @@ import type {
 import { aboutWindowOptions } from './About/window'
 import { mainWindowOptions } from './Main/window'
 import { settingsWindowOptions } from './Settings/window'
-import { resolveRemSizeToPx } from '../../../services/window'
+import { resolveRemSizeToPx } from '~/services/window'
 
 export const SEEKER_WINDOW_KIND = {
   MAIN: 'main',

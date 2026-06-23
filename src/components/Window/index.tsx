@@ -1,17 +1,17 @@
 import './Window.theme.scss'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import type { WindowState } from '~types'
-import { resolveApplication } from '../applications/registry'
-import { resolveRemSizeToPx } from '../../services/window'
-import { captureWindowSnapshot, deleteWindowSnapshot } from '../../services/window-snapshots'
+import { resolveApplication } from '~/components/applications/registry'
+import { resolveRemSizeToPx } from '~/services/window'
+import { captureWindowSnapshot, deleteWindowSnapshot } from '~/services/window-snapshots'
 import {
   consumeWindowRestoreOrigin,
   type WindowRestoreOrigin,
   WINDOW_RESTORE_TRANSITION_DURATION_MS,
-} from '../../services/window-restore-transition'
+} from '~/services/window-restore-transition'
 import fullscreenIcon from '~assets/common/window-fullscreen.svg'
 import { Circle, Minus, Plus, X } from 'lucide-react'
-import { AppIcon } from '../icons/AppIcon'
+import { AppIcon } from '~/components/icons/AppIcon'
 import { FocusContext } from './FocusContext'
 import { shouldStartWindowDrag } from './Drag'
 import { ResizeContext } from './ResizeContext'

@@ -5,7 +5,7 @@ import Sidebar from './Sidebar'
 import useSeekerWindowStore from './store'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { useSystemAppearanceDarkMode } from '~/hooks/useSystemAppearanceDarkMode'
-import { applySeekerTheme } from '../theme'
+import { applySeekerTheme } from '~/components/applications/Seeker/theme'
 
 function SeekerMain() {
   const windowId = useWindowFocus()?.windowId

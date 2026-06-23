@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { AppIcon } from '~/components/icons/AppIcon'
-import { seekerIcons } from '../icons'
+import { seekerIcons } from '~/components/applications/Seeker/icons'
 import type { SeekerTabState } from './types'
 
 const NEW_TAB_ICON_CLASS = 'w-[.9rem] h-[.9rem]'
