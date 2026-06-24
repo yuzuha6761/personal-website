@@ -2,12 +2,12 @@ import { useLayoutEffect, useRef } from 'react'
 import Header from './Header'
 import List from './List'
 import Sidebar from './Sidebar'
-import useSeekerWindowStore from './store'
+import useMainWindowStore from './store'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { useSystemAppearanceDarkMode } from '~/hooks/useSystemAppearanceDarkMode'
 import { applySeekerTheme } from '~/components/applications/Seeker/theme'
 
-function SeekerMain() {
+function Main() {
   const windowId = useWindowFocus()?.windowId
   const containerRef = useRef<HTMLDivElement>(null)
   const isDarkMode = useSystemAppearanceDarkMode()
@@ -15,11 +15,7 @@ function SeekerMain() {
   useLayoutEffect(() => {
     if (!windowId) return
 
-    useSeekerWindowStore.getState().initWindow(windowId)
-
-    return () => {
-      useSeekerWindowStore.getState().removeWindow(windowId)
-    }
+    useMainWindowStore.getState().initWindow(windowId)
   }, [windowId])
 
   useLayoutEffect(() => {
@@ -40,4 +36,4 @@ function SeekerMain() {
   )
 }
 
-export default SeekerMain
+export default Main

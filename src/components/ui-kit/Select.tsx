@@ -2,6 +2,7 @@ import { useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { ChevronsUpDown } from 'lucide-react'
 import { getRootFontSize } from '~/services/window'
+import { Z_INDEX } from '~/constants/zIndex'
 import { useSystemAppearanceDarkMode } from '~/hooks/useSystemAppearanceDarkMode'
 import ContextualMenu, { type ContextualMenuItem } from '~/components/ContextualMenu'
 import { AppIcon } from '~/components/icons/AppIcon'
@@ -112,7 +113,7 @@ function Select(props: SelectProps) {
         items={menuItems}
         open={menuOpen}
         position={menuPosition}
-        zIndex={10000}
+        zIndex={Z_INDEX.IN_APP_OVERLAY}
         onClose={() => setMenuOpen(false)}
         onSelect={({ item }) => onChange?.(item.id)}
       />

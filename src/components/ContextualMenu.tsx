@@ -4,8 +4,18 @@ import { Check, ChevronRight, Globe } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { DockPositionEnum } from '~enums'
+import { Z_INDEX } from '~/constants/zIndex'
 import { AppIcon } from './icons/AppIcon'
 import SystemGlassSurface from './SystemGlassSurface'
+import {
+  clamp,
+  getGlassPanelArrowHalfWidthPx,
+  getGlassPanelArrowPadding,
+  getGlassPanelClipPath,
+  getGlassPanelPath,
+  remToPx,
+  type GlassPanelArrowEdge,
+} from './glassPanelPath'
 import useDockSettingStore from '~/stores/settings/dock'
 
 export interface ContextualMenuPosition {
@@ -103,7 +113,7 @@ interface ContextualSubmenuProps {
   zIndex: number
 }
 
-type MenuArrowEdge = 'bottom' | 'left' | 'right'
+type MenuArrowEdge = GlassPanelArrowEdge
 
 const VIEWPORT_GAP = 8
 const SUBMENU_OVERLAP_REM = 0.35
@@ -116,12 +126,8 @@ const SELECT_HIGHLIGHT_RESTORE_DELAY = 50
 const SELECT_FADE_OUT_DURATION = 200
 const CONTEXTUAL_MENU_OPEN_EVENT = 'contextual-menu-open'
 const ANCHORED_MENU_GAP = 14
-const MENU_ARROW_HEIGHT = 14
-const MENU_ARROW_WIDTH = 28
-const MENU_ARROW_HALF_WIDTH = MENU_ARROW_WIDTH / 2
-const MENU_ARROW_CORNER_RADIUS = 5.5
-const MENU_ARROW_EDGE_INSET = 34
-const MENU_RADIUS = 9
+const MENU_ARROW_HALF_WIDTH = getGlassPanelArrowHalfWidthPx()
+const MENU_ARROW_EDGE_INSET_REM = 2.125
 const MENU_PARENT_SUBMENU_OPEN_HIGHLIGHT_STYLE: CSSProperties = {
   backgroundColor: 'var(--menu-parent-highlight)',
 }
@@ -222,7 +228,9 @@ function getAdjustedRootPosition(
   if (!menuElement) return position
 
   const rect = menuElement.getBoundingClientRect()
-  const preferredArrowOffset = Math.min(MENU_ARROW_EDGE_INSET, Math.max(MENU_ARROW_HALF_WIDTH, (
+  const preferredArrowOffset = Math.min(
+    remToPx(MENU_ARROW_EDGE_INSET_REM),
+    Math.max(MENU_ARROW_HALF_WIDTH, (
     anchor?.side === 'bottom' ? rect.width : rect.height
   ) - MENU_ARROW_HALF_WIDTH))
   const preferredPosition = anchor
@@ -248,163 +256,6 @@ function getAdjustedRootPosition(
     x: Math.max(VIEWPORT_GAP, x),
     y: Math.max(VIEWPORT_GAP, y),
   }
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
-}
-
-function svgPathToCssPath(path: string) {
-  return `path('${path}')`
-}
-
-function getBottomArrowPathSegment(offset: number, baseY: number, tipY: number) {
-  const radius = MENU_ARROW_CORNER_RADIUS
-  const tipRadius = radius * 0.52
-  const leftBaseX = offset - MENU_ARROW_HALF_WIDTH
-  const rightBaseX = offset + MENU_ARROW_HALF_WIDTH
-
-  return [
-    `L ${rightBaseX + radius} ${baseY}`,
-    `Q ${rightBaseX} ${baseY} ${rightBaseX - (radius * 0.72)} ${baseY + (radius * 0.72)}`,
-    `L ${offset + tipRadius} ${tipY - tipRadius}`,
-    `Q ${offset} ${tipY} ${offset - tipRadius} ${tipY - tipRadius}`,
-    `L ${leftBaseX + (radius * 0.72)} ${baseY + (radius * 0.72)}`,
-    `Q ${leftBaseX} ${baseY} ${leftBaseX - radius} ${baseY}`,
-  ]
-}
-
-function getLeftArrowPathSegment(baseX: number, offset: number) {
-  const radius = MENU_ARROW_CORNER_RADIUS
-  const tipRadius = radius * 0.52
-  const topBaseY = offset - MENU_ARROW_HALF_WIDTH
-  const bottomBaseY = offset + MENU_ARROW_HALF_WIDTH
-
-  return [
-    `L ${baseX} ${bottomBaseY + radius}`,
-    `Q ${baseX} ${bottomBaseY} ${baseX - (radius * 0.72)} ${bottomBaseY - (radius * 0.72)}`,
-    `L ${tipRadius} ${offset + tipRadius}`,
-    `Q 0 ${offset} ${tipRadius} ${offset - tipRadius}`,
-    `L ${baseX - (radius * 0.72)} ${topBaseY + (radius * 0.72)}`,
-    `Q ${baseX} ${topBaseY} ${baseX} ${topBaseY - radius}`,
-  ]
-}
-
-function getRightArrowPathSegment(baseX: number, tipX: number, offset: number) {
-  const radius = MENU_ARROW_CORNER_RADIUS
-  const tipRadius = radius * 0.52
-  const topBaseY = offset - MENU_ARROW_HALF_WIDTH
-  const bottomBaseY = offset + MENU_ARROW_HALF_WIDTH
-
-  return [
-    `L ${baseX} ${topBaseY - radius}`,
-    `Q ${baseX} ${topBaseY} ${baseX + (radius * 0.72)} ${topBaseY + (radius * 0.72)}`,
-    `L ${tipX - tipRadius} ${offset - tipRadius}`,
-    `Q ${tipX} ${offset} ${tipX - tipRadius} ${offset + tipRadius}`,
-    `L ${baseX + (radius * 0.72)} ${bottomBaseY - (radius * 0.72)}`,
-    `Q ${baseX} ${bottomBaseY} ${baseX} ${bottomBaseY + radius}`,
-  ]
-}
-
-function getPanelPath(
-  size?: { width: number; height: number },
-  edge?: MenuArrowEdge,
-  offset?: number,
-) {
-  if (!size) return undefined
-  if (!edge || offset === undefined) {
-    const { width, height } = size
-    const radius = Math.min(MENU_RADIUS, width / 2, height / 2)
-
-    return [
-      `M ${radius} 0`,
-      `L ${width - radius} 0`,
-      `Q ${width} 0 ${width} ${radius}`,
-      `L ${width} ${height - radius}`,
-      `Q ${width} ${height} ${width - radius} ${height}`,
-      `L ${radius} ${height}`,
-      `Q 0 ${height} 0 ${height - radius}`,
-      `L 0 ${radius}`,
-      `Q 0 0 ${radius} 0`,
-      'Z',
-    ].join(' ')
-  }
-
-  const { width, height } = size
-  const radius = Math.min(MENU_RADIUS, width / 2, height / 2)
-  const safeOffset = edge === 'bottom'
-    ? clamp(offset, radius + MENU_ARROW_HALF_WIDTH, width - radius - MENU_ARROW_HALF_WIDTH)
-    : clamp(offset, radius + MENU_ARROW_HALF_WIDTH, height - radius - MENU_ARROW_HALF_WIDTH)
-
-  if (edge === 'bottom') {
-    const baseY = height - MENU_ARROW_HEIGHT
-
-    return [
-      `M ${radius} 0`,
-      `L ${width - radius} 0`,
-      `Q ${width} 0 ${width} ${radius}`,
-      `L ${width} ${baseY - radius}`,
-      `Q ${width} ${baseY} ${width - radius} ${baseY}`,
-      ...getBottomArrowPathSegment(safeOffset, baseY, height),
-      `L ${radius} ${baseY}`,
-      `Q 0 ${baseY} 0 ${baseY - radius}`,
-      `L 0 ${radius}`,
-      `Q 0 0 ${radius} 0`,
-      'Z',
-    ].join(' ')
-  }
-
-  if (edge === 'left') {
-    const baseX = MENU_ARROW_HEIGHT
-
-    return [
-      `M ${baseX + radius} 0`,
-      `L ${width - radius} 0`,
-      `Q ${width} 0 ${width} ${radius}`,
-      `L ${width} ${height - radius}`,
-      `Q ${width} ${height} ${width - radius} ${height}`,
-      `L ${baseX + radius} ${height}`,
-      `Q ${baseX} ${height} ${baseX} ${height - radius}`,
-      ...getLeftArrowPathSegment(baseX, safeOffset),
-      `L ${baseX} ${radius}`,
-      `Q ${baseX} 0 ${baseX + radius} 0`,
-      'Z',
-    ].join(' ')
-  }
-
-  const baseX = width - MENU_ARROW_HEIGHT
-
-  return [
-    `M ${radius} 0`,
-    `L ${baseX - radius} 0`,
-    `Q ${baseX} 0 ${baseX} ${radius}`,
-    ...getRightArrowPathSegment(baseX, width, safeOffset),
-    `L ${baseX} ${height - radius}`,
-    `Q ${baseX} ${height} ${baseX - radius} ${height}`,
-    `L ${radius} ${height}`,
-    `Q 0 ${height} 0 ${height - radius}`,
-    `L 0 ${radius}`,
-    `Q 0 0 ${radius} 0`,
-    'Z',
-  ].join(' ')
-}
-
-function getPanelClipPath(
-  size?: { width: number; height: number },
-  edge?: MenuArrowEdge,
-  offset?: number,
-) {
-  const path = getPanelPath(size, edge, offset)
-
-  return path ? svgPathToCssPath(path) : undefined
-}
-
-function getPanelArrowPadding(edge?: MenuArrowEdge): CSSProperties {
-  if (edge === 'bottom') return { paddingBottom: MENU_ARROW_HEIGHT }
-  if (edge === 'left') return { paddingLeft: MENU_ARROW_HEIGHT }
-  if (edge === 'right') return { paddingRight: MENU_ARROW_HEIGHT }
-
-  return {}
 }
 
 function getSubmenuPosition(
@@ -518,9 +369,9 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
   const rowGridClass = reserveCheckColumn
     ? 'grid grid-cols-[1.35rem_minmax(0,1fr)_max-content] pl-[.48rem] pr-[1rem]'
     : 'grid grid-cols-[minmax(0,1fr)_max-content] px-[1rem]'
-  const panelPath = getPanelPath(clipSize, arrowEdge, arrowOffset)
-  const panelClipPath = getPanelClipPath(clipSize, arrowEdge, arrowOffset)
-  const panelArrowPadding = getPanelArrowPadding(arrowEdge)
+  const panelPath = getGlassPanelPath(clipSize, arrowEdge, arrowOffset)
+  const panelClipPath = getGlassPanelClipPath(clipSize, arrowEdge, arrowOffset)
+  const panelArrowPadding = getGlassPanelArrowPadding(arrowEdge)
 
   useLayoutEffect(() => {
     const panel = panelRef.current
@@ -726,7 +577,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                 }}
                 onMouseEnter={(event) => {
                   setHoveredItemId(item.id)
-                  if (hasChildren && item.children) {
+                  if (hasChildren && item.children && !item.disabled) {
                     setActiveSubmenuItemId(item.id)
                     updateSubmenuPlacement(item.id, event.currentTarget, item.children)
                   } else {
@@ -797,7 +648,7 @@ function ContextualMenuPanel(props: ContextualMenuPanelProps) {
                   )}
                 </div>
               </div>
-              {hasChildren && item.children && itemSubmenuOpen && submenuPlacement && (
+              {hasChildren && item.children && !item.disabled && itemSubmenuOpen && submenuPlacement && (
                 <ContextualSubmenu
                   availableBottom={availableBottom}
                   placement={submenuPlacement}
@@ -852,7 +703,7 @@ function ContextualMenu(props: ContextualMenuProps) {
     items,
     open,
     position,
-    zIndex = 3000,
+    zIndex = Z_INDEX.CONTEXT_MENU,
     onClose,
     onSelect,
   } = props

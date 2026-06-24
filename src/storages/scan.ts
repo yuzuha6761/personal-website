@@ -1,4 +1,4 @@
-import type { SeekerSidebarIcon } from '~/components/applications/Seeker/Main/types'
+import type { SidebarIcon } from '~/components/applications/Seeker/Main/types'
 import { STORAGE_CATEGORY_ID_BY_FOLDER } from './categories'
 import type { StorageDevice, StorageTreeNode, StorageVolumeManifest } from './types'
 
@@ -12,7 +12,7 @@ const treeModules = import.meta.glob('./*/*/tree.json', {
   import: 'default',
 }) as Record<string, StorageTreeNode[]>
 
-const STORAGE_DEVICE_ICON_BY_CATEGORY: Record<string, SeekerSidebarIcon> = {
+const STORAGE_DEVICE_ICON_BY_CATEGORY: Record<string, SidebarIcon> = {
   'hard-disks': 'hard-drive',
   'external-disks': 'external-disk',
   'disc-devices': 'disc',

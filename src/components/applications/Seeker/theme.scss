@@ -57,7 +57,18 @@ $seeker-light-theme: (
   list-selected-unfocused: #dcdbdc,
   tab-bottom-border: #d9d9d9,
   list-header-bottom-border: #f0f0f0,
+  list-header-hover-bg: #f3f3f3,
+  list-header-divider: #e3e3e3,
+  list-column-drag-border: #dbdbdb,
+  list-column-drag-header-bg: rgba(255, 255, 255, 0.55),
+  list-column-drag-list-frame-border: #f0f0f0,
+  list-column-drag-header-text: #3b3b3d,
 );
+
+body.seeker-list-column-dragging,
+body.seeker-list-column-dragging * {
+  cursor: grabbing !important;
+}
 
 $seeker-dark-theme: (
   header-focused: #363636,
@@ -112,6 +123,13 @@ $seeker-dark-theme: (
   list-selected-unfocused: #454546,
   tab-bottom-border: #000000,
   list-header-bottom-border: #2d2d2d,
+  list-header-hover-bg: #838383,
+  list-header-divider: #474747,
+  list-header-active-text: #c7c7c7,
+  list-column-drag-border: #dbdbdb,
+  list-column-drag-header-bg: rgba(30, 30, 30, 0.55),
+  list-column-drag-list-frame-border: #1f1f1f,
+  list-column-drag-header-text: #c7c7c7,
 );
 
 [data-seeker-appearance='light'] {
@@ -120,4 +138,9 @@ $seeker-dark-theme: (
 
 [data-seeker-appearance='dark'] {
   @include seeker-theme-variables($seeker-dark-theme);
+}
+
+[data-seeker-appearance='dark'] [data-seeker-list-column-slot] button:active span,
+[data-seeker-appearance='dark'] [data-seeker-list-column-slot] button:active svg {
+  color: var(--seeker-list-header-active-text) !important;
 }

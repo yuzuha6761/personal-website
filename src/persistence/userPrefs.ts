@@ -2,6 +2,8 @@ import useGlobalStore from '~/stores/global'
 import useShellStore from '~/stores/shell'
 import useSystemSettingsStore from '~/stores/settings/system-settings'
 import useDockSettingStore from '~/stores/settings/dock'
+import { normalizeDirectorySortSetting, type SeekerDirectorySortByRecord } from '~/components/applications/Seeker/listContextMenu'
+import { normalizeSeekerListColumnOrder } from '~/components/applications/Seeker/listColumnLayout'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
 import { DEFAULT_SYSTEM_SETTINGS_APPEARANCE } from '~/stores/settings/system-settings.constants'
 import { wallpaper as defaultWallpaper } from '~/constants/preloadAssets'
@@ -104,6 +106,19 @@ function pickDockPrefs(): UserDockPrefs {
   return { position, size, pinnedApplicationIds }
 }
 
+function normalizePersistedDirectorySortBy(
+  directorySortBy: SeekerDirectorySortByRecord | undefined,
+) {
+  if (!directorySortBy) return {}
+
+  return Object.fromEntries(
+    Object.entries(directorySortBy).map(([path, value]) => [
+      path,
+      normalizeDirectorySortSetting(value),
+    ]),
+  )
+}
+
 export function captureUserPrefsRecord(): UserPrefsRecord {
   const {
     wallpaper,
@@ -117,6 +132,8 @@ export function captureUserPrefsRecord(): UserPrefsRecord {
     collapsedSidebarSectionIds,
     defaultViewMode,
     newWindowPathOption,
+    directorySortBy,
+    listColumnOrder,
   } = useSeekerGlobalStore.getState()
 
   return {
@@ -129,6 +146,8 @@ export function captureUserPrefsRecord(): UserPrefsRecord {
       collapsedSidebarSectionIds,
       defaultViewMode,
       newWindowPathOption,
+      directorySortBy,
+      listColumnOrder,
     },
     dock: pickDockPrefs(),
   }
@@ -165,6 +184,10 @@ export function applyUserPrefsRecord(record: UserPrefsRecord | null, isDarkMode:
       ...state,
       ...record.seekerGlobal,
       sidebarSections: record.seekerGlobal?.sidebarSections ?? state.sidebarSections,
+      directorySortBy: record.seekerGlobal?.directorySortBy != null
+        ? normalizePersistedDirectorySortBy(record.seekerGlobal.directorySortBy)
+        : state.directorySortBy,
+      listColumnOrder: normalizeSeekerListColumnOrder(record.seekerGlobal?.listColumnOrder ?? state.listColumnOrder),
       newWindowPathOption: newWindowPathOption ?? state.newWindowPathOption,
     }))
   }

@@ -11,6 +11,7 @@ export const persistenceKeys = {
   runtimeUsers: 'session:runtimeUsers',
   userFs: (userId: string) => `users:${userId}:fs`,
   userPrefs: (userId: string) => `users:${userId}:prefs`,
+  userSession: (userId: string) => `users:${userId}:session`,
 } as const
 
 export async function getPersistenceItem<T>(key: string): Promise<T | null> {

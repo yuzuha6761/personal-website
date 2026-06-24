@@ -1,5 +1,5 @@
 import type { FsNodeKind } from '~types'
-import type { SeekerSidebarIcon } from '~/components/applications/Seeker/Main/types'
+import type { SidebarIcon } from '~/components/applications/Seeker/Main/types'
 
 export type StorageCategoryId =
   | 'hard-disks'
@@ -33,6 +33,6 @@ export interface StorageDevice {
   name: string
   path: string
   boot: boolean
-  icon: SeekerSidebarIcon
+  icon: SidebarIcon
   tree: StorageTreeNode[]
 }

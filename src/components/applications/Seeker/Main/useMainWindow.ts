@@ -1,36 +1,38 @@
 import { useCallback, useMemo } from 'react'
-import useSeekerWindowStore from './Main/store'
-import type { SeekerViewMode, SeekerWindowState } from './Main/types'
+import useMainWindowStore from './store'
+import type { MainWindowState, ViewMode } from './types'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 
-export function useSeekerWindow(): {
+export function useMainWindow(): {
   windowId: string | undefined
-  windowState: SeekerWindowState | undefined
+  windowState: MainWindowState | undefined
   setActiveTab: (tabId: string) => void
   addTab: (path: string, label?: string) => void
   closeTab: (tabId: string) => void
+  closeOtherTabs: (tabId: string) => void
   moveTabs: (tabIds: string[]) => void
   navigateTo: (path: string) => void
   goBack: () => void
   goForward: () => void
-  setViewMode: (viewMode: SeekerViewMode) => void
+  setViewMode: (viewMode: ViewMode) => void
   setSelection: (selection: string[]) => void
 } {
   const windowId = useWindowFocus()?.windowId
-  const windowState = useSeekerWindowStore((state) => (
+  const windowState = useMainWindowStore((state) => (
     windowId ? state.windows[windowId] : undefined
   ))
   const {
     setActiveTab,
     addTab,
     closeTab,
+    closeOtherTabs,
     moveTabs,
     navigateTo,
     goBack,
     goForward,
     setViewMode,
     setSelection,
-  } = useSeekerWindowStore((state) => state)
+  } = useMainWindowStore((state) => state)
 
   const boundSetActiveTab = useCallback((tabId: string) => {
     if (!windowId) return
@@ -46,6 +48,11 @@ export function useSeekerWindow(): {
     if (!windowId) return
     closeTab(windowId, tabId)
   }, [closeTab, windowId])
+
+  const boundCloseOtherTabs = useCallback((tabId: string) => {
+    if (!windowId) return
+    closeOtherTabs(windowId, tabId)
+  }, [closeOtherTabs, windowId])
 
   const boundMoveTabs = useCallback((tabIds: string[]) => {
     if (!windowId) return
@@ -67,7 +74,7 @@ export function useSeekerWindow(): {
     goForward(windowId)
   }, [goForward, windowId])
 
-  const boundSetViewMode = useCallback((viewMode: SeekerViewMode) => {
+  const boundSetViewMode = useCallback((viewMode: ViewMode) => {
     if (!windowId) return
     setViewMode(windowId, viewMode)
   }, [setViewMode, windowId])
@@ -83,6 +90,7 @@ export function useSeekerWindow(): {
     setActiveTab: boundSetActiveTab,
     addTab: boundAddTab,
     closeTab: boundCloseTab,
+    closeOtherTabs: boundCloseOtherTabs,
     moveTabs: boundMoveTabs,
     navigateTo: boundNavigateTo,
     goBack: boundGoBack,
@@ -95,6 +103,7 @@ export function useSeekerWindow(): {
     boundSetActiveTab,
     boundAddTab,
     boundCloseTab,
+    boundCloseOtherTabs,
     boundMoveTabs,
     boundNavigateTo,
     boundGoBack,

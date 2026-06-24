@@ -25,7 +25,6 @@
   border: 1px solid var(--dock-border);
   border-radius: 1rem;
   box-shadow: var(--dock-shadow);
-  z-index: 1000;
   .minimized-window {
     cursor: default;
     overflow: hidden;
@@ -109,17 +108,11 @@
         animation: dock-icon-bounce .624s linear infinite;
         will-change: transform;
       }
-      & > div:first-child {
+      & > .dock-tooltip {
         transform: translateY(-50%);
         display: none;
-        padding: 0.2rem 1rem;
-        background-color: var(--dock-tooltip);
-        -webkit-backdrop-filter: blur(22px) saturate(1.6);
-        backdrop-filter: blur(22px) saturate(1.6);
-        border: 1px solid var(--dock-tooltip-border);
-        box-shadow: var(--dock-tooltip-shadow);
-        border-radius: 0.3rem;
         margin-left: 1rem;
+        pointer-events: none;
         @include a-pos($l: 100%, $t: 50%)
       }
       &:active .icon > img {
@@ -129,7 +122,7 @@
         filter: brightness(.6);
       }
       &:hover, &:active {
-        & > div:first-child {
+        & > .dock-tooltip {
           display: block;
         }
       }
@@ -183,17 +176,11 @@
         animation: dock-icon-bounce .624s linear infinite;
         will-change: transform;
       }
-      & > div:first-child {
+      & > .dock-tooltip {
         transform: translateX(-50%);
         display: none;
-        padding: 0.2rem 1rem;
-        background-color: var(--dock-tooltip);
-        -webkit-backdrop-filter: blur(22px) saturate(1.6);
-        backdrop-filter: blur(22px) saturate(1.6);
-        border: 1px solid var(--dock-tooltip-border);
-        box-shadow: var(--dock-tooltip-shadow);
-        border-radius: 0.3rem;
         margin-bottom: 1rem;
+        pointer-events: none;
         @include a-pos($b: 100%, $l: 50%)
       }
       &:active .icon > img {
@@ -203,7 +190,7 @@
         filter: brightness(.6);
       }
       &:hover, &:active {
-        & > div:first-child {
+        & > .dock-tooltip {
           display: block;
         }
       }
@@ -258,17 +245,11 @@
         animation: dock-icon-bounce .624s linear infinite;
         will-change: transform;
       }
-      & > div:first-child {
+      & > .dock-tooltip {
         transform: translateY(-50%);
         display: none;
-        padding: 0.2rem 1rem;
-        background-color: var(--dock-tooltip);
-        -webkit-backdrop-filter: blur(22px) saturate(1.6);
-        backdrop-filter: blur(22px) saturate(1.6);
-        border: 1px solid var(--dock-tooltip-border);
-        box-shadow: var(--dock-tooltip-shadow);
-        border-radius: 0.3rem;
         margin-right: 1rem;
+        pointer-events: none;
         @include a-pos($r: 100%, $t: 50%)
       }
       &:active .icon > img {
@@ -278,16 +259,16 @@
         filter: brightness(.6);
       }
       &:hover, &:active {
-        & > div:first-child {
+        & > .dock-tooltip {
           display: block;
         }
       }
     }
   }
   &[data-context-menu-open=true] > div:not([data-spliter=true]) {
-    & > div:first-child,
-    &:hover > div:first-child,
-    &:active > div:first-child {
+    & > .dock-tooltip,
+    &:hover > .dock-tooltip,
+    &:active > .dock-tooltip {
       display: none;
     }
   }

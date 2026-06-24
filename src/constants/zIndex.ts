@@ -1,0 +1,8 @@
+export const Z_INDEX = {
+  WINDOW_BASE: 1,
+  WINDOW_MAX: 9000,
+  CONTEXT_MENU: 3000,
+  IN_APP_OVERLAY: 9500,
+  DOCK: 10000,
+  DOCK_MENU: 10001,
+} as const

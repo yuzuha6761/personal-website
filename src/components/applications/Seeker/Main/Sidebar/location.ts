@@ -1,35 +1,35 @@
-import type { SeekerSidebarItem } from '~/components/applications/Seeker/Main/types'
+import type { SidebarItem } from '../types'
 import { getStorageDevicesByCategoryId } from '~/storages'
 import { isStorageCategoryId } from '~/storages/categories'
 
-export const PERMANENT_LOCATION_NETWORK_ITEM: SeekerSidebarItem = {
+export const PERMANENT_LOCATION_NETWORK_ITEM: SidebarItem = {
   id: 'network',
   label: '网络',
   icon: 'globe',
   checked: true,
 }
 
-export function isSidebarItemVisible(item: { checked?: boolean; indeterminate?: boolean }) {
+export function isItemVisible(item: { checked?: boolean; indeterminate?: boolean }) {
   return Boolean(item.checked || item.indeterminate)
 }
 
-export interface LocationSidebarEntry {
-  item: SeekerSidebarItem
+export interface LocationEntry {
+  item: SidebarItem
   depth: number
 }
 
-export function buildLocationSidebarEntries(categories: SeekerSidebarItem[]): LocationSidebarEntry[] {
-  const entries: LocationSidebarEntry[] = []
+export function buildLocationEntries(categories: SidebarItem[]): LocationEntry[] {
+  const entries: LocationEntry[] = []
 
   for (const item of categories) {
     if (item.id === 'yuzuha-website') {
-      if (isSidebarItemVisible(item)) {
+      if (isItemVisible(item)) {
         entries.push({ item, depth: 0 })
       }
       continue
     }
 
-    if (!isStorageCategoryId(item.id) || !isSidebarItemVisible(item)) continue
+    if (!isStorageCategoryId(item.id) || !isItemVisible(item)) continue
 
     for (const device of getStorageDevicesByCategoryId(item.id)) {
       entries.push({
@@ -49,12 +49,12 @@ export function buildLocationSidebarEntries(categories: SeekerSidebarItem[]): Lo
   return entries
 }
 
-export function buildVisibleSidebarEntries(sectionId: string, items: SeekerSidebarItem[]): LocationSidebarEntry[] {
+export function buildVisibleEntries(sectionId: string, items: SidebarItem[]): LocationEntry[] {
   if (sectionId === 'locations') {
-    return buildLocationSidebarEntries(items)
+    return buildLocationEntries(items)
   }
 
   return items
-    .filter(isSidebarItemVisible)
+    .filter(isItemVisible)
     .map((item) => ({ item, depth: 0 }))
 }

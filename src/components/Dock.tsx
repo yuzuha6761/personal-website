@@ -20,8 +20,11 @@ import ContextualMenu, {
   type ContextualMenuItem,
   type ContextualMenuSelectEvent,
 } from './ContextualMenu'
+import DockTooltip from './DockTooltip'
+import type { GlassPanelArrowEdge } from './glassPanelPath'
 import { AppWindowMac } from 'lucide-react'
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react'
+import { Z_INDEX } from '~/constants/zIndex'
 import type { AppId, WindowState } from '~types'
 
 interface DockMenuState {
@@ -164,9 +167,13 @@ function Dock() {
   }, [minimizedWindowIdKey])
 
   const dockStyle = useMemo(() => {
-    if (position === DockPositionEnum.LEFT) return {width: size, height: 'auto'}
-    else if (position === DockPositionEnum.BOTTOM) return {width: 'auto', height: size}
-    else if (position === DockPositionEnum.RIGHT) return {width: size, height: 'auto'}
+    const baseStyle = { zIndex: Z_INDEX.DOCK }
+
+    if (position === DockPositionEnum.LEFT) return { ...baseStyle, width: size, height: 'auto' }
+    if (position === DockPositionEnum.BOTTOM) return { ...baseStyle, width: 'auto', height: size }
+    if (position === DockPositionEnum.RIGHT) return { ...baseStyle, width: size, height: 'auto' }
+
+    return baseStyle
   }, [size, position])
 
   const dockMenuItems = useMemo<ContextualMenuItem[]>(() => {
@@ -328,6 +335,14 @@ function Dock() {
     finishRestoringSlot()
   }
 
+  const dockTooltipArrowEdge = (
+    position === DockPositionEnum.LEFT
+      ? 'left'
+      : position === DockPositionEnum.RIGHT
+        ? 'right'
+        : 'bottom'
+  ) satisfies GlassPanelArrowEdge
+
   return (
     <>
       <div
@@ -350,7 +365,11 @@ function Dock() {
               onClick={() => openApp(application.id)}
               onContextMenu={(event) => onAppContextMenu(application.id, event)}
             >
-              <div>{application.name}</div>
+              <DockTooltip
+                arrowEdge={dockTooltipArrowEdge}
+                className={styles['dock-tooltip']}
+                label={application.name}
+              />
               <div className={styles['icon']}>
                 <img src={application.icon} alt=""/>
               </div>
@@ -375,7 +394,11 @@ function Dock() {
               onClick={() => restoreMinimizedWindow(window.id)}
               style={getMinimizedWindowStyle(window.id)}
             >
-              <div>{window.title}</div>
+              <DockTooltip
+                arrowEdge={dockTooltipArrowEdge}
+                className={styles['dock-tooltip']}
+                label={window.title}
+              />
               <MinimizedWindowPreview
                 appIcon={application.icon}
                 windowId={window.id}
@@ -384,7 +407,11 @@ function Dock() {
           )
         })}
         <div>
-          <div>Trash</div>
+          <DockTooltip
+            arrowEdge={dockTooltipArrowEdge}
+            className={styles['dock-tooltip']}
+            label="Trash"
+          />
           <div className={styles['icon']}>
             <img src={trashIcon} alt=""/>
           </div>
@@ -396,6 +423,7 @@ function Dock() {
         items={dockMenuItems}
         open={Boolean(dockMenu)}
         position={dockMenu?.position ?? { x: 0, y: 0 }}
+        zIndex={Z_INDEX.DOCK_MENU}
         onClose={() => {
           setDockMenu(null)
         }}

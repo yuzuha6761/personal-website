@@ -206,9 +206,9 @@ export const seekerMenuBarItems: ApplicationMenuBarItem[] = [
         label: '排序方式',
         children: [
           { id: 'sort-none', label: '无', checkable: true },
-          { id: 'sort-name', label: '名称', checkable: true },
+          { id: 'sort-name', label: '名称', checkable: true, checked: true },
           { id: 'sort-kind', label: '种类', checkable: true },
-          { id: 'sort-date-opened', label: '上次打开日期', checkable: true, checked: true },
+          { id: 'sort-date-opened', label: '上次打开日期', checkable: true },
           { id: 'sort-added', label: '添加日期', checkable: true },
           { id: 'sort-modified', label: '修改日期', checkable: true },
           { id: 'sort-created', label: '创建日期', checkable: true },

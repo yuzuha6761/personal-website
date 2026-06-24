@@ -1,7 +1,10 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import ContextualMenu, { type ContextualMenuSelectEvent } from '~/components/ContextualMenu'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
-import type { SeekerTabState } from './types'
+import { Z_INDEX } from '~/constants/zIndex'
+import { getTabContextMenuItems } from './tabContextMenu'
+import type { TabState } from '../types'
 
 const NEW_TAB_ICON_CLASS = 'w-[.9rem] h-[.9rem]'
 const TAB_CLOSE_ICON_CLASS = 'w-[.9rem] h-[.9rem]'
@@ -262,11 +265,13 @@ function TabContent({
 }
 
 interface TabBarProps {
-  tabs: SeekerTabState[]
+  tabs: TabState[]
   activeTabId: string
   focused: boolean
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
+  onCloseOtherTabs: (tabId: string) => void
+  onMoveTabToNewWindow: (tabId: string) => void
   onMoveTabs: (tabIds: string[]) => void
   onAddTab: () => void
 }
@@ -277,6 +282,8 @@ function TabBar({
   focused,
   onSelectTab,
   onCloseTab,
+  onCloseOtherTabs,
+  onMoveTabToNewWindow,
   onMoveTabs,
   onAddTab,
 }: TabBarProps) {
@@ -290,6 +297,11 @@ function TabBar({
   const [settleState, setSettleState] = useState<TabSettleState | null>(null)
   const [layoutAnim, setLayoutAnim] = useState<TabLayoutAnimState | null>(null)
   const [suppressBgTransition, setSuppressBgTransition] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{
+    open: boolean
+    position: { x: number; y: number }
+    tabId: string | null
+  }>({ open: false, position: { x: 0, y: 0 }, tabId: null })
   const prevFocusedRef = useRef(focused)
 
   const measureTrack = useCallback(() => {
@@ -506,6 +518,49 @@ function TabBar({
     trackWidthPx,
   ])
 
+  const contextMenuItems = useMemo(
+    () => getTabContextMenuItems(tabs.length),
+    [tabs.length],
+  )
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu((current) => (current.open ? { ...current, open: false, tabId: null } : current))
+  }, [])
+
+  const handleTabContextMenu = useCallback((tabId: string, event: React.MouseEvent) => {
+    if (isDragging || isSettling || layoutAnim) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    onSelectTab(tabId)
+    setContextMenu({
+      open: true,
+      position: { x: event.clientX, y: event.clientY },
+      tabId,
+    })
+  }, [isDragging, isSettling, layoutAnim, onSelectTab])
+
+  const handleContextMenuSelect = useCallback((event: ContextualMenuSelectEvent) => {
+    const tabId = contextMenu.tabId
+    if (!tabId) return
+
+    switch (event.item.id) {
+      case 'close-tab':
+        handleCloseTab(tabId)
+        break
+      case 'close-other-tabs':
+        onCloseOtherTabs(tabId)
+        break
+      case 'move-tab-new-window':
+        onMoveTabToNewWindow(tabId)
+        break
+      default:
+        break
+    }
+
+    closeContextMenu()
+  }, [closeContextMenu, contextMenu.tabId, handleCloseTab, onCloseOtherTabs, onMoveTabToNewWindow])
+
   const beginSettle = useCallback((state: TabDragState) => {
     if (settleTimerRef.current !== null) {
       window.clearTimeout(settleTimerRef.current)
@@ -647,6 +702,7 @@ function TabBar({
               {showInactiveInTrack ? (
                 <div
                   className={`flex min-w-0 h-full items-stretch cursor-default ${inactiveTabBgClass}`}
+                  onContextMenu={(event) => handleTabContextMenu(tab.id, event)}
                   onMouseDown={(event) => handleTabMouseDown(tab.id, visualIndex, event)}
                 >
                   <TabContent
@@ -714,6 +770,7 @@ function TabBar({
             <div className={`shrink-0 ${activeTabBgClass}`} style={{ height: ACTIVE_TAB_RISE_PX }} />
             <div
               className="flex min-w-0 flex-1 items-stretch h-8"
+              onContextMenu={(event) => handleTabContextMenu(activeTab.id, event)}
               onMouseDown={(event) => handleTabMouseDown(activeTab.id, activeVisualIndex, event)}
             >
               <TabContent
@@ -812,6 +869,15 @@ function TabBar({
           </>
         )
       })() : null}
+
+      <ContextualMenu
+        items={contextMenuItems}
+        open={contextMenu.open}
+        position={contextMenu.position}
+        zIndex={Z_INDEX.IN_APP_OVERLAY}
+        onClose={closeContextMenu}
+        onSelect={handleContextMenuSelect}
+      />
     </div>
   )
 }

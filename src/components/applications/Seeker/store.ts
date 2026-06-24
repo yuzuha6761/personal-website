@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { sidebarSections, tagItems } from './data'
 import { DEFAULT_SEEKER_NEW_WINDOW_PATH_OPTION } from './newWindowPath'
+import { getDefaultSortAscending } from './listContextMenu'
+import { DEFAULT_SEEKER_LIST_COLUMN_ORDER, normalizeSeekerListColumnOrder } from './listColumnLayout'
 import type { SeekerGlobalStore } from './types'
 
 const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({
@@ -9,6 +11,8 @@ const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({
   collapsedSidebarSectionIds: [],
   defaultViewMode: 'list',
   newWindowPathOption: DEFAULT_SEEKER_NEW_WINDOW_PATH_OPTION,
+  directorySortBy: {},
+  listColumnOrder: [...DEFAULT_SEEKER_LIST_COLUMN_ORDER],
 
   setSidebarItemChecked: (sectionId, itemId, checked) => {
     set((state) => ({
@@ -34,6 +38,20 @@ const useSeekerGlobalStore = create<SeekerGlobalStore>((set) => ({
   },
   setDefaultViewMode: (defaultViewMode) => set({ defaultViewMode }),
   setNewWindowPathOption: (newWindowPathOption) => set({ newWindowPathOption }),
+  setDirectorySortBy: (path, sortBy, ascending) => {
+    set((state) => ({
+      directorySortBy: {
+        ...state.directorySortBy,
+        [path]: {
+          sortBy,
+          ascending: ascending ?? getDefaultSortAscending(sortBy),
+        },
+      },
+    }))
+  },
+  setListColumnOrder: (listColumnOrder) => {
+    set({ listColumnOrder: normalizeSeekerListColumnOrder(listColumnOrder) })
+  },
 }))
 
 export default useSeekerGlobalStore

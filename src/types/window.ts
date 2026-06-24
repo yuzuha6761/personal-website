@@ -19,4 +19,5 @@ export interface OpenWindowOptions {
   position?: { x: number; y: number }
   size?: { width?: number; height?: number }
   payload?: Record<string, unknown>
+  zIndex?: number
 }

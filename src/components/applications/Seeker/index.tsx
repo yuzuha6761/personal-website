@@ -1,5 +1,5 @@
 import SeekerAbout from './About'
-import SeekerMain from './Main'
+import Main from './Main'
 import SeekerSettings from './Settings'
 import { getSeekerWindowKind, SEEKER_WINDOW_KIND } from './windows'
 import { useWindowFocus } from '~/components/Window/FocusContext'
@@ -21,7 +21,7 @@ function Seeker() {
     return <SeekerSettings />
   }
 
-  return <SeekerMain />
+  return <Main />
 }
 
 export default Seeker

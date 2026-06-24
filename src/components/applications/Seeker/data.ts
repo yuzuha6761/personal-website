@@ -1,6 +1,6 @@
-import type { SeekerSidebarSection } from './Main/types'
+import type { SidebarSection } from './Main/types'
 
-export const sidebarSections: SeekerSidebarSection[] = [
+export const sidebarSections: SidebarSection[] = [
   {
     id: 'favorites',
     title: '个人收藏',

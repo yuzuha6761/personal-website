@@ -10,13 +10,14 @@ import {
   getSeekerPathLabel,
 } from '~/components/applications/Seeker/virtualFolders'
 import { getRootFontSize } from '~/services/window'
-import { getPathContextMenuIcon, getPathTitleIcon } from '~/components/applications/Seeker/pathIcons'
+import { Z_INDEX } from '~/constants/zIndex'
+import { getPathContextMenuIcon, getPathTitleIcon } from './pathIcons'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
-import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
+import { useMainWindow } from '../useMainWindow'
 import { resolveSeekerNewWindowPath, getCurrentUserHomeLabel } from '~/components/applications/Seeker/newWindowPath'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
-import useSeekerWindowStore from './store'
-import { HeaderToolbarArea } from './HeaderToolbar'
+import useMainWindowStore from '../store'
+import { ToolbarArea } from './Toolbar'
 
 const historyIconClass = 'w-[1.4rem] h-[1.4rem]'
 const PATH_MENU_ROW_LEFT_OFFSET_REM = 0.48 + 1.35
@@ -75,14 +76,14 @@ function Header() {
     windowState,
     goBack,
     goForward,
-  } = useSeekerWindow()
+  } = useMainWindow()
   const nodes = useFsStore((state) => state.nodes)
   const newWindowPathOption = useSeekerGlobalStore((state) => state.newWindowPathOption)
   const defaultTabPath = resolveSeekerNewWindowPath(newWindowPathOption)
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
   const currentPath = activeTab?.path ?? defaultTabPath
-  const canGoBack = (windowState?.historyBack.length ?? 0) > 0
-  const canGoForward = (windowState?.historyForward.length ?? 0) > 0
+  const canGoBack = (activeTab?.historyBack.length ?? 0) > 0
+  const canGoForward = (activeTab?.historyForward.length ?? 0) > 0
 
   const pathMenuItems = useMemo<ContextualMenuItem[]>(() => (
     pathMenuPaths.map((path, index) => ({
@@ -131,7 +132,7 @@ function Header() {
     const path = pathMenuPathsRef.current[index]
     if (!path || !windowId) return
 
-    const store = useSeekerWindowStore.getState()
+    const store = useMainWindowStore.getState()
     store.initWindow(windowId)
     store.navigateTo(windowId, path)
   }, [windowId])
@@ -191,7 +192,7 @@ function Header() {
         </div>
 
         <div className="flex min-w-0 shrink-0 justify-end overflow-visible">
-          <HeaderToolbarArea focused={focused} headerRowRef={headerRowRef} leadingRef={leadingRef} />
+          <ToolbarArea focused={focused} headerRowRef={headerRowRef} leadingRef={leadingRef} />
         </div>
       </div>
 
@@ -200,7 +201,7 @@ function Header() {
         items={pathMenuItems}
         open={pathMenuOpen}
         position={pathMenuPosition}
-        zIndex={10000}
+        zIndex={Z_INDEX.IN_APP_OVERLAY}
         onClose={() => setPathMenuOpen(false)}
         onSelect={handlePathMenuSelect}
       />

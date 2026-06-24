@@ -1,10 +1,13 @@
+import type { SeekerListSortOption } from '~/components/applications/Seeker/listContextMenu'
 import { getHomePath } from '~/session/paths'
 
-export function getSeekerDefaultTabPath(): string {
+export type { SeekerListSortOption }
+
+export function getDefaultTabPath(): string {
   return getHomePath()
 }
 
-export const SEEKER_TAB_CHROME = {
+export const TAB_CHROME = {
   activeBackground: '#f4f4f4',
   inactiveBackground: '#e6e5e5',
   inactiveHoverBackground: '#d8d7d7',
@@ -16,13 +19,13 @@ export const SEEKER_TAB_CHROME = {
   bottomBorder: '#d9d9d9',
 } as const
 
-export function shouldShowSeekerTabBar(tabCount: number): boolean {
+export function shouldShowTabBar(tabCount: number): boolean {
   return tabCount > 1
 }
 
-export type SeekerViewMode = 'icon' | 'list' | 'column' | 'gallery'
+export type ViewMode = 'icon' | 'list' | 'column' | 'gallery'
 
-export type SeekerSidebarIcon =
+export type SidebarIcon =
   | 'airdrop'
   | 'clock'
   | 'applications'
@@ -44,47 +47,64 @@ export type SeekerSidebarIcon =
   | 'globe'
   | 'tag'
 
-export interface SeekerSidebarItem {
+export interface SidebarItem {
   id: string
   label: string
-  icon: SeekerSidebarIcon
+  icon: SidebarIcon
   active?: boolean
   checked?: boolean
   indeterminate?: boolean
 }
 
-export interface SeekerSidebarSection {
+export interface SidebarSection {
   id: string
   title?: string
-  items: SeekerSidebarItem[]
+  items: SidebarItem[]
 }
 
-export interface SeekerTabState {
+export interface TabState {
   id: string
   path: string
   label: string
-}
-
-export interface SeekerWindowState {
-  tabs: SeekerTabState[]
-  activeTabId: string
-  viewMode: SeekerViewMode
-  selection: string[]
   historyBack: string[]
   historyForward: string[]
 }
 
-export interface SeekerWindowStore {
-  windows: Record<string, SeekerWindowState>
+export interface MainWindowState {
+  tabs: TabState[]
+  activeTabId: string
+  viewMode: ViewMode
+  selection: string[]
+}
+
+export interface MainWindowStore {
+  windows: Record<string, MainWindowState>
   initWindow: (windowId: string) => void
   removeWindow: (windowId: string) => void
   setActiveTab: (windowId: string, tabId: string) => void
   addTab: (windowId: string, path: string, label?: string) => void
   closeTab: (windowId: string, tabId: string) => void
+  closeOtherTabs: (windowId: string, tabId: string) => void
   moveTabs: (windowId: string, tabIds: string[]) => void
   navigateTo: (windowId: string, path: string) => void
   goBack: (windowId: string) => void
   goForward: (windowId: string) => void
-  setViewMode: (windowId: string, viewMode: SeekerViewMode) => void
+  setViewMode: (windowId: string, viewMode: ViewMode) => void
   setSelection: (windowId: string, selection: string[]) => void
+  restoreWindowState: (windowId: string, snapshot: RestoreMainWindowSnapshot) => void
+}
+
+export interface RestoreMainWindowSnapshot {
+  tabs: {
+    path: string
+    label?: string
+    historyBack?: string[]
+    historyForward?: string[]
+  }[]
+  activeTabIndex: number
+  viewMode: ViewMode
+  /** @deprecated Migrated to per-tab history on restore */
+  historyBack?: string[]
+  /** @deprecated Migrated to per-tab history on restore */
+  historyForward?: string[]
 }

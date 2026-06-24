@@ -21,8 +21,13 @@ export interface ApplicationWindowCloseContext {
 
 export type ApplicationWindowCloseAction = 'quit'
 
+export interface ApplicationWindowOpenedContext {
+  window: WindowState
+}
+
 export interface ApplicationWindowHandlers {
   openApp?: (context: ApplicationOpenAppContext) => string | undefined
   resolveOpenWindowPayload?: (context: ApplicationOpenWindowContext) => Record<string, unknown> | undefined
+  onWindowOpened?: (context: ApplicationWindowOpenedContext) => void
   onCloseWindow?: (context: ApplicationWindowCloseContext) => ApplicationWindowCloseAction | undefined
 }

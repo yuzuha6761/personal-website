@@ -8,7 +8,7 @@ import {
 } from '~/fs/paths'
 import { getHomePath } from '~/session/paths'
 
-export function resolveSidebarItemPath(itemId: string): string | undefined {
+export function resolveItemPath(itemId: string): string | undefined {
   const homePath = getHomePath()
 
   const sidebarItemPaths: Partial<Record<string, string>> = {
@@ -29,7 +29,7 @@ export function resolveSidebarItemPath(itemId: string): string | undefined {
   return sidebarItemPaths[itemId] ?? resolveStorageDevicePath(itemId)
 }
 
-export function isSidebarItemActive(itemId: string, currentPath: string): boolean {
-  const itemPath = resolveSidebarItemPath(itemId)
+export function isItemActive(itemId: string, currentPath: string): boolean {
+  const itemPath = resolveItemPath(itemId)
   return itemPath !== undefined && itemPath === currentPath
 }

@@ -6,12 +6,12 @@ import { Scrollbar } from '~/components/ui-kit'
 import { useWindowFocus } from '~/components/Window/FocusContext'
 import { getRootFontSize } from '~/services/window'
 import { resolveSeekerNewWindowPath } from '~/components/applications/Seeker/newWindowPath'
-import { isSidebarItemActive, resolveSidebarItemPath } from '~/components/applications/Seeker/sidebarPaths'
-import { buildVisibleSidebarEntries, isSidebarItemVisible } from '~/components/applications/Seeker/locationSidebar'
+import { isItemActive, resolveItemPath } from './paths'
+import { buildVisibleEntries, isItemVisible } from './location'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
-import { useSeekerWindow } from '~/components/applications/Seeker/useSeekerWindow'
-import type { SeekerSidebarItem } from './types'
+import { useMainWindow } from '../useMainWindow'
+import type { SidebarItem } from '../types'
 
 const DEFAULT_WIDTH_REM = 10.65
 const MIN_WIDTH_REM = 9
@@ -22,19 +22,19 @@ const TAGS_SECTION_ID = 'tags'
 const sidebarItemClass = 'w-full h-[1.98rem] border-0 rounded-[.34rem] pr-[.25rem] py-0 bg-transparent [font:inherit] text-[.9rem] font-[560] leading-none cursor-default flex items-center text-left'
 const sidebarIconClass = 'flex-[0_0_1.42rem] w-[1.1rem] h-[1.1rem] mr-[.3rem]'
 
-interface SidebarNavItemProps {
+interface NavItemProps {
   active: boolean
   depth: number
   focused: boolean
-  item: SeekerSidebarItem
+  item: SidebarItem
   onNavigate: (path: string) => void
   sidebarIconColorStyle: { color: string }
   sidebarTextClass: string
 }
 
-function SidebarNavItem(props: SidebarNavItemProps) {
+function NavItem(props: NavItemProps) {
   const { active, depth, focused, item, onNavigate, sidebarIconColorStyle, sidebarTextClass } = props
-  const path = resolveSidebarItemPath(item.id)
+  const path = resolveItemPath(item.id)
   const depthClass = depth > 0 ? 'pl-[1.35rem]' : 'pl-[.3rem]'
   const className = `${sidebarItemClass} ${depthClass} ${sidebarTextClass}`
   const activeBackground = focused
@@ -90,7 +90,7 @@ function HairlineVerticalStrip({ className = '', color }: HairlineStripProps) {
   )
 }
 
-interface SidebarSectionTitleProps {
+interface SectionTitleProps {
   className: string
   collapsed: boolean
   sectionId: string
@@ -98,13 +98,13 @@ interface SidebarSectionTitleProps {
   toggleCollapsed: (sectionId: string) => void
 }
 
-function SidebarSectionTitle({
+function SectionTitle({
   className,
   collapsed,
   sectionId,
   title,
   toggleCollapsed,
-}: SidebarSectionTitleProps) {
+}: SectionTitleProps) {
   return (
     <div className={`group flex items-center justify-between ${className}`}>
       <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{title}</span>
@@ -125,12 +125,12 @@ function SidebarSectionTitle({
   )
 }
 
-interface CollapsibleSidebarItemsProps {
+interface CollapsibleItemsProps {
   children: React.ReactNode
   collapsed: boolean
 }
 
-function CollapsibleSidebarItems({ children, collapsed }: CollapsibleSidebarItemsProps) {
+function CollapsibleItems({ children, collapsed }: CollapsibleItemsProps) {
   return (
     <div
       className="grid overflow-hidden"
@@ -151,7 +151,7 @@ interface SidebarProps {
   containerRef: RefObject<HTMLDivElement | null>
 }
 
-function resolveSidebarWidth(pointerRem: number, containerWidthRem: number) {
+function resolveWidth(pointerRem: number, containerWidthRem: number) {
   if (pointerRem <= HIDE_AT_REM) {
     return { visible: false, widthRem: DEFAULT_WIDTH_REM }
   }
@@ -164,7 +164,7 @@ function resolveSidebarWidth(pointerRem: number, containerWidthRem: number) {
 
 function Sidebar({ containerRef }: SidebarProps) {
   const focused = useWindowFocus()?.focused ?? true
-  const { windowState, navigateTo } = useSeekerWindow()
+  const { windowState, navigateTo } = useMainWindow()
   const newWindowPathOption = useSeekerGlobalStore((state) => state.newWindowPathOption)
   const defaultTabPath = resolveSeekerNewWindowPath(newWindowPathOption)
   const activeTab = windowState?.tabs.find((tab) => tab.id === windowState.activeTabId)
@@ -190,7 +190,7 @@ function Sidebar({ containerRef }: SidebarProps) {
       : 'var(--system-sidebar-icon-color-muted, #ffb3da)',
   }
   const tagSection = sidebarSections.find((section) => section.id === TAGS_SECTION_ID)
-  const showTagsSection = Boolean(tagSection?.items.some(isSidebarItemVisible) && tagItems.length > 0)
+  const showTagsSection = Boolean(tagSection?.items.some(isItemVisible) && tagItems.length > 0)
 
   const handleNavigate = useCallback((path: string) => {
     navigateTo(path)
@@ -204,7 +204,7 @@ function Sidebar({ containerRef }: SidebarProps) {
     const containerRect = container.getBoundingClientRect()
     const containerWidthRem = containerRect.width / rootFontSize
     const pointerRem = (clientX - containerRect.left) / rootFontSize
-    const next = resolveSidebarWidth(pointerRem, containerWidthRem)
+    const next = resolveWidth(pointerRem, containerWidthRem)
 
     setVisible(next.visible)
     if (next.visible) setWidthRem(next.widthRem)
@@ -262,7 +262,7 @@ function Sidebar({ containerRef }: SidebarProps) {
         contentClassName="pt-0 pr-[.5rem] pb-[.9rem] pl-[.6rem]"
       >
         {sidebarSections.filter((section) => section.id !== TAGS_SECTION_ID).map((section) => {
-          const visibleEntries = buildVisibleSidebarEntries(section.id, section.items)
+          const visibleEntries = buildVisibleEntries(section.id, section.items)
           const collapsed = collapsedSidebarSectionIds.includes(section.id)
 
           if (visibleEntries.length === 0) return null
@@ -270,7 +270,7 @@ function Sidebar({ containerRef }: SidebarProps) {
           return (
             <section className="mb-[1.08rem]" key={section.id}>
               {section.title && (
-                <SidebarSectionTitle
+                <SectionTitle
                   className={`mb-[.25rem] ${sidebarTitleClass} text-[.78rem] font-700`}
                   collapsed={collapsed}
                   sectionId={section.id}
@@ -278,10 +278,10 @@ function Sidebar({ containerRef }: SidebarProps) {
                   toggleCollapsed={toggleSidebarSectionCollapsed}
                 />
               )}
-              <CollapsibleSidebarItems collapsed={collapsed}>
+              <CollapsibleItems collapsed={collapsed}>
                 {visibleEntries.map(({ item, depth }) => (
-                  <SidebarNavItem
-                    active={isSidebarItemActive(item.id, currentPath)}
+                  <NavItem
+                    active={isItemActive(item.id, currentPath)}
                     depth={depth}
                     focused={focused}
                     item={item}
@@ -291,21 +291,21 @@ function Sidebar({ containerRef }: SidebarProps) {
                     sidebarTextClass={sidebarTextClass}
                   />
                 ))}
-              </CollapsibleSidebarItems>
+              </CollapsibleItems>
             </section>
           )
         })}
 
         {showTagsSection ? (
           <section className="mb-[1.08rem]">
-            <SidebarSectionTitle
+            <SectionTitle
               className={`mb-[.34rem] ${sidebarTitleClass} text-[.74rem] font-700`}
               collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}
               sectionId={TAGS_SECTION_ID}
               title={tagSection?.title ?? '标签'}
               toggleCollapsed={toggleSidebarSectionCollapsed}
             />
-            <CollapsibleSidebarItems collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}>
+            <CollapsibleItems collapsed={collapsedSidebarSectionIds.includes(TAGS_SECTION_ID)}>
               {tagItems.map((tag) => (
                 <div className={`${sidebarItemClass} pl-[.3rem] ${sidebarTextClass}`} key={tag.id}>
                   <span
@@ -315,7 +315,7 @@ function Sidebar({ containerRef }: SidebarProps) {
                   <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{tag.label}</span>
                 </div>
               ))}
-            </CollapsibleSidebarItems>
+            </CollapsibleItems>
           </section>
         ) : null}
       </Scrollbar>

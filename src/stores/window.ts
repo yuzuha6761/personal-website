@@ -7,7 +7,8 @@ import {
   preloadApplication,
 } from '~/components/applications/registry'
 import { SEEKER_WINDOW_KIND } from '~/components/applications/Seeker/windows'
-import { createWindowState, getNextZIndex } from '~/services/window'
+import { Z_INDEX } from '~/constants/zIndex'
+import { createWindowState, getNextZIndex, normalizeWindowZIndices } from '~/services/window'
 import { prepareWindowRestoreTransition } from '~/services/window-restore-transition'
 import useAppStore from './app'
 
@@ -159,7 +160,7 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       size: options?.size,
       payload,
       siblingCount: siblings.length,
-      zIndex: getNextZIndex(get().windows),
+      zIndex: options?.zIndex ?? getNextZIndex(get().windows),
     })
 
     set((state) => ({
@@ -167,6 +168,8 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       activeWindowId: newWindow.id,
       focusedTarget: { type: 'window', windowId: newWindow.id },
     }))
+
+    getApplicationWindowHandlers(appId)?.onWindowOpened?.({ window: newWindow })
 
     useAppStore.getState().activateApp(appId)
 
@@ -324,12 +327,18 @@ const useWindowStore = create<WindowStore>((set, get) => ({
       const target = state.windows.find((window) => window.id === windowId)
       if (!target) return state
 
-      const zIndex = getNextZIndex(state.windows)
+      let windows = state.windows
+      let zIndex = getNextZIndex(windows)
+
+      if (zIndex >= Z_INDEX.WINDOW_MAX) {
+        windows = normalizeWindowZIndices(windows)
+        zIndex = getNextZIndex(windows)
+      }
 
       return {
         activeWindowId: windowId,
         focusedTarget: { type: 'window', windowId },
-        windows: state.windows.map((window) =>
+        windows: windows.map((window) =>
           window.id === windowId
             ? { ...window, zIndex, minimized: false, minimizedAt: undefined }
             : window,

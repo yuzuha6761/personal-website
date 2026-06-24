@@ -5,6 +5,7 @@ import type {
   OpenWindowOptions,
   WindowState,
 } from '~types'
+import useMainWindowStore from '~/components/applications/Seeker/Main/store'
 import { aboutWindowOptions } from './About/window'
 import { mainWindowOptions } from './Main/window'
 import { settingsWindowOptions } from './Settings/window'
@@ -130,5 +131,19 @@ export const applicationWindowHandlers: ApplicationWindowHandlers = {
 
   resolveOpenWindowPayload() {
     return { windowKind: SEEKER_WINDOW_KIND.MAIN }
+  },
+
+  onWindowOpened({ window }) {
+    if (getSeekerWindowKind(window.payload) === SEEKER_WINDOW_KIND.MAIN) {
+      useMainWindowStore.getState().initWindow(window.id)
+    }
+  },
+
+  onCloseWindow({ window }) {
+    if (getSeekerWindowKind(window.payload) === SEEKER_WINDOW_KIND.MAIN) {
+      useMainWindowStore.getState().removeWindow(window.id)
+    }
+
+    return undefined
   },
 }

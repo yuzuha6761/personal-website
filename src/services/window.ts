@@ -1,3 +1,4 @@
+import { Z_INDEX } from '~/constants/zIndex'
 import type { Application, WindowRemSize, WindowState } from '~types'
 
 const DEFAULT_WINDOW_SIZE = { width: 400, height: 300 }
@@ -21,9 +22,22 @@ export function cascadePosition(siblingCount: number) {
   }
 }
 
+export function normalizeWindowZIndices(windows: WindowState[]): WindowState[] {
+  return [...windows]
+    .sort((left, right) => left.zIndex - right.zIndex || left.openedAt - right.openedAt)
+    .map((window, index) => ({
+      ...window,
+      zIndex: Z_INDEX.WINDOW_BASE + index,
+    }))
+}
+
 export function getNextZIndex(windows: WindowState[]): number {
-  if (windows.length === 0) return 1
-  return Math.max(...windows.map((window) => window.zIndex)) + 1
+  if (windows.length === 0) return Z_INDEX.WINDOW_BASE
+
+  const max = Math.max(...windows.map((window) => window.zIndex))
+  if (max < Z_INDEX.WINDOW_MAX) return max + 1
+
+  return Z_INDEX.WINDOW_MAX
 }
 
 export function createWindowState(

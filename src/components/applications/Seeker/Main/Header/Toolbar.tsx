@@ -3,8 +3,9 @@ import type { LucideIcon } from 'lucide-react'
 import ContextualMenu, { type ContextualMenuItem } from '~/components/ContextualMenu'
 import { AppIcon } from '~/components/icons/AppIcon'
 import { getRootFontSize } from '~/services/window'
+import { Z_INDEX } from '~/constants/zIndex'
 import { seekerIcons } from '~/components/applications/Seeker/icons'
-import type { SeekerViewMode } from './types'
+import type { ViewMode } from '../types'
 
 const TITLE_MIN_REM = 7.5
 const ICON_SLOT_REM = 1.72
@@ -18,7 +19,7 @@ const SEARCH_FIELD_REM = 11.5
 const ALL_ACTIONS = ['group', 'share', 'tag', 'more'] as const
 type ActionId = typeof ALL_ACTIONS[number]
 
-const VIEW_MODES: { id: SeekerViewMode; icon: LucideIcon; label: string }[] = [
+const VIEW_MODES: { id: ViewMode; icon: LucideIcon; label: string }[] = [
   { id: 'icon', icon: seekerIcons.grid, label: '为图标' },
   { id: 'list', icon: seekerIcons.list, label: '为列表' },
   { id: 'column', icon: seekerIcons.columns, label: '为分栏' },
@@ -40,7 +41,7 @@ interface ToolbarLayout {
   visibleActionCount: number
 }
 
-interface HeaderToolbarProps {
+interface ToolbarProps {
   availableWidth: number | null
   focused: boolean
 }
@@ -89,15 +90,15 @@ function resolveToolbarLayout(availableRem: number): ToolbarLayout {
   return candidates[candidates.length - 1]
 }
 
-function HeaderToolbar(props: HeaderToolbarProps) {
+function Toolbar(props: ToolbarProps) {
   const { availableWidth, focused } = props
   const viewMenuId = useId()
   const overflowMenuId = useId()
   const viewTriggerRef = useRef<HTMLDivElement>(null)
   const overflowTriggerRef = useRef<HTMLDivElement>(null)
 
-  const [viewMode, setViewMode] = useState<SeekerViewMode>('list')
-  const [hoveredViewMode, setHoveredViewMode] = useState<SeekerViewMode | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [hoveredViewMode, setHoveredViewMode] = useState<ViewMode | null>(null)
   const [viewMenuOpen, setViewMenuOpen] = useState(false)
   const [overflowMenuOpen, setOverflowMenuOpen] = useState(false)
   const [viewMenuPosition, setViewMenuPosition] = useState({ x: 0, y: 0 })
@@ -172,7 +173,7 @@ function HeaderToolbar(props: HeaderToolbarProps) {
     setOverflowMenuOpen(true)
   }, [])
 
-  const getViewSlotClass = (mode: SeekerViewMode) => {
+  const getViewSlotClass = (mode: ViewMode) => {
     if (viewMode === mode) return `${iconSlotClass} ${viewActiveClass}`
     if (hoveredViewMode === mode) return `${iconSlotClass} ${focused ? 'bg-#dcdcdc' : 'bg-#d8d8d8'}`
     return `${iconSlotClass} ${viewHoverClass}`
@@ -266,9 +267,9 @@ function HeaderToolbar(props: HeaderToolbarProps) {
         items={viewMenuItems}
         open={viewMenuOpen}
         position={viewMenuPosition}
-        zIndex={10000}
+        zIndex={Z_INDEX.IN_APP_OVERLAY}
         onClose={() => setViewMenuOpen(false)}
-        onSelect={({ item }) => setViewMode(item.id as SeekerViewMode)}
+        onSelect={({ item }) => setViewMode(item.id as ViewMode)}
       />
 
       <ContextualMenu
@@ -276,11 +277,11 @@ function HeaderToolbar(props: HeaderToolbarProps) {
         items={overflowMenuItems}
         open={overflowMenuOpen}
         position={overflowMenuPosition}
-        zIndex={10000}
+        zIndex={Z_INDEX.IN_APP_OVERLAY}
         onClose={() => setOverflowMenuOpen(false)}
         onSelect={({ item }) => {
           if (item.id.startsWith('view-')) {
-            setViewMode(item.id.replace('view-', '') as SeekerViewMode)
+            setViewMode(item.id.replace('view-', '') as ViewMode)
           }
         }}
       />
@@ -288,13 +289,13 @@ function HeaderToolbar(props: HeaderToolbarProps) {
   )
 }
 
-interface HeaderToolbarAreaProps {
+interface ToolbarAreaProps {
   focused: boolean
   headerRowRef: RefObject<HTMLDivElement | null>
   leadingRef: RefObject<HTMLDivElement | null>
 }
 
-export function HeaderToolbarArea(props: HeaderToolbarAreaProps) {
+export function ToolbarArea(props: ToolbarAreaProps) {
   const { focused, headerRowRef, leadingRef } = props
   const [availableWidth, setAvailableWidth] = useState<number | null>(null)
 
@@ -321,7 +322,7 @@ export function HeaderToolbarArea(props: HeaderToolbarAreaProps) {
     return () => resizeObserver.disconnect()
   }, [headerRowRef, leadingRef])
 
-  return <HeaderToolbar availableWidth={availableWidth} focused={focused} />
+  return <Toolbar availableWidth={availableWidth} focused={focused} />
 }
 
-export default HeaderToolbar
+export default Toolbar

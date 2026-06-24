@@ -6,7 +6,6 @@ import { seekerIcons } from '~/components/applications/Seeker/icons'
 import { Checkbox } from '~/components/ui-kit'
 import useSeekerGlobalStore from '~/components/applications/Seeker/store'
 
-const PANEL_BORDER_COLOR = '#d2d2d2'
 const PANEL_HOLE_RADIUS_REM = 0.42
 
 interface PanelLayout {
@@ -33,7 +32,7 @@ function GlassPanelBorder(props: { height: number; radius: number; width: number
         height={height - 1}
         rx={rx}
         ry={rx}
-        stroke={PANEL_BORDER_COLOR}
+        stroke="var(--settings-scene-glass-panel-border, #d2d2d2)"
         strokeWidth="1"
         vectorEffect="non-scaling-stroke"
         width={width - 1}
